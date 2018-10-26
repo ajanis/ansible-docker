@@ -1,14 +1,14 @@
 ---
-- name: install docker
+- name: install docker packages
   apt: 
-    name: docker.io 
+    name: "{{ item }}"
     update_cache: yes 
     state: latest
+  with_items: "{{ docker_pkgs }}"
 
-- name: install docker module
+- name: install docker python modules
   pip:
-    name: docker
-
-- name: install docker compose module
-  pip:
-    name: docker-compose
+    name: "{{ item }}"
+    update_cache: yes
+    state: latest
+  with_items: "{{ docker_py_pkgs }}"

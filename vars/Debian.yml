@@ -1,0 +1,7 @@
+docker_pkgs:
+  - python-pip
+  - docker.io
+
+docker_py_pkgs:
+  - docker-compose
+  - docker
