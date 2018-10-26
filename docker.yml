@@ -1,0 +1,10 @@
+---
+- name: Deploy Docker Server
+  hosts: all
+  remote_user: root
+  become: True
+  tasks:
+    - import_role:
+        name: common 
+    - include_role:
+        name: docker

@@ -1,0 +1,14 @@
+---
+- name: install docker
+  apt: 
+    name: docker.io 
+    update_cache: yes 
+    state: latest
+
+- name: install docker module
+  pip:
+    name: docker
+
+- name: install docker compose module
+  pip:
+    name: docker-compose
