@@ -1,6 +1,6 @@
 ---
 
-- name: deploy service container
+- name: Create Docker Containers
   docker_container:
     name: "{{ item.key }}"
     image: "{{ item.value.image }}"

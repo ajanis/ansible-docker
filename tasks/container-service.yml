@@ -1,5 +1,5 @@
 ---
-- name: Create systemd file for docker container
+- name: Create systemd files for docker containers
   template:
     src: docker-container.service.j2
     dest: "/etc/systemd/system/docker-{{ item.key }}.service"
