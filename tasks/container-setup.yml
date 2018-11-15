@@ -1,0 +1,17 @@
+---
+
+- name: deploy service container
+  docker_container:
+    name: "{{ item.key }}"
+    image: "{{ item.value.image }}"
+    env: "{{ item.value.env | default({}) }}"
+    state: started
+    restart_policy: always
+    recreate: no
+    network_mode: "{{ item.value.network_mode }}"
+    published_ports: "{{ item.value.ports }}"
+    volumes: "{{ item.value.volumes }}"
+    log_driver: syslog
+    log_options:
+      tag: "{{ item.key }}"
+  with_dict: "{{ docker_containers }}"
