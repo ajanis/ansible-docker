@@ -9,8 +9,9 @@
     restart_policy: always
     recreate: no
     network_mode: "{{ item.value.network_mode }}"
-    published_ports: "{{ item.value.ports }}"
-    volumes: "{{ item.value.volumes }}"
+    published_ports: "{{ item.value.ports | default([]) }}"
+    volumes: "{{ item.value.volumes | default([]) }}"
+    devices: "{{ item.value.devices | default([]) }}"
     log_driver: syslog
     log_options:
       tag: "{{ item.key }}"
