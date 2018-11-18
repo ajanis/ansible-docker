@@ -12,3 +12,7 @@
   pip:
     name: "{{ docker_py_pkgs }}"
     state: latest
+
+- include_tasks: container-setup.yml
+
+- include_tasks: container-service.yml
