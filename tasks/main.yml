@@ -1,17 +1,5 @@
 ---
-- name: Add the OS specific varibles
-  include_vars: "{{ ansible_os_family }}.yml"
-
-- name: install docker packages
-  apt: 
-    name: "{{ docker_pkgs }}"
-    update_cache: yes 
-    state: latest
-
-- name: install docker python modules
-  pip:
-    name: "{{ docker_py_pkgs }}"
-    state: latest
+- include_tasks: docker-install.yml
 
 - include_tasks: container-setup.yml
 
