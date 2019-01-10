@@ -1,0 +1,17 @@
+---
+- name: Install docker-py module for image building
+  pip:
+    name: docker-py
+    state: present
+    
+- name: Check out docker image repo
+  git:
+    repo: "{{ item.value.repo }}"
+    dest: "/tmp/{{ item.key }}"
+  with_dict: "{{ docker_build_images }}"
+
+- name: Build Docker Image
+  docker_image:
+    path: "/tmp/{{ item.key }}"
+    name: "{{ item.key }}"
+  with_dict: "{{ docker_build_images }}"

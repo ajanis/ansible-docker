@@ -1,6 +1,8 @@
 ---
 - include_tasks: docker-install.yml
 
+- include_tasks: image-build.yml
+
 - include_tasks: container-setup.yml
 
 - include_tasks: container-service.yml
