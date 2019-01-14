@@ -5,5 +5,7 @@
   when: docker_build_images is defined
 
 - include_tasks: container-setup.yml
+  when: docker_containers is defined
 
 - include_tasks: container-service.yml
+  when: docker_containers is defined
