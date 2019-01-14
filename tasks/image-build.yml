@@ -1,8 +1,4 @@
 ---
-- name: Install docker-py module for image building
-  pip:
-    name: docker-py
-    state: present
     
 - name: Check out docker image repo
   git:

@@ -3,5 +3,6 @@ docker_pkgs:
   - docker.io
 
 docker_py_pkgs:
+  - docker-py
   - docker-compose
   - docker
