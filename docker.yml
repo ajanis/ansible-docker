@@ -5,6 +5,14 @@
   become: True
   tasks:
     - import_role:
-        name: common 
+        name: common
+    - import_role:
+        name: openldap
+    - import_role:
+        name: ceph-fs
+      when: storage_backend == "cephfs"
+    - import_role:
+        name: nfs
+      when: storage_backend == "nfs"
     - include_role:
         name: docker
