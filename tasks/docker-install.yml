@@ -7,7 +7,14 @@
     update_cache: yes
     state: latest
 
-- name: install docker python modules
+- name: install python2 docker modules
   pip:
-    name: "{{ docker_py_pkgs }}"
+    name: "{{ docker_py2_pkgs }}"
     state: latest
+  when: ansible_python.version.major == 2
+
+- name: install python3 docker modules
+  pip:
+    name: "{{ docker_py3_pkgs }}"
+    state: latest
+  when: ansible_python.version.major == 3 
