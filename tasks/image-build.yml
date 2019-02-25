@@ -10,4 +10,5 @@
   docker_image:
     path: "/tmp/{{ item.key }}"
     name: "{{ item.key }}"
+    buildargs: "{{ item.value.buildargs | default([]) }}"
   with_dict: "{{ docker_build_images }}"
