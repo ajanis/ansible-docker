@@ -32,7 +32,7 @@ docker_containers:
     command: "-config.file /etc/unifi_exporter/config.yml"
     network_mode: host
     volumes:
-      - '{{ media_root }}/configs/unifi_exporter:/etc/unifi_exporter'
+      - '{{ data_mount_root }}/{{ configs_directory }}/unifi_exporter:/etc/unifi_exporter'
       
 docker_build_images:
   unifi_exporter:
@@ -61,16 +61,16 @@ Creates config directory, SSL keys, and script to import SSL cert into JVM
 
 - name: Install SSL Key
   copy:
-    content: "{{ vault_prettybaked_com_ssl_private_key }}"
-    dest: "{{ ssl_private_key }}"
+    content: "{{ vault_ssl_private_key }}"
+    dest: "{{ ssl_key_path }}"
     owner: root
     group: root
     mode: 0640
 
 - name: Install SSL Certificate Chain
   copy:
-    content: "{{ vault_prettybaked_com_ssl_certificate }}"
-    dest: "{{ ssl_certificate }}"
+    content: "{{ vault_ssl_certificate }}"
+    dest: "{{ ssl_certificate_path }}"
     owner: root
     group: root
     mode: 0640
@@ -78,13 +78,13 @@ Creates config directory, SSL keys, and script to import SSL cert into JVM
 - name: Create SSL Import Script
   template:
     src: unifi_ssl_import.sh.j2
-    dest: /data/configs/unifi/unifi_ssl_import.sh
+    dest: "{{ data_mount_root }}/{{ configs_directory }}/unifi/unifi_ssl_import.sh"
     mode: 0775
     owner: root
     group: root
 
 - name: Build SSL Keystore for Unifi Admin
-  shell: /data/configs/unifi/unifi_ssl_import.sh >> /var/log/docker_unifi_ssl_upgrade.log
+  shell: "{{ data_mount_root }}/{{ configs_directory }}/unifi/unifi_ssl_import.sh >> /var/log/docker_unifi_ssl_upgrade.log"
   args:
     executable: /bin/bash
   notify: restart docker_unifi
@@ -95,7 +95,7 @@ Generates config for unifi-exporter container
 - name: Generate Unifi Prometheus Collector config file
   template:
     src: unifi_exporter_config.yml.j2
-    dest: '{{ media_root }}/configs/unifi_exporter/config.yml'
+    dest: '{{ data_mount_root }}/{{ configs_directory }}/unifi_exporter/config.yml'
   notify: restart docker_unifi_exporter
 ```
 ### Unifi-Exporter Config Template
