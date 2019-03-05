@@ -1,11 +1,19 @@
 # Ansible role for Docker containers and image build
-This role is intended to be included into playbooks for deploying containerized services.  The role makes use of group_vars to build a container image from a specified git repo and then starts the container using the newly created image.
+This role is intended to be included into playbooks for deploying containerized services.  The service role should include group_vars defining the container run parameters and container image parameters (including git repository), along with any container-specific prerequisites and config files.  The role is intended to make it easier to deploy several containerized services on a specified host.
 
-## Example using group_vars
-This is an example of how to use this role to deploy the Ubiquiti Unifi Admin controller and a Prometheus metrics collector for Unifi Admin
+## Example
+The following example **ansible-unifi** role uses this **ansible-docker** role to build the container image for the unifi-exporter service (prometheus exporter for unifi AP data) and run the Unifi-Admin and the Unifi-Exporter containers.  The role itself creates config files on the docker host that are used by the Unifi-Exporter service and runs additional setup steps required by the Unifi-Admin service.
 
-### docker_containers
-Uses the ansible docker_container module to deploy containers with specified arguments.  SystemD services are also created for each container.
+Together, the roles deploy the complete containerized services and related configurations.
+
+Below are the key components of the role.  You may check out the full role here:  [https://github.com/ajanis/ansible-unifi](https://github.com/ajanis/ansible-unifi)
+
+**NOTE:** You will need Prometheus set up somewhere to use the Unifi-Exporter.  You may want to look at [This InfluxDB Role](https://github.com/ajanis/ansible-influxdb) for deploying InfluxDB + Prometheus, which also includes the required Prometheus configuration for the Unifi-Exporter.
+
+### group_vars used in service role
+Calls the docker role with the following group_vars to build a docker image from the specified git repo and deploy the containerized service and systemd configs.
+
+#### group_vars/unifi/vars.yml
 ```
 docker_containers: 
   unifi:
@@ -25,25 +33,12 @@ docker_containers:
     network_mode: host
     volumes:
       - '{{ media_root }}/configs/unifi_exporter:/etc/unifi_exporter'
-```
-### docker_build_images
-Uses the Ansible docker_image module to build a docker image using the specified repo and additional arguments.  Currently builds the image on the host which will run the container, but can be easily modified to push to a desired docker hub.
-```
+      
 docker_build_images:
   unifi_exporter:
     repo: "https://github.com/mdlayher/unifi_exporter.git"
 ```
-## Included as part of a playbook and service role
-The following **ansible-unifi** role uses this **ansible-docker** role to build the container image for the unifi-exporter service (prometheus exporter for unifi AP data) and run the Unifi-Admin and the Unifi-Exporter containers.  The role itself creates config files on the docker host that are used by the Unifi-Exporter service and runs additional setup steps required by the Unifi-Admin service.
-
-Together, the roles deploy the complete containerized services and related configuration.
-
-Below are the key components of the role.  You may check out the full role here:  [https://github.com/ajanis/ansible-unifi](https://github.com/ajanis/ansible-unifi)
-
-**NOTE:** You will need Prometheus set up somewhere to use the Unifi-Exporter.  You may want to look at [This InfluxDB Role](https://github.com/ajanis/ansible-influxdb) for deploying InfluxDB + Prometheus, which also includes the required Prometheus configuration for the Unifi-Exporter.
-
-
-### Sample Playbook
+### Sample Service Role Playbook
 ```
 - name: Deploy Unifi Controller
   hosts: unifi
@@ -54,7 +49,8 @@ Below are the key components of the role.  You may check out the full role here:
     - import_role:
         name: unifi
 ```
-### Main task for Unifi-Admin
+### Unifi-Admin related tasks
+Creates config directory, SSL keys, and script to import SSL cert into JVM
 ```
 - name: Ensure Unifi Data Directory Exists
   file:
@@ -91,17 +87,19 @@ Below are the key components of the role.  You may check out the full role here:
   shell: /data/configs/unifi/unifi_ssl_import.sh >> /var/log/docker_unifi_ssl_upgrade.log
   args:
     executable: /bin/bash
-  notify: restart_docker_unifi
+  notify: restart docker_unifi
 ```
-### Unfi-Exporter tasks
+### Unfi-Exporter related tasks
+Generates config for unifi-exporter container
 ```
 - name: Generate Unifi Prometheus Collector config file
   template:
     src: unifi_exporter_config.yml.j2
     dest: '{{ media_root }}/configs/unifi_exporter/config.yml'
-  notify: restart unifi_exporter
+  notify: restart docker_unifi_exporter
 ```
 ### Unifi-Exporter Config Template
+Template used by unifi-exporter task above
 ```
 listen:
   address: :9130
@@ -115,12 +113,13 @@ unifi:
   timeout: 5s
 ```
 ### systemd container service handlers
+Provides restart handlers for docker containers
 ```
-- name: restart_docker_unifi
+- name: restart docker_unifi
   service:
     name: docker-unifi
     state: restarted
-- name: restart unifi_exporter
+- name: restart docker_unifi_exporter
   systemd:
     name: docker-unifi_exporter
     state: restarted
