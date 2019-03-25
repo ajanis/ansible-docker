@@ -6,6 +6,7 @@
     image: "{{ item.value.image }}"
     env: "{{ item.value.env | default({}) }}"
     state: started
+    pull: "{{ item.value.pull | default('no') }}"
     restart_policy: always
     recreate: no
     network_mode: "{{ item.value.network_mode }}"
