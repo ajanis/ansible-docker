@@ -9,7 +9,7 @@
     pull: "{{ item.value.pull | default('no') }}"
     restart_policy: always
     recreate: no
-    network_mode: "{{ item.value.network_mode }}"
+    network_mode: "{{ item.value.network_mode | default('bridge') }}"
     published_ports: "{{ item.value.ports | default([]) }}"
     volumes: "{{ item.value.volumes | default([]) }}"
     devices: "{{ item.value.devices | default([]) }}"
