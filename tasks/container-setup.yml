@@ -1,5 +1,13 @@
 ---
 
+- name: Create Docker Volume Paths
+#  file:
+#    state: directory
+#    path: "{{ item.split(':')[0] }}"
+  debug: 
+    msg: "Item {{ item }}"
+  with_subelements: "{{ lookup('dict', docker_containers) | subelements('value.volumes') }}"
+
 - name: Create Docker Containers
   docker_container:
     name: "{{ item.key }}"
