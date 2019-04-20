@@ -14,7 +14,7 @@
     name: "{{ item.key }}"
     image: "{{ item.value.image }}"
     env: "{{ item.value.env | default({}) }}"
-    state: stopped
+    state: present
     pull: "{{ item.value.pull | default('no') }}"
     restart_policy: "no"
     recreate: no
