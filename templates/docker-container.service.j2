@@ -1,6 +1,8 @@
 [Unit]
 Description={{ item.value.description }}
-After=docker.service
+After=docker.service autofs.service
+Requires=docker.service autofs.service
+RequiresMountsFor=/data
 
 [Service]
 Restart=always
