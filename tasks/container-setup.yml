@@ -1,5 +1,14 @@
 ---
 
+- name: "Ensure directory paths exist for Docker Volume"
+  file:
+    state: directory
+    path: "{{ item.1.split(':')[0] }}"
+  with_subelements:
+    - "{{ docker_containers }}"
+    - volumes
+  when: item.1.split(':')[0] is search('/data/')
+
 - name: Create Docker Containers
   docker_container:
     name: "{{ item.key }}"
