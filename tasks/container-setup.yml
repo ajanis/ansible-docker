@@ -5,9 +5,9 @@
     name: "{{ item.key }}"
     image: "{{ item.value.image }}"
     env: "{{ item.value.env | default({}) }}"
-    state: started
+    state: stopped
     pull: "{{ item.value.pull | default('no') }}"
-    restart_policy: always
+    restart_policy: "no"
     recreate: no
     network_mode: "{{ item.value.network_mode | default('bridge') }}"
     published_ports: "{{ item.value.ports | default([]) }}"
