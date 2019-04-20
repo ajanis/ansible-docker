@@ -21,7 +21,11 @@
 #  with_dict: "{{ docker_containers }}"
 #  when: docker_service.changed
 
-- name: Register docker container service
-  command: "systemctl restart docker-{{ item.key }}.service"
+- name: Register, Enable, and Start docker-{{ item.key }} Service
+  systemd:
+    name: "docker-{{ item.key }}"
+    state: started
+    enabled: yes
+    daemon_reload: yes
   with_dict: "{{ docker_containers }}"
   when: docker_service.changed
