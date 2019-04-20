@@ -6,6 +6,7 @@
     version: "{{ item.value.branch | default('master') }}"
     dest: "/tmp/{{ item.key }}"
   with_dict: "{{ docker_build_images }}"
+  register: docker_image_repo
 
 - name: Build Docker Image
   docker_image:
@@ -13,4 +14,6 @@
     dockerfile: "{{ item.value.dockerfile | default('Dockerfile') }}"
     name: "{{ item.key }}"
     buildargs: "{{ item.value.buildargs | default({}) }}"
+    force: yes
   with_dict: "{{ docker_build_images }}"
+  when: docker_image_repo is changed
