@@ -1,5 +1,9 @@
 ---
-    
+- name: Install git
+  package:
+    name: git
+    state: present
+
 - name: Check out docker image repo
   git:
     repo: "{{ item.value.repo }}"
