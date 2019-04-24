@@ -5,16 +5,16 @@
   apt:
     name: "{{ docker_pkgs }}"
     update_cache: yes
-    state: latest
+    state: present
 
 - name: install python2 docker modules
   pip:
     name: "{{ docker_py2_pkgs }}"
-    state: latest
+    state: present
   when: ansible_python.version.major == 2
 
 - name: install python3 docker modules
   pip:
     name: "{{ docker_py3_pkgs }}"
-    state: latest
-  when: ansible_python.version.major == 3 
+    state: present
+  when: ansible_python.version.major == 3
