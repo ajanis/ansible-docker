@@ -7,20 +7,6 @@
   with_dict: "{{ docker_containers }}"
   register: docker_service
 
-#- name: Register docker container service
-#  command: "systemctl enable /etc/systemd/system/docker-{{ item.key }}.service"
-#  with_dict: "{{ docker_containers }}"
-#  when: docker_service.changed
-#
-#- name: Update systemctl
-#  command: systemctl daemon-reload
-#  when: docker_service.changed
-#
-#- name: Register docker container service
-#  command: "systemctl restart docker-{{ item.key }}.service"
-#  with_dict: "{{ docker_containers }}"
-#  when: docker_service.changed
-
 - name: Register, Enable, and Start docker-{{ item.key }} Service
   systemd:
     name: "docker-{{ item.key }}"
