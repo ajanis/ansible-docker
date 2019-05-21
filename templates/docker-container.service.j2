@@ -1,9 +1,14 @@
 [Unit]
 Description={{ item.value.description }}
+{% if shared_storage %}
 After=docker.service autofs.service data.mount
 Requires=docker.service autofs.service data.mount
 RequiresMountsFor=/data
 ConditionPathIsMountPoint=/data
+{% else %}
+After=docker.service
+Requires=docker.service
+{% endif %}
 
 [Service]
 Restart=always
