@@ -1,8 +1,9 @@
 [Unit]
 Description={{ item.value.description }}
-After=docker.service autofs.service
-Requires=docker.service autofs.service
+After=docker.service autofs.service data.mount
+Requires=docker.service autofs.service data.mount
 RequiresMountsFor=/data
+ConditionPathIsMountPoint=/data
 
 [Service]
 Restart=always
@@ -10,4 +11,4 @@ ExecStart=/usr/bin/docker start -a {{ item.key }}
 ExecStop=/usr/bin/docker stop -t 2 {{ item.key }}
 
 [Install]
-WantedBy=local.target
+WantedBy=multi-user.target
