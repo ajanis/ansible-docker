@@ -14,4 +14,12 @@
     enabled: yes
     daemon_reload: yes
   with_dict: "{{ docker_containers }}"
+
+- name: Restart docker-container systemd service if systemd files are updated
+  systemd:
+    name: "docker-{{ item.key }}"
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  with_dict: "{{ docker_containers }}"
   when: docker_service.changed
