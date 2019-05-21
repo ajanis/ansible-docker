@@ -7,6 +7,26 @@
     update_cache: yes
     state: present
 
+- name: Create systemd Docker service.d directory
+  file:
+    path: "/etc/systemd/system/docker.service.d"
+    state: directory
+
+- name: Create systemd Docker override config
+  copy:
+    src: docker-override.conf
+    dest: "/etc/systemd/system/docker.service.d/override.conf"
+    mode: 0755
+  register: docker_override
+
+- name: Register, Enable, and Start docker-{{ item.key }} Service
+  systemd:
+    name: "docker"
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  when: docker_override.changed
+
 - name: uninstall deprecated python2 docker modules
   pip:
     name: "{{ docker_py2_exclude_pkgs }}"
