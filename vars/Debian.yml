@@ -5,5 +5,8 @@ docker_pkgs:
 docker_py2_pkgs:
   - docker-py
 
+docker_py2_exclude_pkgs:
+  - docker
+
 docker_py3_pkgs:
   - docker
