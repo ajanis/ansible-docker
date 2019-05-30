@@ -1,10 +1,10 @@
 [Unit]
 Description={{ item.value.description }}
 {% if shared_storage %}
-After=docker.service autofs.service data.mount
-Requires=docker.service autofs.service data.mount
-RequiresMountsFor=/data
-ConditionPathIsMountPoint=/data
+After=docker.service autofs.service {{ data_mount_root }}.mount
+Requires=docker.service autofs.service {{ data_mount_root }}.mount
+RequiresMountsFor=/{{ data_mount_root }}
+ConditionPathIsMountPoint=/{{ data_mount_root }}
 {% else %}
 After=docker.service
 Requires=docker.service
