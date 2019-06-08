@@ -8,13 +8,13 @@
   git:
     repo: "{{ item.value.repo }}"
     version: "{{ item.value.branch | default('master') }}"
-    dest: "{{ media_root }}/git/{{ item.key }}"
+    dest: "{{ data_mount_root }}/{{ git_directory }}/{{ item.key }}"
   with_dict: "{{ docker_build_images }}"
   register: docker_image_repo
 
 - name: Build Docker Image
   docker_image:
-    path: "{{ media_root }}/git/{{ item.key }}"
+    path: "{{ data_mount_root }}/{{ git_directory }}/{{ item.key }}"
     dockerfile: "{{ item.value.dockerfile | default('Dockerfile') }}"
     name: "{{ item.key }}"
     buildargs: "{{ item.value.buildargs | default({}) }}"
