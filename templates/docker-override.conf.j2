@@ -5,8 +5,8 @@ Documentation=https://docs.docker.com
 After=network-online.target docker.socket firewalld.service autofs.service {{ data_mount_root }}.mount
 Wants=network-online.target
 Requires=docker.socket autofs.service {{ data_mount_root }}.mount
-RequiresMountsFor=/{{ data_mount_root }}
-ConditionPathIsMountPoint=/{{ data_mount_root }}
+RequiresMountsFor={{ data_mount_root }}
+ConditionPathIsMountPoint={{ data_mount_root }}
 {% else %}
 After=network-online.target docker.socket firewalld.service
 Wants=network-online.target
