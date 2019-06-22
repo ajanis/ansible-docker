@@ -9,7 +9,7 @@
     repo: "{{ item.value.repo }}"
     version: "{{ item.value.branch | default('master') }}"
     dest: "{{ data_mount_root }}/{{ git_directory }}/{{ item.key }}"
-  with_dict: "{{ docker_build_images }}"
+  loop: "{{ docker_build_images|dict2items }}"
   register: docker_image_repo
 
 - name: Build Docker Image
