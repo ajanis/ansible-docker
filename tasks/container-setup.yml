@@ -16,7 +16,11 @@
     env: "{{ item.value.env | default({}) }}"
     state: present
     pull: "{{ item.value.pull | default('no') }}"
-    restart_policy: "no"
+    comparisons:
+      image: strict
+      volumes: strict
+      env: strict
+      devices: strict
     recreate: no
     network_mode: "{{ item.value.network_mode | default('bridge') }}"
     published_ports: "{{ item.value.ports | default([]) }}"
