@@ -14,10 +14,11 @@
 
 - name: Build Docker Image
   docker_image:
-    build.path: "{{ data_mount_root }}/{{ git_directory }}/{{ item.item.key }}"
-    build.dockerfile: "{{ item.item.value.build.dockerfile | default('Dockerfile') }}"
     name: "{{ item.item.key }}"
-    build.args: "{{ item.item.value.build.args | default({}) }}"
+    build:
+      path: "{{ data_mount_root }}/{{ git_directory }}/{{ item.item.key }}"
+      dockerfile: "{{ item.item.value.dockerfile | default('Dockerfile') }}"
+      args: "{{ item.item.value.buildargs | default({}) }}"
     force_source: yes
     source: build
   loop: "{{ docker_image_repo.results }}"
