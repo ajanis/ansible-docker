@@ -28,7 +28,7 @@
     devices: "{{ item.value.devices | default([]) }}"
     command: "{{ item.value.command | default([]) }}"
     privileged: "{{ item.value.privileged | default('no') }}"
-    log_driver: syslog
+    log_driver: journald
     log_options:
       tag: "{{ item.key }}"
   with_dict: "{{ docker_containers }}"
