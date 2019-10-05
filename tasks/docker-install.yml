@@ -27,20 +27,23 @@
     daemon_reload: yes
   when: docker_override.changed
 
-- name: uninstall deprecated python2 docker modules
+- name: uninstall deprecated python docker modules
   pip:
     name: "{{ docker_py2_exclude_pkgs }}"
     state: absent
-  when: ansible_python.version.major == 2
+    executable: pip2
+  #when: ansible_python.version.major == 2
 
-- name: install python2 docker modules
+- name: install python docker modules
   pip:
     name: "{{ docker_py2_pkgs }}"
     state: present
-  when: ansible_python.version.major == 2
+    executable: pip2
+  #when: ansible_python.version.major == 2
 
 - name: install python3 docker modules
   pip:
     name: "{{ docker_py3_pkgs }}"
     state: present
-  when: ansible_python.version.major == 3
+    executable: pip3
+  #when: ansible_python.version.major == 3
