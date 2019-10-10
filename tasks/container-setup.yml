@@ -27,6 +27,7 @@
     volumes: "{{ item.value.volumes | default([]) }}"
     devices: "{{ item.value.devices | default([]) }}"
     command: "{{ item.value.command | default([]) }}"
+    links: "{{ item.value.links | default([]) }}"
     privileged: "{{ item.value.privileged | default('no') }}"
     log_driver: journald
     log_options:
