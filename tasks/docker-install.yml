@@ -34,7 +34,7 @@
     executable: pip2
   when:
     - ansible_python.version.major == 2
-    - ansible_python.version.minor == 6
+    - ansible_python.version.minor <= 6
 
 - name: uninstall deprecated python 2.7 docker modules
   pip:
@@ -43,7 +43,7 @@
     executable: pip2
   when:
     - ansible_python.version.major == 2
-    - ansible_python.version.minor == 7
+    - ansible_python.version.minor >= 7
 
 - name: install python 2.7 docker modules
   pip:
@@ -52,7 +52,7 @@
     executable: pip2
   when:
     - ansible_python.version.major == 2
-    - ansible_python.version.minor == 7
+    - ansible_python.version.minor >= 7
 
 - name: install python3 docker modules
   pip:
