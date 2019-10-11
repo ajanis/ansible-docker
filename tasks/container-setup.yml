@@ -23,13 +23,19 @@
       devices: strict
     recreate: no
     network_mode: "{{ item.value.network_mode | default('bridge') }}"
-    networks: "{{ item.value.neworks | default([]) }}"
+    networks: "{{ item.value.networks | default([]) }}"
     published_ports: "{{ item.value.ports | default([]) }}"
     volumes: "{{ item.value.volumes | default([]) }}"
     devices: "{{ item.value.devices | default([]) }}"
     command: "{{ item.value.command | default([]) }}"
     links: "{{ item.value.links | default([]) }}"
     privileged: "{{ item.value.privileged | default('no') }}"
+    networks_cli_compatible: |
+      {% if item.value.networks is defined %}
+        yes
+      {% else %}
+        no
+      {% endif %}
     log_driver: journald
     log_options:
       tag: "{{ item.key }}"
