@@ -38,7 +38,7 @@
 
 - name: uninstall deprecated python 2.7 docker modules
   pip:
-    name: "{{ docker_py2_exclude_pkgs }}"
+    name: "{{ docker_py26_pkgs }}"
     state: absent
     executable: pip2
   #when: ansible_python.version.major == 2
