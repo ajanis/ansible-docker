@@ -2,10 +2,10 @@ docker_pkgs:
   - python-pip
   - docker.io
 
-docker_py2_pkgs:
+docker_py26_pkgs:
   - docker-py
 
-docker_py2_exclude_pkgs:
+docker_py27_pkgs:
   - docker
 
 docker_py3_pkgs:
