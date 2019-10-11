@@ -41,7 +41,9 @@
     name: "{{ docker_py26_pkgs }}"
     state: absent
     executable: pip2
-  #when: ansible_python.version.major == 2
+  when:
+    - ansible_python.version.major == 2
+    - ansible_python.version.minor == 7
 
 - name: install python docker modules
   pip:
