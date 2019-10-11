@@ -23,6 +23,7 @@
       devices: strict
     recreate: no
     network_mode: "{{ item.value.network_mode | default('bridge') }}"
+    networks: "{{ item.value.neworks | default([]) }}"
     published_ports: "{{ item.value.ports | default([]) }}"
     volumes: "{{ item.value.volumes | default([]) }}"
     devices: "{{ item.value.devices | default([]) }}"
