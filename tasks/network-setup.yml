@@ -6,6 +6,6 @@
     appends: "{{ item.appends | default('no') }}"
     internal: "{{ item.internal | default('no') }}"
     scope: "{{ item.scope | default('local') }}"
-    ipam_config: "{{ item.ipam | default ([]) )}"
+    ipam_config: "{{ item.ipam | default ([]) }}"
     state: "present"
   with_dict: "{{ docker_networks }}"
