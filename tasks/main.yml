@@ -4,7 +4,7 @@
 - include_tasks: image-build.yml
   when: docker_build_images is defined
 
-- include_tasks: network_setup.yml
+- include_tasks: network-setup.yml
   when: docker_networks is defined
 
 - include_tasks: container-setup.yml
