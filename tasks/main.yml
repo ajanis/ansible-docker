@@ -1,8 +1,8 @@
 ---
-# - include_tasks: docker-install.yml
+- include_tasks: docker-install.yml
 
-# - include_tasks: image-build.yml
-#   when: docker_build_images is defined
+- include_tasks: image-build.yml
+  when: docker_build_images is defined
 
 - include_tasks: network-setup.yml
   when: docker_networks is defined
