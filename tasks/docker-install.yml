@@ -27,7 +27,16 @@
     daemon_reload: yes
   when: docker_override.changed
 
-- name: uninstall deprecated python docker modules
+- name: install python docker modules
+  pip:
+    name: "{{ docker_py26_pkgs }}"
+    state: present
+    executable: pip2
+  when:
+    - ansible_python.version.major == 2
+    - ansible_python.version.minor == 6
+
+- name: uninstall deprecated python 2.7 docker modules
   pip:
     name: "{{ docker_py2_exclude_pkgs }}"
     state: absent
