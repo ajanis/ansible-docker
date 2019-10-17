@@ -19,7 +19,7 @@
       path: "{{ data_mount_root }}/{{ git_directory }}/{{ item.item.key }}"
       dockerfile: "{{ item.item.value.dockerfile | default('Dockerfile') }}"
       args: "{{ item.item.value.buildargs | default({}) }}"
+      pull: yes
     force_source: yes
     source: build
   loop: "{{ docker_image_repo.results }}"
-  when: item.changed
