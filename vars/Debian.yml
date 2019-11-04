@@ -7,6 +7,8 @@ docker_py26_pkgs:
 
 docker_py27_pkgs:
   - docker
+  - docker-compose
 
 docker_py3_pkgs:
   - docker
+  - docker-compose
