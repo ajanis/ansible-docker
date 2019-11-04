@@ -2,10 +2,10 @@
 
 - name: "Create Docker Networks"
   docker_network:
-    name: "{{ item.name }}"
-    appends: "{{ item.appends | default('no') }}"
-    internal: "{{ item.internal | default('no') }}"
-    scope: "{{ item.scope | default('local') }}"
-    ipam_config: "{{ item.ipam | default ([]) }}"
+    name: "{{ item.key }}"
+    appends: "{{ item.value.appends | default('no') }}"
+    internal: "{{ item.value.internal | default('no') }}"
+    scope: "{{ item.value.scope | default('local') }}"
+    ipam_config: "{{ item.value.ipam_config | default (omit) }}"
     state: "present"
-  with_items: "{{ docker_networks }}"
+  loop: "{{ docker_networks | dict2items }}"
