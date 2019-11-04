@@ -7,13 +7,15 @@
   with_subelements:
     - "{{ docker_containers }}"
     - volumes
-  when: item.1.split(':')[0] is search('/data/')
+  when:
+    - item.1.split(':')[0] is search('/data/')
 
 - name: Create Docker Containers
   docker_container:
     name: "{{ item.key }}"
+    hostname: "{{ item.key }}"
     image: "{{ item.value.image }}"
-    env: "{{ item.value.env | default({}) }}"
+    env: "{{ item.value.env | default(omit) }}"
     state: present
     pull: "{{ item.value.pull | default('no') }}"
     comparisons:
@@ -21,14 +23,18 @@
       volumes: strict
       env: strict
       devices: strict
+      networks: strict
+      user: strict
+      hostname: strict
     recreate: no
+    user: "{{ item.value.user | default(omit) }}"
     network_mode: "{{ item.value.network_mode | default('bridge') }}"
-    networks: "{{ item.value.networks | default([]) }}"
-    published_ports: "{{ item.value.ports | default([]) }}"
-    volumes: "{{ item.value.volumes | default([]) }}"
-    devices: "{{ item.value.devices | default([]) }}"
-    command: "{{ item.value.command | default([]) }}"
-    links: "{{ item.value.links | default([]) }}"
+    networks: "{{ item.value.networks | default(omit) }}"
+    published_ports: "{{ item.value.ports | default(omit) }}"
+    volumes: "{{ item.value.volumes | default(omit) }}"
+    devices: "{{ item.value.devices | default(omit) }}"
+    command: "{{ item.value.command | default(omit) }}"
+    links: "{{ item.value.links | default(omit) }}"
     privileged: "{{ item.value.privileged | default('no') }}"
     networks_cli_compatible: |
       {% if item.value.networks is defined %}
