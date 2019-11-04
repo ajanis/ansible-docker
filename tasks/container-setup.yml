@@ -12,6 +12,7 @@
 - name: Create Docker Containers
   docker_container:
     name: "{{ item.key }}"
+    hostname: "{{ item.key }}"
     image: "{{ item.value.image }}"
     env: "{{ item.value.env | default({}) }}"
     state: present
