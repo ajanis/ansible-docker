@@ -14,7 +14,7 @@ Below are the key components of the role.  You may check out the full role here:
 Calls the docker role with the following group_vars to build a docker image from the specified git repo and deploy the containerized service and systemd configs.
 
 #### group_vars/unifi/vars.yml
-```
+```yaml
 docker_containers: 
   unifi:
     description: "Unifi Admin Controller"
@@ -39,7 +39,7 @@ docker_build_images:
     repo: "https://github.com/mdlayher/unifi_exporter.git"
 ```
 ### Sample Service Role Playbook
-```
+```yaml
 - name: Deploy Unifi Controller
   hosts: unifi
   become: True
@@ -51,7 +51,7 @@ docker_build_images:
 ```
 ### Unifi-Admin related tasks
 Creates config directory, SSL keys, and script to import SSL cert into JVM
-```
+```yaml
 - name: Ensure Unifi Data Directory Exists
   file:
     state: directory
@@ -91,7 +91,7 @@ Creates config directory, SSL keys, and script to import SSL cert into JVM
 ```
 ### Unfi-Exporter related tasks
 Generates config for unifi-exporter container
-```
+```yaml
 - name: Generate Unifi Prometheus Collector config file
   template:
     src: unifi_exporter_config.yml.j2
@@ -100,7 +100,7 @@ Generates config for unifi-exporter container
 ```
 ### Unifi-Exporter Config Template
 Template used by unifi-exporter task above
-```
+```yaml
 listen:
   address: :9130
   metricspath: /metrics
