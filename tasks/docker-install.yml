@@ -19,7 +19,7 @@
     mode: 0755
   register: docker_override
 
-- name: Reload systemd service and restart docker service
+- name: Reload systemd service and restart docker service # noqa 503
   systemd:
     name: "docker"
     state: restarted
