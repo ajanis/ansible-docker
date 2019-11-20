@@ -1,7 +1,5 @@
 ---
 - import_tasks: docker-install.yml
-  tags:
-    - always
 
 - import_tasks: image-build.yml
   when: docker_build_images is defined
