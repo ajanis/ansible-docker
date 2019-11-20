@@ -1,2 +1,5 @@
 ---
 shared_storage: False
+docker_containers: {}
+docker_build_images: {}
+docker_networks: {}
