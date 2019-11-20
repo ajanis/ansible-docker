@@ -1,27 +1,27 @@
 ---
-- include_tasks: docker-install.yml
+- import_tasks: docker-install.yml
   tags:
     - always
 
-- include_tasks: image-build.yml
+- import_tasks: image-build.yml
   when: docker_build_images is defined
   tags:
     - docker
     - dockerbuild
 
-- include_tasks: network-setup.yml
+- import_tasks: network-setup.yml
   when: docker_networks is defined
   tags:
     - docker
     - dockernetwork
 
-- include_tasks: container-setup.yml
+- import_tasks: container-setup.yml
   when: docker_containers is defined
   tags:
     - docker
     - dockercontainers
 
-- include_tasks: container-service.yml
+- import_tasks: container-service.yml
   when: docker_containers is defined
   tags:
     - docker
