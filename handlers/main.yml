@@ -1,7 +1,1 @@
-- name: "restart docker-{{ item.key }}"
-  systemd:
-    name: "docker-{{ item.key }}"
-    state: restarted
-    enabled: yes
-    daemon_reload: yes
-  with_dict: "{{ docker_containers }}"
+---
