@@ -7,7 +7,7 @@
   with_dict: "{{ docker_containers }}"
   register: docker_service
 
-- name: Register, Enable, and Start docker-{{ item.key }} Service
+- name: "Register, Enable, and Start Docker Container Services"
   systemd:
     name: "docker-{{ item.key }}"
     state: started
