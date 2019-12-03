@@ -2,17 +2,23 @@
 - name: Deploy Docker Server
   hosts: all
   remote_user: root
-  become: True
+  gather_facts: yes
+
   tasks:
     - import_role:
         name: common
     - import_role:
         name: openldap
+      when:  openldap_server_ip is defined and openldap_server_ip != None
     - import_role:
         name: ceph-fs
-      when: storage_backend == "cephfs"
+      when:
+        - shared_storage
+        - storage_backend == "cephfs"
     - import_role:
         name: nfs
-      when: storage_backend == "nfs"
-    - include_role:
+      when:
+        - shared_storage
+        - storage_backend == "nfs"
+    - import_role:
         name: docker
