@@ -39,10 +39,20 @@ galaxy_info:
   #   - 99.99
 
   platforms:
+    - name: Debian
+      versions:
+        - 9
+        - 8
+        - 7
     - name: Ubuntu
       versions:
         - 16.04
         - 18.04
+    - name: EL
+      versions:
+        - 6
+        - 7
+        - 8
 
   galaxy_tags:
     - docker
