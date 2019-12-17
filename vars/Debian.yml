@@ -1,6 +1,14 @@
-docker_pkgs:
-  - python-pip
+---
+
+python_pip_pkg: python-pip
+
+python3_pip_pkg: python3-pip
+
+docker_io_pkgs:
   - docker.io
+
+docker_ce_pkgs:
+  - docker-ce
 
 docker_py26_pkgs:
   - docker-py
@@ -12,3 +20,5 @@ docker_py27_pkgs:
 docker_py3_pkgs:
   - docker
   - docker-compose
+
+docker_repo_url: https://download.docker.com/linux
