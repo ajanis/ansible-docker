@@ -1,0 +1,53 @@
+
+- name: Install Docker Community Edition
+  block:
+    - name: Remove old Docker versions
+      yum:
+        name:
+          - docker
+          - docker-client
+          - docker-client-latest
+          - docker-common
+          - docker-latest
+          - docker-latest-logrotate
+          - docker-logrotate
+          - docker-engine
+        state: absent
+
+    - name: Install Docker GPG Key
+      apt_key:
+        url: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
+        state: present
+    - name: Set up Docker Community Edition repo
+      yum_repository:
+        baseurl: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/docker-ce.repo"
+        name: docker-ce
+        description: Docker Community Edition
+    - name: Install Docker Community Edition
+      yum:
+        name: "{{ docker_ce_pkgs }}"
+        update_cache: yes
+        state: present
+  when: docker_install_community_edition
+
+
+- name: Install Docker from OS Repository
+  block:
+    - name: Remove old Docker versions
+      yum:
+        name:
+          - docker
+          - docker-client
+          - docker-client-latest
+          - docker-common
+          - docker-latest
+          - docker-latest-logrotate
+          - docker-logrotate
+          - docker-engine
+        state: absent
+    - name: Install Docker from OS Repo
+      yum:
+        name: "{{ docker_io_pkgs }}"
+        update_cache: yes
+        state: present
+  when: not docker_install_community_edition

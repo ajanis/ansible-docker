@@ -1,0 +1,81 @@
+- name: Add the OS specific varibles
+  include_vars: "{{ ansible_os_family }}.yml"
+
+
+- name: Install Docker [Debian/Ubuntu]
+  import_tasks: install_debian.yml
+  when:
+    - ansible_os_family == "Debian"
+
+- name: Install Docker [Debian/Ubuntu]
+  import_tasks: install_redhat.yml
+  when:
+    - ansible_os_family == "RedHat"
+
+- name: Create systemd Docker service.d directory
+  file:
+    path: "/etc/systemd/system/docker.service.d"
+    state: directory
+
+- name: Create systemd Docker override config
+  template:
+    src: docker-override.conf.j2
+    dest: "/etc/systemd/system/docker.service.d/override.conf"
+    mode: 0755
+  register: docker_override
+
+- name: Reload systemd service and restart docker service # noqa 503
+  systemd:
+    name: "docker"
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  when: docker_override.changed
+
+
+
+- name: Install Python Packages
+  block:
+    - name: install Python PIP package
+      package:
+        name: "{{ python_pip_pkg }}"
+        state: present
+    - name: install python docker modules
+      pip:
+        name: "{{ docker_py26_pkgs }}"
+        state: present
+        executable: pip2
+      when:
+        - ansible_python.version.minor <= 6
+    - name: uninstall deprecated python 2.7 docker modules
+      pip:
+        name: "{{ docker_py26_pkgs }}"
+        state: absent
+        executable: pip2
+      when:
+        - ansible_python.version.minor >= 7
+    - name: install python 2.7 docker modules
+      pip:
+        name: "{{ docker_py27_pkgs }}"
+        state: present
+        executable: pip2
+      when:
+        - ansible_python.version.minor >= 7
+  when:
+    - ansible_python.version.major == 2
+
+
+
+- name: Install Python3 Packages
+  block:
+    - name: install Python3 PIP package
+      package:
+        name: "{{ python3_pip_pkg }}"
+        state: present
+    - name: install python3 docker modules
+      pip:
+        name: "{{ docker_py3_pkgs }}"
+        state: present
+        executable: pip3
+  when:
+    - ansible_python.version.major == 3

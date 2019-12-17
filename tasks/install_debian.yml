@@ -1,0 +1,47 @@
+
+- name: Install Docker Community Edition
+  block:
+    - name: Get dpkg architecture
+      command: dpkg --print-architecture
+      register: dpkg_architecture_result
+      check_mode: false
+    - name: Set machine architecture
+      set_fact:
+        dpkg_architecture: "{{ dpkg_architecture_result.stdout }}"
+    - name: Remove old Docker versions
+      apt:
+        name:
+          - docker
+          - docker-engine
+          - docker.io
+        state: absent
+    - name: Install Docker GPG Key
+      apt_key:
+        url: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
+        state: present
+    - name: Set up Docker Community Edition add-apt-repository
+      apt_repository:
+        repo: "deb [arch={{ dpkg_architecture }}] {{ docker_repo_url }}/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} {{ docker_ce_version }}"
+        filename: docker-ce
+    - name: Install Docker Community Edition
+      apt:
+        name: "{{ docker_ce_pkgs }}"
+        update_cache: yes
+        state: present
+  when: docker_install_community_edition
+
+
+- name: Install Docker from OS Repository
+  block:
+    - name: Remove old Docker versions
+      apt:
+        name:
+          - docker
+          - docker-engine
+        state: absent
+    - name: Install Docker from OS Repo
+      apt:
+        name: "{{ docker_io_pkgs }}"
+        update_cache: yes
+        state: present
+  when: not docker_install_community_edition
