@@ -1,6 +1,4 @@
-- name: Add the OS specific varibles
-  include_vars: "{{ ansible_os_family }}.yml"
-
+---
 
 - name: Install Docker [Debian/Ubuntu]
   import_tasks: install_debian.yml
