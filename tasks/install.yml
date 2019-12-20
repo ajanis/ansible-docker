@@ -5,10 +5,24 @@
   when:
     - ansible_os_family == "Debian"
 
-- name: Install Docker [Debian/Ubuntu]
+- name: Install Docker [RedHat]
   import_tasks: install_redhat.yml
   when:
     - ansible_os_family == "RedHat"
+
+- name: Start and enable docker-ce services
+  block:
+    - name: Start and enable docker socket
+      systemd:
+        name: docker.socket
+        state: started
+        enabled: yes
+    - name: Start and enable docker service
+      systemd:
+        name: docker.service
+        state: started
+        enabled: yes
+  when: docker_install_community_edition
 
 - name: Create systemd Docker service.d directory
   file:
