@@ -1,0 +1,77 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+
+version: '{{ docker_compose_version | default('3') }}'
+networks:
+{% for network in docker_networks | dict2items %}
+{% if network.key in network_list %}
+  {{ network.key }}:
+    {{ network.value | to_nice_yaml }}
+{% endif %}
+{% endfor %}
+services:
+{% for service in docker_containers | dict2items %}
+{% if service.key in container_list %}
+  {{ service.key }}:
+    container_name: {{ service.key }}
+    image: {{ service.value.image }}
+    {% if service.value.hostname is defined %}
+    hostname: {{ service.value.hostname }}
+    {% endif %}
+    restart: {{ service.value.restart | default('always') }}
+    {% if service.value.networks is defined %}
+    networks:
+      {% for net in service.value.networks %}
+      - {{ net.name }}
+      {% endfor %}
+    {% endif %}
+    {% if service.value.ports is defined %}
+    ports:
+      {% for port in service.value.ports %}
+      - {{ port }}
+      {% endfor %}
+    {% endif %}
+    {% if service.value.volumes is defined %}
+    volumes:
+      {% for volume in service.value.volumes %}
+      - {{ volume }}
+      {% endfor %}
+    {% endif %}
+    {% if service.value.env is defined %}
+    environment:
+      {% for k,v in service.value.env.items() %}
+      {{ k }}: '{{ v }}'
+      {% endfor %}
+    {% endif %}
+    {% if service.value.user is defined %}
+    user: '{{ service.value.user }}'
+    {% endif %}
+    logging:
+      driver: {{ service.value.log_driver | default('journald') }}
+      options:
+        {% if service.value.log_options is defined %}
+        {% for k,v in service.value.log_options.items() %}
+        {{ k }}: '{{ v }}'
+        {% endfor %}
+        {% else %}
+        tag: {{ service.key }}
+        {% endif %}
+    {% if service.value.command is defined %}
+    command: {{ service.value.command }}
+    {% endif %}
+    {% if service.value.depends_on is defined %}
+    depends_on:
+      {% for dep in service.value.depends_on %}
+      - {{ dep }}
+      {% endfor %}
+    {% endif %}
+    {% if service.value.build is defined %}
+    build: {{ service.value.build }}
+    {% endif %}
+    {% if service.value.cap_add is defined %}
+    cap_add: {{ service.value.cap_add }}
+    {% endif %}
+    {% if service.value.cap_drop is defined %}
+    cap_drop: {{ service.value.cap_drop }}
+    {% endif %}
+{% endif %}
+{% endfor %}
