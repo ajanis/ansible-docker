@@ -48,7 +48,24 @@
       {% else %}
         no
       {% endif %}
-    log_driver: journald
-    log_options:
-      tag: "{{ item.key }}"
+    log_driver: "{{ item.value.log_driver | default('journald') }}"
+    log_options: "{{ item.value.log_options | default({'tag': item.key}) }}"
   with_dict: "{{ docker_containers }}"
+  when: item.key not in compose_containers
+
+
+- name: Generate docker-compose project files
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ item.config_path }}/docker-compose.yml"
+  loop: "{{ docker_compose_projects }}"
+  vars:
+    container_list: "{{ item.containers }}"
+    network_list: "{{ item.networks }}"
+
+- name: Bring up docker-compose projects
+  docker_compose:
+    project_src: "{{ item.config_path }}"
+    pull: yes
+    state: present
+  loop: "{{ docker_compose_projects }}"
