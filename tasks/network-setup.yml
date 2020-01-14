@@ -13,3 +13,4 @@
     ipam_config: "{{ item.value.ipam_config | default (omit) }}"
     state: "present"
   loop: "{{ docker_networks | dict2items }}"
+  when: item.key not in compose_networks
