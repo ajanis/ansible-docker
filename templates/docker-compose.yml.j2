@@ -1,13 +1,15 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 
 version: '{{ docker_compose_version | default('3') }}'
+
 networks:
 {% for network in docker_networks | dict2items %}
 {% if network.key in network_list %}
   {{ network.key }}:
     {{ network.value | to_nice_yaml }}
-{% endif %}
+{%- endif -%}
 {% endfor %}
+
 services:
 {% for service in docker_containers | dict2items %}
 {% if service.key in container_list %}
