@@ -31,6 +31,8 @@
       user: strict
       hostname: strict
     recreate: no
+    capabilities: "{{ item.value.cap_add | default(omit) }}"
+    cap_drop: "{{ item.value.cap_drop | default(omit) }}"
     user: "{{ item.value.user | default(omit) }}"
     network_mode: "{{ item.value.network_mode | default('bridge') }}"
     networks: "{{ item.value.networks | default(omit) }}"
