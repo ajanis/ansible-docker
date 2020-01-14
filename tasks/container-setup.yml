@@ -10,6 +10,10 @@
   when:
     - item.1.split(':')[0] is search('/data/')
 
+- set_fact:
+    compose_containers: "{{ compose_containers + item.containers }}"
+  loop: "{{ docker_compose_projects }}"
+
 - name: Create Docker Containers
   docker_container:
     name: "{{ item.key }}"
