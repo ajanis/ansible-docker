@@ -1,5 +1,9 @@
 ---
 
+- set_fact:
+    compose_networks: "{{ compose_networks + item.networks }}"
+  loop: "{{ docker_compose_projects }}"
+
 - name: "Create Docker Networks"
   docker_network:
     name: "{{ item.key }}"
