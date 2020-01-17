@@ -66,6 +66,6 @@
 - name: Bring up docker-compose projects
   docker_compose:
     project_src: "{{ item.config_path }}"
-    pull: yes
+    pull: "{{ item.pull | default('no') }}"
     state: present
   loop: "{{ docker_compose_projects }}"
