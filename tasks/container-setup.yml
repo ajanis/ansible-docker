@@ -13,6 +13,9 @@
 - set_fact:
     compose_containers: "{{ compose_containers + item.containers }}"
   loop: "{{ docker_compose_projects }}"
+  when:
+    - docker_compose_projects is defined
+    - docker_compose_projects != None
 
 - name: Create Docker Containers
   docker_container:
@@ -51,7 +54,10 @@
     log_driver: "{{ item.value.log_driver | default('journald') }}"
     log_options: "{{ item.value.log_options | default({'tag': item.key}) }}"
   with_dict: "{{ docker_containers }}"
-  when: item.key not in compose_containers
+  when:
+    - docker_containers is defined
+    - docker_containers != None
+    - item.key not in compose_containers
 
 
 - name: Generate docker-compose project files
@@ -62,6 +68,9 @@
   vars:
     container_list: "{{ item.containers }}"
     network_list: "{{ item.networks }}"
+  when:
+    - docker_compose_projects is defined
+    - docker_compose_projects != None
 
 - name: Bring up docker-compose projects
   docker_compose:
@@ -69,3 +78,6 @@
     pull: "{{ item.pull | default('no') }}"
     state: present
   loop: "{{ docker_compose_projects }}"
+  when:
+    - docker_compose_projects is defined
+    - docker_compose_projects != None
