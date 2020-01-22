@@ -3,6 +3,9 @@
 - set_fact:
     compose_networks: "{{ compose_networks + item.networks }}"
   loop: "{{ docker_compose_projects }}"
+  when:
+    - docker_compose_projects is defined
+    - docker_compose_projects != None
 
 - name: "Create Docker Networks"
   docker_network:
