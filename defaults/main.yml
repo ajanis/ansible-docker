@@ -3,6 +3,6 @@ shared_storage: False
 docker_containers: {}
 docker_build_images: {}
 docker_networks: {}
-
+docker_compose_projects: []
 docker_install_community_edition: False
 docker_ce_version: stable
