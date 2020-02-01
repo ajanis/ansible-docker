@@ -11,6 +11,9 @@
     dest: "{{ data_mount_root }}/{{ git_directory }}/{{ item.key }}"
   loop: "{{ docker_build_images|dict2items }}"
   register: docker_image_repo
+  when:
+    - docker_build_images is defined
+    - docker_build_images != None
 
 - name: Build Docker Image
   docker_image:
@@ -23,3 +26,6 @@
     force_source: yes
     source: build
   loop: "{{ docker_image_repo.results }}"
+  when:
+    - docker_build_images is defined
+    - docker_build_images != None
