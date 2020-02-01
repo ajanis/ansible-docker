@@ -3,11 +3,6 @@
 - name: Add the OS specific varibles
   include_vars: "{{ ansible_os_family }}.yml"
 
-- set_fact:
-    compose_containers: []
-- set_fact:
-    compose_networks: []
-
 - import_tasks: install.yml
 
 - import_tasks: image-build.yml
