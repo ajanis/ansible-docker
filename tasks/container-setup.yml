@@ -8,14 +8,10 @@
     - "{{ docker_containers }}"
     - volumes
   when:
+    - docker_containers is defined
+    - docker_containers != None
     - item.1.split(':')[0] is search('/data/')
 
-- set_fact:
-    compose_containers: "{{ compose_containers + item.containers }}"
-  loop: "{{ docker_compose_projects }}"
-  when:
-    - docker_compose_projects is defined
-    - docker_compose_projects != None
 
 - name: Create Docker Containers
   docker_container:
@@ -57,27 +53,38 @@
   when:
     - docker_containers is defined
     - docker_containers != None
-    - item.key not in compose_containers
 
 
-- name: Generate docker-compose project files
-  template:
-    src: docker-compose.yml.j2
-    dest: "{{ item.config_path }}/docker-compose.yml"
-  loop: "{{ docker_compose_projects }}"
-  vars:
-    container_list: "{{ item.containers }}"
-    network_list: "{{ item.networks }}"
-  when:
-    - docker_compose_projects is defined
-    - docker_compose_projects != None
+#- name: Generate docker-compose project files
+#  template:
+#    src: docker-compose.yml.j2
+#    dest: "{{ item.config_path }}/docker-compose.yml"
+#  loop: "{{ docker_compose_projects }}"
+#  vars:
+#    services: "{{ item.services }}"
+#    networks: "{{ item.networks }}"
+#  when:
+#    - docker_compose_projects is defined
+#    - docker_compose_projects != None
+#
+#- name: Bring up docker-compose projects
+#  docker_compose:
+#    project_src: "{{ item.config_path }}"
+#    pull: "{{ item.pull | default('no') }}"
+#    state: present
+#  loop: "{{ docker_compose_projects }}"
+#  when:
+#    - docker_compose_projects is defined
+#    - docker_compose_projects != None
 
 - name: Bring up docker-compose projects
   docker_compose:
-    project_src: "{{ item.config_path }}"
+    project_name: "{{ item.project_name }}"
     pull: "{{ item.pull | default('no') }}"
     state: present
+    definition: "{{ item.definition }}"
   loop: "{{ docker_compose_projects }}"
   when:
     - docker_compose_projects is defined
     - docker_compose_projects != None
+  register: compose_up_output
