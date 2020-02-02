@@ -24,27 +24,29 @@
         enabled: yes
   when: docker_install_community_edition
 
-- name: Create systemd Docker service.d directory
-  file:
-    path: "/etc/systemd/system/docker.service.d"
-    state: directory
+- name: Create systemd override for Docker service
+  block:
+    - name: Create systemd Docker service.d directory
+      file:
+        path: "/etc/systemd/system/docker.service.d"
+        state: directory
 
-- name: Create systemd Docker override config
-  template:
-    src: docker-override.conf.j2
-    dest: "/etc/systemd/system/docker.service.d/override.conf"
-    mode: 0755
-  register: docker_override
+    - name: Create systemd Docker override config
+      template:
+        src: docker-override.conf.j2
+        dest: "/etc/systemd/system/docker.service.d/override.conf"
+        mode: 0755
+      register: docker_override
 
-- name: Reload systemd service and restart docker service # noqa 503
-  systemd:
-    name: "docker"
-    state: restarted
-    enabled: yes
-    daemon_reload: yes
-  when: docker_override.changed
-
-
+    - name: Reload systemd service and restart docker service # noqa 503
+      systemd:
+        name: "docker"
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+      when: docker_override.changed
+  when:
+    - ansible_os_family == "Debian"
 
 - name: Install Python Packages
   block:

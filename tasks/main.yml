@@ -15,4 +15,6 @@
   when: docker_containers is defined
 
 - import_tasks: container-service.yml
-  when: docker_containers is defined
+  when:
+    - docker_containers is defined
+    - ansible_os_family == "Debian"
