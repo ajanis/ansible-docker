@@ -4,6 +4,8 @@ python_pip_pkg: python-pip
 
 python3_pip_pkg: python3-pip
 
+docker_install_community_edition: True
+
 docker_io_pkgs:
   - docker
 
