@@ -1,9 +1,21 @@
 - name: Disable SELinux
   selinux:
     state: disabled
+  when:
+    - ansible_os_family == "RedHat"
+
+- name: Get FirewallD public zone target
+  command: firewall-cmd --zone public --get-target --permanent
+  register: firewalld_public_target
+  changed_when: False
+  when:
+    - ansible_os_family == "RedHat"
 
 - name: Set FirewallD public zone to allow-all
   command: firewall-cmd --permanent --zone=public --set-target=ACCEPT
+  when:
+    - firewalld_public_target.stdout != "ACCEPT"
+    - ansible_os_family == "RedHat"
 
 - name: Install Docker Community Edition
   block:
