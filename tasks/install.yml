@@ -78,8 +78,6 @@
   when:
     - ansible_python.version.major == 2
 
-
-
 - name: Install Python3 Packages
   block:
     - name: install Python3 PIP package
