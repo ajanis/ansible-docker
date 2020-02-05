@@ -1,16 +1,16 @@
-- name: "Disable SELinux, Configure FirewallD to ACCEPT from all [RHEL/CentOS]"
+---
+- name: "Disable SELinux, Configure FirewallD ports to ACCEPT [RHEL/CentOS]"
   block:
     - name: Disable SELinux
       selinux:
         state: disabled
-    - name: Get FirewallD public zone target
-      command: firewall-cmd --zone public --get-target --permanent
-      register: firewalld_public_target
-      changed_when: False
-    - name: Set FirewallD public zone to allow-all
-      command: firewall-cmd --permanent --set-target=ACCEPT
-      when:
-        - firewalld_public_target.stdout != "ACCEPT"
+    - name: Configure Firewalld allowed ports
+      firewalld:
+        port: "{{ item }}"
+        permanent: yes
+        immediate: yes
+        state: enabled
+      loop: "{{ docker_allowed_ports }}"
   when: ansible_os_family == "RedHat"
 
 - name: Install Docker Community Edition
