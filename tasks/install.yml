@@ -48,12 +48,13 @@
   when:
     - ansible_os_family == "Debian"
 
+- name: Install Package Dependencies
+  package:
+    name: "{{ docker_dependency_pkgs }}"
+    state: present
+
 - name: Install Python Packages
   block:
-    - name: install Python PIP package
-      package:
-        name: "{{ python_pip_pkg }}"
-        state: present
     - name: install python docker modules
       pip:
         name: "{{ docker_py26_pkgs }}"
@@ -80,10 +81,6 @@
 
 - name: Install Python3 Packages
   block:
-    - name: install Python3 PIP package
-      package:
-        name: "{{ python3_pip_pkg }}"
-        state: present
     - name: install python3 docker modules
       pip:
         name: "{{ docker_py3_pkgs }}"
