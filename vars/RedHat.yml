@@ -4,6 +4,7 @@ python_pip_pkg:
   - python-pip
   - gcc
   - python-devel
+  - python-urllib3
 
 python3_pip_pkg:
   - python3-pip
@@ -30,7 +31,6 @@ docker_py27_pkgs:
   - more-itertools==5.0.0
   - requests==2.22.0
   - requests-futures==0.9.9
-  - urllib3==1.25.8
 
 docker_py3_pkgs:
   - docker
