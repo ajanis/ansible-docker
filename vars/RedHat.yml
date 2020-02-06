@@ -1,12 +1,9 @@
 ---
-
-python_pip_pkg:
+docker_dependency_pkgs:
   - python-pip
   - gcc
   - python-devel
   - python-urllib3
-
-python3_pip_pkg:
   - python3-pip
   - gcc
   - python3-devel
