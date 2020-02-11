@@ -10,16 +10,7 @@
 - name: "Register, Enable, and Start Docker Container Services"
   systemd:
     name: "docker-{{ item.key }}"
-    state: started
+    state: "{% if docker_service.changed %}restarted{% else %}started{% endif %}"
     enabled: yes
     daemon_reload: yes
   with_dict: "{{ docker_containers }}"
-
-- name: Restart docker-container systemd service if systemd files are updated # noqa 503
-  systemd:
-    name: "docker-{{ item.key }}"
-    state: restarted
-    enabled: yes
-    daemon_reload: yes
-  with_dict: "{{ docker_containers }}"
-  when: docker_service.changed
