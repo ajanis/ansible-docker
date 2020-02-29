@@ -4,16 +4,26 @@
   include_vars: "{{ ansible_os_family }}.yml"
 
 - import_tasks: install.yml
+  tags:
+    - docker_install
 
 - import_tasks: image-build.yml
   when: docker_build_images is defined
+  tags:
+    - docker_build
 
 - import_tasks: network-setup.yml
   when: docker_networks is defined
+  tags:
+    - docker_network
 
 - import_tasks: container-setup.yml
   when: docker_containers is defined
+  tags:
+    - docker_container
 
 - import_tasks: container-service.yml
   when:
     - docker_containers is defined
+  tags:
+    - docker_container
