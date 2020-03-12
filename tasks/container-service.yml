@@ -4,7 +4,9 @@
     src: docker-container.service.j2
     dest: "/etc/systemd/system/docker-{{ item.key }}.service"
     mode: 0755
-  with_dict: "{{ docker_containers }}"
+  loop: "{{ docker_containers|dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
   register: docker_service
 
 - name: "Register, Enable, and Start Docker Container Services"
@@ -13,4 +15,12 @@
     state: "{% if docker_service.changed %}restarted{% else %}started{% endif %}"
     enabled: yes
     daemon_reload: yes
-  with_dict: "{{ docker_containers }}"
+  loop: "{{ docker_containers|dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: Configure systemd services for docker-compose projects
+  include_tasks: docker-compose-systemd.yml
+  loop: "{{ docker_compose_projects }}"
+  loop_control:
+    loop_var: project_item
