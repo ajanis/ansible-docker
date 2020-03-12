@@ -1,19 +1,37 @@
 [Unit]
 Description={{ item.value.description }}
 {% if shared_storage %}
-After=docker.service autofs.service {{ data_mount_root | regex_replace('^\\/', '') }}.mount
-Requires=docker.service autofs.service {{ data_mount_root | regex_replace('^\\/', '') }}.mount {{ item.value.depends_on | default([]) | join(' ') }}
+# Start services, mounts, and docker container dependencies before starting this container
+After=docker.service autofs.service {{ data_mount_root | regex_replace('^\\/', '') }}.mount {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+
+# Ensure shared storage path mounts exist
 RequiresMountsFor={{ data_mount_root }}
+# Ensure shared storage is mounted
 ConditionPathIsMountPoint={{ data_mount_root }}
+
+# Require shared storage mount and docker container dependencies before starting
+Requires=docker.service autofs.service {{ data_mount_root | regex_replace('^\\/', '') }}.mount {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+
+# Stop service if any dependencies are stopped
+BindsTo=docker.service autofs.service {{ data_mount_root | regex_replace('^\\/', '') }}.mount {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+
 {% else %}
-After=docker.service
-Requires=docker.service {{ item.value.depends_on | default([]) | join(' ') }}
+# Start services and docker container dependencies before starting this container
+After=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+
+# Require docker container dependencies before starting
+Requires=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+
+# Stop service if any dependencies are stopped
+BindsTo=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+
 {% endif %}
 
 [Service]
 Restart=always
 ExecStart=/usr/bin/docker start -a {{ item.key }}
 ExecStop=/usr/bin/docker stop -t 2 {{ item.key }}
+RestartSec=1min
 
 [Install]
 WantedBy=multi-user.target
