@@ -1,0 +1,20 @@
+[Unit]
+Description=Docker-Compose {{ project_item.project_name }}_{{ item.key }} Service
+{% if shared_storage %}
+After=docker.service autofs.service {{ data_mount_root | regex_replace('^\\/', '') }}.mount
+RequiresMountsFor={{ data_mount_root }}
+ConditionPathIsMountPoint={{ data_mount_root }}
+Requires=docker.service autofs.service {{ data_mount_root | regex_replace('^\\/', '') }}.mount {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+{% else %}
+After=docker.service
+Requires=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+{% endif %}
+
+
+[Service]
+Restart=always
+ExecStart=/usr/bin/docker start -a {{ project_item.project_name }}_{{ item.key }}_1
+ExecStop=/usr/bin/docker stop -t 2 {{ project_item.project_name }}_{{ item.key }}_1
+
+[Install]
+WantedBy=multi-user.target
