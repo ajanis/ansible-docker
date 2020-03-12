@@ -2,28 +2,26 @@
 
 - name: Add the OS specific varibles
   include_vars: "{{ ansible_os_family }}.yml"
+  tags:
+    - always
 
 - import_tasks: install.yml
   tags:
-    - docker_install
+    - docker-install
 
 - import_tasks: image-build.yml
-  when: docker_build_images is defined
   tags:
-    - docker_build
+    - docker-build
 
 - import_tasks: network-setup.yml
-  when: docker_networks is defined
   tags:
-    - docker_network
+    - docker-network
 
 - import_tasks: container-setup.yml
-  when: docker_containers is defined
   tags:
-    - docker_container
+    - docker-container
 
 - import_tasks: container-service.yml
-  when:
-    - docker_containers is defined
   tags:
     - docker_container
+    - docker-container-systemd
