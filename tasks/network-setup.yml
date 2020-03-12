@@ -11,6 +11,8 @@
     ipam_driver: "{{ item.value.ipam.driver | default(omit) }}"
     state: "present"
   loop: "{{ docker_networks | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
   when:
     - docker_networks is defined
     - docker_networks != None

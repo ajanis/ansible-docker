@@ -4,9 +4,9 @@
   file:
     state: directory
     path: "{{ item.1.split(':')[0] }}"
-  with_subelements:
-    - "{{ docker_containers }}"
-    - volumes
+  loop: "{{ docker_containers|subelements('volumes') }}"
+  loop_control:
+    label: "{{ item.1.split(':')[0] }}"
   when:
     - docker_containers is defined
     - docker_containers != None
@@ -49,7 +49,9 @@
       {% endif %}
     log_driver: "{{ item.value.log_driver | default('journald') }}"
     log_options: "{{ item.value.log_options | default({'tag': item.key}) }}"
-  with_dict: "{{ docker_containers }}"
+  loop: "{{ docker_containers|dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
   when:
     - docker_containers is defined
     - docker_containers != None
@@ -84,6 +86,8 @@
     state: present
     definition: "{{ item.definition }}"
   loop: "{{ docker_compose_projects }}"
+  loop_control:
+    label: "{{ item.project_name }}"
   when:
     - docker_compose_projects is defined
     - docker_compose_projects != None
