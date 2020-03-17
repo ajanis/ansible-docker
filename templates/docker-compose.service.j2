@@ -12,18 +12,12 @@ ConditionPathIsMountPoint={{ data_mount_root }}
 # Require shared storage mount and docker container dependencies before starting
 Requires=docker.service autofs.service {{ data_mount_root | regex_replace('^\\/', '') }}.mount {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
 
-# Stop service if any dependencies are stopped
-BindsTo=docker.service autofs.service {{ data_mount_root | regex_replace('^\\/', '') }}.mount {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
-
 {% else %}
 # Start services and docker container dependencies before starting this container
 After=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
 
 # Require docker container dependencies before starting
 Requires=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
-
-# Stop service if any dependencies are stopped
-BindsTo=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
 
 {% endif %}
 
