@@ -3,7 +3,7 @@
 - name: Create systemd files for docker-compose services
   template:
     src: docker-compose.service.j2
-    dest: "/etc/systemd/system/docker-{{ project_item.project_name }}-{{ item.key }}.service"
+    dest: "{% if item.value.container_name is defined %}/etc/systemd/system/docker-{{ item.value.container_name }}.service{% else %}/etc/systemd/system/docker-{{ project_item.project_name }}-{{ item.key }}.service{% endif %}"
     mode: 0755
   loop: "{{ project_item.definition.services|dict2items }}"
   register: docker_compose_service
@@ -12,7 +12,7 @@
 
 - name: "Register, Enable, and Start Docker Container Services"
   systemd:
-    name: "docker-{{ project_item.project_name }}-{{ item.key }}"
+    name: "{% if item.value.container_name is defined %}docker-{{ item.value.container_name }}{% else %}docker-{{ project_item.project_name }}-{{ item.key }}{% endif %}"
     state: "{% if docker_compose_service.changed %}restarted{% else %}started{% endif %}"
     enabled: yes
     daemon_reload: yes

@@ -1,3 +1,39 @@
+
+{% if item.value.container_name is defined %}
+[Unit]
+Description=Docker-Compose {{ project_item.project_name }}_{{ item.key }} Service
+{% if shared_storage %}
+# Start services, mounts, and docker container dependencies before starting this container
+After=docker.service autofs.service {{ data_mount_root | regex_replace('^\\/', '') }}.mount {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{  item.value.container_name }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+
+# Ensure shared storage path mounts exist
+RequiresMountsFor={{ data_mount_root }}
+# Ensure shared storage is mounted
+ConditionPathIsMountPoint={{ data_mount_root }}
+
+# Require shared storage mount and docker container dependencies before starting
+Requires=docker.service autofs.service {{ data_mount_root | regex_replace('^\\/', '') }}.mount {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{  item.value.container_name }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+
+{% else %}
+# Start services and docker container dependencies before starting this container
+After=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{  item.value.container_name }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+
+# Require docker container dependencies before starting
+Requires=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{  item.value.container_name }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+
+{% endif %}
+
+[Service]
+Restart=always
+ExecStart=/usr/bin/docker start -a {{ item.value.container_name }}
+ExecStop=/usr/bin/docker stop -t 2 {{ item.value.container_name }}
+RestartSec=1min
+
+[Install]
+WantedBy=multi-user.target
+
+{% else %}
+
 [Unit]
 Description=Docker-Compose {{ project_item.project_name }}_{{ item.key }} Service
 {% if shared_storage %}
@@ -29,3 +65,5 @@ RestartSec=1min
 
 [Install]
 WantedBy=multi-user.target
+
+{% endif %}
