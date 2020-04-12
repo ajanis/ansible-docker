@@ -4,6 +4,7 @@
   docker_network:
     name: "{{ item.key }}"
     appends: "{{ item.value.appends | default('no') }}"
+    attachable: "{{ item.value.attachable | default('no') }}"
     internal: "{{ item.value.internal | default('no') }}"
     scope: "{{ item.value.scope | default('local') }}"
     driver: "{{ item.value.driver | default(omit) }}"
