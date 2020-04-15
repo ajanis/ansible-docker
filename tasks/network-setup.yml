@@ -8,8 +8,8 @@
     internal: "{{ item.value.internal | default('no') }}"
     scope: "{{ item.value.scope | default('local') }}"
     driver: "{{ item.value.driver | default(omit) }}"
-    ipam_config: "{{ item.value.ipam.config | default(omit) }}"
-    ipam_driver: "{{ item.value.ipam.driver | default(omit) }}"
+    ipam_config: "{{ item.value.ipam_config|default(omit) }}"
+    ipam_driver: "{{ item.value.ipam_driver|default(omit) }}"
     state: "present"
   loop: "{{ docker_networks | dict2items }}"
   loop_control:
