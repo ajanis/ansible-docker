@@ -39,7 +39,7 @@
     volumes: "{{ item.value.volumes | default(omit) }}"
     devices: "{{ item.value.devices | default(omit) }}"
     command: "{{ item.value.command | default(omit) }}"
-    restart_policy: "{{ item.restart_policy | default('unless-stopped') }}"
+    restart_policy: "{{ item.restart_policy | default(omit) }}"
     links: "{{ item.value.links | default(omit) }}"
     privileged: "{{ item.value.privileged | default('no') }}"
     networks_cli_compatible: |
