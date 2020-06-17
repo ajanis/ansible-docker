@@ -1,0 +1,17 @@
+---
+docker_dependency_pkgs:
+  - gcc
+  - python3-dev
+  - python3-pip
+
+docker_io_pkgs:
+  - docker.io
+
+docker_ce_pkgs:
+  - docker-ce
+
+docker_py3_pkgs:
+  - docker
+  - docker-compose
+
+docker_repo_url: https://download.docker.com/linux
