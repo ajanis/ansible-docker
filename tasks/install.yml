@@ -53,6 +53,11 @@
     name: "{{ docker_dependency_pkgs }}"
     state: present
 
+- name: Upgrade python-pip
+  pip:
+    name: pip
+    state: latest
+
 - name: Install Python Packages
   block:
     - name: install python docker modules
