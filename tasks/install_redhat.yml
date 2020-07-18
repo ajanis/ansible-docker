@@ -34,7 +34,7 @@
         state: present
     - name: Set up Docker Community Edition repo
       yum_repository:
-        baseurl: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/docker-ce.repo"
+        baseurl: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/$releasever/$basearch/{{ docker_ce_version }}"
         name: docker-ce
         description: Docker Community Edition
     - name: Install Docker Community Edition
