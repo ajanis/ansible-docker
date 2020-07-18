@@ -1,0 +1,34 @@
+---
+docker_dependency_pkgs:
+  - gcc
+  - python3-pip
+  - gcc
+  - python3-devel
+  - python3-urllib3
+
+docker_install_community_edition: True
+
+docker_io_pkgs:
+  - docker
+
+docker_ce_pkgs:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+
+docker_py26_pkgs:
+  - docker-py
+
+docker_py27_pkgs:
+  - docker==4.1.0
+  - docker-compose==1.25.3
+  - zipp==1.0.0
+  - more-itertools==5.0.0
+  - requests==2.22.0
+  - requests-futures==0.9.9
+
+docker_py3_pkgs:
+  - docker
+  - docker-compose
+
+docker_repo_url: https://download.docker.com/linux
