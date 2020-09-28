@@ -4,8 +4,6 @@ Description={{ item.value.description }}
 # Start services, mounts, and docker container dependencies before starting this container
 After=docker.service autofs.service cephfs.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
 
-# Ensure shared storage path mounts exist
-RequiresMountsFor={{ data_mount_root }}
 # Ensure shared storage is mounted
 ConditionPathIsMountPoint={{ data_mount_root }}
 
