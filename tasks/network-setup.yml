@@ -11,6 +11,7 @@
     ipam_config: "{{ item.value.ipam_config|default(omit) }}"
     ipam_driver: "{{ item.value.ipam_driver|default(omit) }}"
     state: "present"
+    enable_ipv6: no
   loop: "{{ docker_networks | dict2items }}"
   loop_control:
     label: "{{ item.key }}"
