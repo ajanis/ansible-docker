@@ -26,6 +26,9 @@ docker_containers:
     env:
       PUID: '0'
       PGID: '0'
+    sysctls:
+      net.ipv4.ip_unprivileged_port_start: 0
+
   unifi_exporter:
     description: "Prometheus Metrics Collector Unifi"
     image: unifi_exporter
