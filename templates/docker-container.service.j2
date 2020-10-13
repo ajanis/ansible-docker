@@ -1,23 +1,13 @@
 [Unit]
 Description={{ item.value.description }}
-{% if shared_storage %}
-# Start services, mounts, and docker container dependencies before starting this container
-After=docker.service autofs.service cephfs.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
-
+# Start ocker container dependencies before starting this container
+After=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+{% if shared_storage and (item.value.volumes | select('search', data_mount_root) | list | length) != 0 %}
 # Ensure shared storage is mounted
 ConditionPathIsMountPoint={{ data_mount_root }}
-
-# Require shared storage mount and docker container dependencies before starting
-Requires=docker.service autofs.service cephfs.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
-
-{% else %}
-# Start services and docker container dependencies before starting this container
-After=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
-
-# Require docker container dependencies before starting
-Requires=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
-
 {% endif %}
+# Require shared storage mount and docker container dependencies before starting
+Requires=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
 
 [Service]
 Restart=always
