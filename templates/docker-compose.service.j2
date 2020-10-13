@@ -33,8 +33,6 @@ ConditionPathIsMountPoint={{ data_mount_root }}
 # Require shared storage mount and docker container dependencies before starting
 Requires=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
 
-{% endif %}
-
 [Service]
 {% if project_item.start_delay is defined and project_item.start_delay is number %}
 ExecStartPre=/bin/sleep {{ project_item.start_delay | int }}
