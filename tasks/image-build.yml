@@ -25,6 +25,7 @@
       dockerfile: "{{ item.item.value.dockerfile | default('Dockerfile') }}"
       args: "{{ item.item.value.buildargs | default({}) }}"
       pull: yes
+      target: "{{ item.item.value.target | default(omit) }}"
     force_source: yes
     source: build
   loop: "{{ docker_image_repo.results }}"
