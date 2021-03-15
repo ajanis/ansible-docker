@@ -1,1 +1,13 @@
 ---
+- name: initramfs requires update
+  set_fact:
+    initramfs_requires_update: True
+  when: blacklist_nouveau is changed
+
+- name: dracut requires update
+  set_fact:
+    dracut_requires_update: True
+
+- name: reload docker
+  set_fact:
+    docker_requires_reload: True

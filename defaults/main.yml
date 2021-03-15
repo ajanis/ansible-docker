@@ -4,8 +4,11 @@ docker_containers: {}
 docker_build_images: {}
 docker_networks: {}
 docker_compose_projects: []
+
 docker_install_community_edition: False
 docker_ce_version: stable
+
+docker_install_nvidia: False
 
 docker_allowed_ports:
   - "22/tcp"

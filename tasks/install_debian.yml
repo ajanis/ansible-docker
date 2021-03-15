@@ -14,6 +14,8 @@
           - docker
           - docker-engine
           - docker.io
+          - containerd
+          - runc
         state: absent
     - name: Install Docker GPG Key
       apt_key:
@@ -28,7 +30,9 @@
         name: "{{ docker_ce_pkgs }}"
         update_cache: yes
         state: present
-  when: docker_install_community_edition
+  when:
+    - ( docker_install_community_edition or
+      docker_install_nvidia )
 
 
 - name: Install Docker from OS Repository
@@ -38,10 +42,116 @@
         name:
           - docker
           - docker-engine
+          - docker.io
+          - containerd
+          - runc
         state: absent
     - name: Install Docker from OS Repo
       apt:
         name: "{{ docker_io_pkgs }}"
         update_cache: yes
         state: present
-  when: not docker_install_community_edition
+  when:
+    - not docker_install_community_edition
+    - not docker_install_nvidia
+
+- name: Install runtime environments, packages, modules and configurations for docker nvidia support
+  block:
+    - name: Blacklist nouveau kernel module when cuda cards are present
+      copy:
+        dest: /etc/modprobe.d/blacklist-nouveau.conf
+        content: |
+          blacklist nouveau
+          options nouveau modset=0
+        mode: 0644
+      notify: initramfs requires update
+      register: blacklist_nouveau
+
+    - meta: flush_handlers
+
+    - name: update initramfs
+      shell:
+        cmd: update-initramfs -u
+      register: initramfs_update_result
+
+    - name: Reboot after initramfs update and nouveau module blacklist
+      reboot:
+        connect_timeout: 10
+        reboot_timeout: 600
+        msg: Rebooting system via Ansible
+      when:
+        - initramfs_requires_update|default(False)
+        - initramfs_update_result is defined
+        - initramfs_update_result.rc|int == 0
+
+    - name: Import nvidia-docker GPG key
+      apt_key:
+        url: https://nvidia.github.io/nvidia-docker/gpgkey
+        state: present
+
+#    - name: Add repositories for graphics-driver support when nvidia cards are present
+#      apt_repository:
+#        repo: "{{ item }}"
+#        state: present
+#        filename: nvidia-docker
+#      loop:
+#        - "deb https://nvidia.github.io/libnvidia-container/stable/{{ ansible_distribution|lower }}{{ ansible_distribution_release }}/{{ dpkg_architecture }}"
+#        - "deb https://nvidia.github.io/nvidia-container-runtime/stable/{{ ansible_distribution|lower }}{{ ansible_distribution_release }}/{{ dpkg_architecture }}"
+#        - "deb https://nvidia.github.io/nvidia-docker/{{ ansible_distribution|lower }}{{ ansible_distribution_release }}/{{ dpkg_architecture }}"
+
+    - name: Add repositories for nvidia docker drivers, runtime environments, packages
+      get_url:
+        url: "https://nvidia.github.io/nvidia-docker/{{ ansible_distribution|lower }}{{ ansible_lsb.release  }}/nvidia-docker.list"
+        dest: /etc/apt/sources.list.d/nvidia-docker.list
+        mode: 644
+
+    - name: Install dependencies for building kernel modules and drivers
+      apt:
+        name: "{{ nvidia_driver_dependencies }}"
+        state: present
+        autoclean: yes
+        update_cache: yes
+
+    - name: install video driver for our card
+      apt:
+        name: "{{ nvidia_driver_packages }}"
+        state: present
+        autoclean: yes
+        update_cache: yes
+      notify: reload docker
+
+    - name: Install nvidia-docker2 and container runtime packages
+      apt:
+        name: "{{ nvidia_docker_packages }}"
+        state: present
+        autoclean: yes
+        update_cache: yes
+      notify: reload docker
+
+    - name: Add nvidia runtime config file to docker
+      copy:
+        src: docker-daemon.json
+        dest: /etc/docker/daemon.json
+        owner: root
+        group: root
+        mode: 0664
+      notify: reload docker
+
+    - meta: flush_handlers
+
+    - name: Reboot after docker updates
+      reboot:
+        connect_timeout: 10
+        reboot_timeout: 600
+        msg: Rebooting system via Ansible
+      when:
+        - docker_requires_reload|default(False)
+
+    - name: reload systemctl and restart docker service if necessary
+      systemd:
+        daemon_reload: yes
+        name: docker
+        state: "{% if docker_requires_reload|default(False) %}restarted{% else %}started{% endif %}"
+      when: docker_requires_reload|default(False)
+  when:
+    - docker_install_nvidia
