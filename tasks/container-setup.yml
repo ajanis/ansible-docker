@@ -20,7 +20,7 @@
     image: "{{ item.value.image }}"
     runtime: "{{ item.value.runtime|default(omit) }}"
     env: "{{ item.value.env | default(omit) }}"
-    state: present
+    state: "{{ item.value.state | default('started') }}"
     pull: "{{ item.value.pull | default('no') }}"
     comparisons:
       image: strict
@@ -30,7 +30,7 @@
       networks: strict
       user: strict
       hostname: strict
-    recreate: no
+    recreate: "{{ item.value.recreate | default(omit) }}"
     capabilities: "{{ item.value.cap_add | default(omit) }}"
     cap_drop: "{{ item.value.cap_drop | default(omit) }}"
     user: "{{ item.value.user | default(omit) }}"
