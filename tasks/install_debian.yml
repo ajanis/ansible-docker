@@ -139,6 +139,27 @@
         mode: 0664
       notify: reload docker
 
+    - name: Create nvidia patch directory
+      file:
+        path: "{{ docker_nvidia_transcode_patch_dir }}"
+        state: directory
+        mode: 0755
+        owner: root
+        group: root
+
+    - name: Download patch to allow more than 2 hardware transcodes
+      git:
+        repo: "{{ docker_nvidia_transcode_patch }}"
+        dest: "{{ docker_nvidia_transcode_patch_dir }}/nvidia-patch"
+
+    - name: Patch nvidia drivers if needed
+      shell:
+        cmd: ./patch.sh
+        chdir: "{{ docker_nvidia_transcode_patch_dir }}/nvidia-patch"
+        creates: "{{ docker_nvidia_transcode_patch_dir }}/libnvidia-encode-backup"
+      register: nvidia_transcode_patch_result
+      notify: reload docker
+
     - meta: flush_handlers
 
     - name: Reboot after docker updates
