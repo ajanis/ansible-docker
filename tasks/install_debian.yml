@@ -73,6 +73,8 @@
       shell:
         cmd: update-initramfs -u
       register: initramfs_update_result
+      when:
+        - initramfs_requires_update|default(false)
 
     - name: Reboot after initramfs update and nouveau module blacklist
       reboot:
