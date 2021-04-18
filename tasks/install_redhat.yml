@@ -42,9 +42,10 @@
         update_cache: yes
         state: present
   when:
-    - ( docker_install_community_edition or
-      docker_install_nvidia )
+    - docker_install_community_edition
     - ansible_distribution_major_version is version('7', '<=')
+  tags:
+    - install-docker-ce
 
 - name: Install Docker Community Edition
   block:
@@ -77,10 +78,12 @@
       yum:
         name: "{{ docker_ce_pkgs }}"
         update_cache: yes
-        state: present
+        state: latest
   when:
     - docker_install_community_edition
     - ansible_distribution_major_version is version('8', '>=')
+  tags:
+    - install-docker-ce
 
 - name: Install Docker from OS Repository
   block:
@@ -100,10 +103,11 @@
       yum:
         name: "{{ docker_io_pkgs }}"
         update_cache: yes
-        state: present
+        state: latest
   when:
     - not docker_install_community_edition
-    - not docker_install_nvidia
+  tags:
+    - install-docker-osversion
 
 - name: Install runtime environments, packages, modules and configurations for docker nvidia support
   block:
@@ -182,8 +186,22 @@
         group: root
         mode: 0664
       notify: reload docker
+  when:
+    - docker_install_nvidia
+  tags:
+    - install-docker-nvidia
 
+- name: Reboot host if necessary
+  block:
     - meta: flush_handlers
+
+    - name: Reboot after docker updates
+      reboot:
+        connect_timeout: 10
+        reboot_timeout: 600
+        msg: Rebooting system via Ansible
+      when:
+        - docker_requires_reload|default(False)
 
     - name: reload systemctl and restart docker service if necessary
       systemd:
@@ -191,4 +209,5 @@
         name: docker
         state: "{% if docker_requires_reload|default(False) %}restarted{% else %}started{% endif %}"
       when: docker_requires_reload|default(False)
-
+  tags:
+    - always
