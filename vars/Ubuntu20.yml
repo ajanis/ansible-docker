@@ -40,7 +40,8 @@ nvidia_docker_packages:
 
 docker_ce_pkgs:
   - docker-ce
-
+  - containerd.io
+  - docker-ce-cli
 docker_py3_pkgs:
   - docker
   - docker-compose

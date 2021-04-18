@@ -10,9 +10,12 @@ docker_dependency_pkgs:
 
 docker_io_pkgs:
   - docker.io
+  - containerd
 
 docker_ce_pkgs:
   - docker-ce
+  - containerd.io
+  - docker-ce-cli
 
 docker_py26_pkgs:
   - docker-py
