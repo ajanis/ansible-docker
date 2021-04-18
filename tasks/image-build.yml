@@ -3,6 +3,8 @@
   package:
     name: git
     state: present
+  tags:
+    - docker-image-checkout
 
 - name: Check out docker image repo
   git:
@@ -16,6 +18,8 @@
   when:
     - docker_build_images is defined
     - docker_build_images != None
+  tags:
+    - docker-image-checkout
 
 - name: Build Docker Image
   docker_image:
@@ -34,3 +38,5 @@
   when:
     - docker_build_images is defined
     - docker_build_images != None
+  tags:
+    docker-image-build

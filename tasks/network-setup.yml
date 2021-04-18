@@ -18,3 +18,5 @@
   when:
     - docker_networks is defined
     - docker_networks != None
+  tags:
+    - docker-network

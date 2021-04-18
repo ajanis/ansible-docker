@@ -9,16 +9,10 @@
     - always
 
 - import_tasks: install.yml
-  tags:
-    - docker-install
 
 - import_tasks: image-build.yml
-  tags:
-    - docker-build
 
 - import_tasks: network-setup.yml
-  tags:
-    - docker-network
 
 - import_tasks: container-setup.yml
   tags:
