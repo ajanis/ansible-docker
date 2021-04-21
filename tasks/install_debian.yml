@@ -29,11 +29,11 @@
       apt:
         name: "{{ docker_ce_pkgs }}"
         update_cache: yes
-        state: latest
+        state: present
   when:
     - docker_install_community_edition
-  tags:
-    - install-docker-ce
+#  tags:
+#    - install-docker-ce
 
 - name: Install Docker from OS Repository
   block:
@@ -50,11 +50,11 @@
       apt:
         name: "{{ docker_io_pkgs }}"
         update_cache: yes
-        state: latest
+        state: present
   when:
     - not docker_install_community_edition
-  tags:
-    - install-docker-osversion
+#  tags:
+#    - install-docker-osversion
 
 - name: Install runtime environments, packages, modules and configurations for docker nvidia support
   block:
@@ -162,8 +162,8 @@
       notify: reload docker
   when:
     - docker_install_nvidia
-  tags:
-    - install-docker-nvidia
+#  tags:
+#    - install-docker-nvidia
 
 - name: Reboot host if necessary
   block:
