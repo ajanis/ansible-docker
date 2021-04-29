@@ -7,6 +7,7 @@ docker_compose_projects: []
 
 docker_install_community_edition: False
 docker_ce_version: stable
+docker_recreate: False
 
 docker_install_nvidia: False
 
