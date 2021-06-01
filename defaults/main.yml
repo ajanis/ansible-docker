@@ -21,3 +21,4 @@ docker_allowed_ports:
   - "4789/udp"
 
 
+docker_nvidia_transcode_patch_dir: /opt/nvidia
