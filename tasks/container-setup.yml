@@ -30,8 +30,6 @@
       networks: strict
       user: strict
       hostname: strict
-      security_opts: strict
-    security_opts: "{{ item.value.security_options | default(omit) }}"
     recreate: "{{ item.value.recreate | default(omit) }}"
     capabilities: "{{ item.value.cap_add | default(omit) }}"
     cap_drop: "{{ item.value.cap_drop | default(omit) }}"

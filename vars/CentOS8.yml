@@ -6,7 +6,9 @@ docker_dependency_pkgs:
   - python3-devel
   - python3-urllib3
 
-docker_install_community_edition: True
+docker_old_pkgs:
+  - docker.io
+  - docker-engine
 
 docker_io_pkgs:
   - docker
@@ -39,16 +41,18 @@ nvidia_driver_dependencies:
   - pciutils
   - elfutils-libelf-devel
   - libglvnd-devel
+  - iptables
+  - firewalld
+  - vim
+  - bind-utils
+  - wget
 
 nvidia_driver_packages:
+  - nvidia-driver-latest-dkms
+  - cuda
+  - cuda_drivers
   - "kernel-headers-{{ ansible_kernel }}"
   - "kernel-devel-{{ ansible_kernel }}"
-  - "nvidia-driver:latest-dkms"
-  - kernel
-  - kernel-core
-  - kernel-modules
-  - cuda
-
 
 nvidia_docker_packages:
   - nvidia-container-toolkit

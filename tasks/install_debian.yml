@@ -10,12 +10,7 @@
         dpkg_architecture: "{{ dpkg_architecture_result.stdout }}"
     - name: Remove old Docker versions
       apt:
-        name:
-          - docker
-          - docker-engine
-          - docker.io
-          - containerd
-          - runc
+        name: "{{ docker_io_pkgs + docker_old_pkgs }}"
         state: absent
     - name: Install Docker GPG Key
       apt_key:
@@ -32,19 +27,14 @@
         state: present
   when:
     - docker_install_community_edition
-#  tags:
-#    - install-docker-ce
+  tags:
+    - install-docker-ce
 
 - name: Install Docker from OS Repository
   block:
     - name: Remove old Docker versions
       apt:
-        name:
-          - docker
-          - docker-engine
-          - docker.io
-          - containerd
-          - runc
+        name: "{{ docker_ce_pkgs + docker_old_pkgs }}"
         state: absent
     - name: Install Docker from OS Repo
       apt:
@@ -53,8 +43,8 @@
         state: present
   when:
     - not docker_install_community_edition
-#  tags:
-#    - install-docker-osversion
+  tags:
+    - install-docker-osversion
 
 - name: Install runtime environments, packages, modules and configurations for docker nvidia support
   block:
@@ -162,8 +152,8 @@
       notify: reload docker
   when:
     - docker_install_nvidia
-#  tags:
-#    - install-docker-nvidia
+  tags:
+    - install-docker-nvidia
 
 - name: Reboot host if necessary
   block:
