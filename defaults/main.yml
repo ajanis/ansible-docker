@@ -22,4 +22,4 @@ docker_allowed_ports:
 
 
 docker_nvidia_transcode_patch_dir: /opt/nvidia
-docker_nvidia_transcode_path: https://github.com/keylase/nvidia-patch.git
+docker_nvidia_transcode_patch: https://github.com/keylase/nvidia-patch.git
