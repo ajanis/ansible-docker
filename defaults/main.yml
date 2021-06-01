@@ -21,5 +21,8 @@ docker_allowed_ports:
   - "4789/udp"
 
 
-docker_nvidia_transcode_patch_dir: /opt/nvidia
-docker_nvidia_transcode_patch: https://github.com/keylase/nvidia-patch.git
+docker_nvidia_workdir: /opt/nvidia
+docker_nvidia_patch_src_dir: nvidia-patch
+docker_nvidia_transcode_patch_dir: "{{ docker_nvidia_workdir }}/{{ docker_nvidia_patch_src_dir }}"
+docker_nvidia_creates: "{{ docker_nvidia_workdir }}/libnvidia-encode-backup"
+docker_nvidia_transcode_patch_repo: https://github.com/keylase/nvidia-patch.git
