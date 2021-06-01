@@ -51,14 +51,14 @@ nvidia_driver_dependencies:
   - software-properties-common
 
 nvidia_driver_packages:
-  - "nvidia-headless-{{ nvidia_pkg_versionn }}"
-  - "libnvidia-encode-{{ nvidia_pkg_versionn }}"
-  - "libnvidia-decode-{{ nvidia_pkg_versionn }}"
+  - "nvidia-headless-{{ nvidia_pkg_version }}"
+  - "libnvidia-encode-{{ nvidia_pkg_version }}"
+  - "libnvidia-decode-{{ nvidia_pkg_version }}"
   - "libnvidia-container-tools={{ libnvidia_version }}"
   - "libnvidia-container1={{ libnvidia_version }}"
-  - "nvidia-utils-{{ nvidia_pkg_versionn }}"
-  - "nvidia-kernel-common-{{ nvidia_pkg_versionn }}"
-  - "nvidia-kernel-source-{{ nvidia_pkg_versionn }}"
+  - "nvidia-utils-{{ nvidia_pkg_version }}"
+  - "nvidia-kernel-common-{{ nvidia_pkg_version }}"
+  - "nvidia-kernel-source-{{ nvidia_pkg_version }}"
 
 nvidia_docker_packages:
   - nvidia-container-toolkit
