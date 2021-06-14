@@ -10,24 +10,35 @@
   when:
     - ansible_os_family == "RedHat"
 
-- name: Start and enable docker-ce services
+- name: Reboot host if necessary
   block:
-    - name: Start and enable docker socket
-      systemd:
-        name: docker.socket
-        state: restarted
-        masked: no
-        enabled: yes
-        daemon_reload: yes
+    - meta: flush_handlers
+    - name: Reboot after docker updates
+      reboot:
+        connect_timeout: 10
+        reboot_timeout: 600
+        msg: Rebooting system via Ansible
+      when:
+        - docker_requires_reload|default(False)
+  tags:
+    - always
+
+- name: Start and enable docker services
+  block:
     - name: Start and enable docker service
       systemd:
         name: docker.service
-        masked: no
-        state: restarted
         enabled: yes
         daemon_reload: yes
-  when:
-    - docker_install_community_edition
+        masked: no
+        state: "{% if docker_requires_reload|default(False) %}restarted{% else %}started{% endif %}"
+    - name: Start and enable docker socket
+      systemd:
+        name: docker.socket
+        enabled: yes
+        masked: no
+        daemon_reload: yes
+        state: "{% if docker_requires_reload|default(False) %}restarted{% else %}started{% endif %}"
 
 - name: Create systemd override for Docker service
   block:
