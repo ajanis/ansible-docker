@@ -23,22 +23,6 @@
   tags:
     - always
 
-- name: Start and enable docker services
-  block:
-    - name: Start and enable docker service
-      systemd:
-        name: docker.service
-        enabled: yes
-        daemon_reload: yes
-        masked: no
-        state: "{% if docker_requires_reload|default(False) %}restarted{% else %}started{% endif %}"
-    - name: Start and enable docker socket
-      systemd:
-        name: docker.socket
-        enabled: yes
-        masked: no
-        daemon_reload: yes
-        state: "{% if docker_requires_reload|default(False) %}restarted{% else %}started{% endif %}"
 
 - name: Create systemd override for Docker service
   block:
@@ -110,3 +94,20 @@
         executable: pip3
   when:
     - ansible_python.version.major == 3
+
+- name: Start and enable docker services
+  block:
+    - name: Start and enable docker service
+      systemd:
+        name: docker.service
+        enabled: yes
+        daemon_reload: yes
+        masked: no
+        state: "{% if docker_requires_reload|default(False) %}restarted{% else %}started{% endif %}"
+    - name: Start and enable docker socket
+      systemd:
+        name: docker.socket
+        enabled: yes
+        masked: no
+        daemon_reload: yes
+        state: "{% if docker_requires_reload|default(False) %}restarted{% else %}started{% endif %}"
