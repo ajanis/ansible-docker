@@ -5,6 +5,8 @@
       command: dpkg --print-architecture
       register: dpkg_architecture_result
       check_mode: false
+      changed_when: false
+
     - name: Set machine architecture
       set_fact:
         dpkg_architecture: "{{ dpkg_architecture_result.stdout }}"
@@ -25,6 +27,7 @@
         name: "{{ docker_ce_pkgs }}"
         update_cache: yes
         state: present
+      notify: reload docker
   when:
     - docker_install_community_edition
   tags:
@@ -41,6 +44,7 @@
         name: "{{ docker_io_pkgs }}"
         update_cache: yes
         state: present
+      notify: reload docker
   when:
     - not docker_install_community_edition
   tags:
@@ -82,16 +86,6 @@
         url: https://nvidia.github.io/nvidia-docker/gpgkey
         state: present
 
-#    - name: Add repositories for graphics-driver support when nvidia cards are present
-#      apt_repository:
-#        repo: "{{ item }}"
-#        state: present
-#        filename: nvidia-docker
-#      loop:
-#        - "deb https://nvidia.github.io/libnvidia-container/stable/{{ ansible_distribution|lower }}{{ ansible_distribution_release }}/{{ dpkg_architecture }}"
-#        - "deb https://nvidia.github.io/nvidia-container-runtime/stable/{{ ansible_distribution|lower }}{{ ansible_distribution_release }}/{{ dpkg_architecture }}"
-#        - "deb https://nvidia.github.io/nvidia-docker/{{ ansible_distribution|lower }}{{ ansible_distribution_release }}/{{ dpkg_architecture }}"
-
     - name: Add repositories for nvidia docker drivers, runtime environments, packages
       get_url:
         url: "https://nvidia.github.io/nvidia-docker/{{ ansible_distribution|lower }}{{ ansible_lsb.release  }}/nvidia-docker.list"
@@ -130,63 +124,37 @@
         mode: 0755
       notify: reload docker
 
-    - name: stat nvidia path repo directory
-      stat:
-        path: "{{ docker_nvidia_workdir }}"
-      ignore_errors: True
-      register: nvidia_patch_directory
-    - set_fact:
-        install_nvidia_path: True
-      when:
-        - not nvidia_patch_directory.stat.exists|default(False)
-
-    - name: Create nvidia patch directory
+    - name: Ensure nvidia work directory exists
       file:
         path: "{{ docker_nvidia_workdir }}"
         state: directory
-        mode: 0755
-        recurse: True
-      when:
-        - install_nvidia_path|default(False)
 
-    - name: Download patch to allow more than 2 hardware transcodes
+    - name: Check if nvidia patch has been downloaded or needs upgrade
       git:
         repo: "{{ docker_nvidia_transcode_patch_repo }}"
-        dest: "{{ docker_nvidia_workdir }}"
-        update: no
-      when:
-        - install_nvidia_path|default(False)
+        dest: "{{ docker_nvidia_transcode_patch_dir }}"
+        update: yes
+        clone: yes
+        version: "{{ docker_nvidia_transcode_patch_repo_version|default('master') }}"
+      register: repo_patch_check
+
+    - name: print repo patch info
+      debug:
+        msg: |
+          installed patch: {{ repo_patch_check.before }}
+          latest patch: {{ repo_patch_check.after }}
+          changed: {{ repo_patch_check.changed }}
+        verbosity: 1
 
     - name: Patch nvidia drivers if needed
       shell:
         cmd: ./patch.sh
         chdir: "{{ docker_nvidia_transcode_patch_dir }}"
-        creates: "{{ docker_nvidia_creates }}"
       register: nvidia_transcode_patch_result
       notify: reload docker
+      when:
+        - repo_patch_check.changed
   when:
     - docker_install_nvidia
-    - install_nvidia_path|default(False)
   tags:
     - install-docker-nvidia
-
-- name: Reboot host if necessary
-  block:
-    - meta: flush_handlers
-
-    - name: Reboot after docker updates
-      reboot:
-        connect_timeout: 10
-        reboot_timeout: 600
-        msg: Rebooting system via Ansible
-      when:
-        - docker_requires_reload|default(False)
-
-    - name: reload systemctl and restart docker service if necessary
-      systemd:
-        daemon_reload: yes
-        name: docker
-        state: "{% if docker_requires_reload|default(False) %}restarted{% else %}started{% endif %}"
-      when: docker_requires_reload|default(False)
-  tags:
-    - always
