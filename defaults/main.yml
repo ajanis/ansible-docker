@@ -26,3 +26,4 @@ docker_nvidia_patch_src_dir: nvidia-patch
 docker_nvidia_transcode_patch_dir: "{{ docker_nvidia_workdir }}/{{ docker_nvidia_patch_src_dir }}"
 docker_nvidia_creates: "{{ docker_nvidia_workdir }}/libnvidia-encode-backup"
 docker_nvidia_transcode_patch_repo: https://github.com/keylase/nvidia-patch.git
+docker_nvidia_transcode_patch_repo_version: master
