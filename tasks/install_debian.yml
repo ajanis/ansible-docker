@@ -127,20 +127,35 @@
         dest: /etc/docker/daemon.json
         owner: root
         group: root
-        mode: 0664
+        mode: 0755
       notify: reload docker
+
+    - name: stat nvidia path repo directory
+      stat:
+        path: "{{ docker_nvidia_workdir }}"
+      ignore_errors: True
+      register: nvidia_patch_directory
+    - set_fact:
+        install_nvidia_path: True
+      when:
+        - not nvidia_patch_directory.stat.exists|default(False)
 
     - name: Create nvidia patch directory
       file:
         path: "{{ docker_nvidia_workdir }}"
         state: directory
-        mode: 0777
+        mode: 0755
         recurse: True
+      when:
+        - install_nvidia_path|default(False)
 
     - name: Download patch to allow more than 2 hardware transcodes
       git:
         repo: "{{ docker_nvidia_transcode_patch_repo }}"
         dest: "{{ docker_nvidia_workdir }}"
+        update: no
+      when:
+        - install_nvidia_path|default(False)
 
     - name: Patch nvidia drivers if needed
       shell:
@@ -151,6 +166,7 @@
       notify: reload docker
   when:
     - docker_install_nvidia
+    - install_nvidia_path|default(False)
   tags:
     - install-docker-nvidia
 
