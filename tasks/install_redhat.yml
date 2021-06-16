@@ -16,17 +16,8 @@
   block:
     - name: Remove old Docker versions
       yum:
-        name:
-          - docker
-          - docker-client
-          - docker-client-latest
-          - docker-common
-          - docker-latest
-          - docker-latest-logrotate
-          - docker-logrotate
-          - docker-engine
+        name: "{{ docker_io_pkgs + docker_old_pkgs }}"
         state: absent
-
     - name: Install Docker GPG Key
       rpm_key:
         key: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
@@ -44,22 +35,14 @@
   when:
     - docker_install_community_edition
     - ansible_distribution_major_version is version('7', '<=')
-  tags:
-    - install-docker-ce
+#  tags:
+#    - install-docker-ce
 
 - name: Install Docker Community Edition
   block:
     - name: Remove old Docker versions
       yum:
-        name:
-          - docker
-          - docker-client
-          - docker-client-latest
-          - docker-common
-          - docker-latest
-          - docker-latest-logrotate
-          - docker-logrotate
-          - docker-engine
+        name: "{{ docker_io_pkgs + docker_old_pkgs }}"
         state: absent
 
     - name: Install Docker GPG Key
@@ -82,22 +65,14 @@
   when:
     - docker_install_community_edition
     - ansible_distribution_major_version is version('8', '>=')
-  tags:
-    - install-docker-ce
+#  tags:
+#    - install-docker-ce
 
 - name: Install Docker from OS Repository
   block:
     - name: Remove old Docker versions
       yum:
-        name:
-          - docker
-          - docker-client
-          - docker-client-latest
-          - docker-common
-          - docker-latest
-          - docker-latest-logrotate
-          - docker-logrotate
-          - docker-engine
+        name: "{{ docker_ce_pkgs + docker_old_pkgs }}"
         state: absent
     - name: Install Docker from OS Repo
       yum:
@@ -106,8 +81,8 @@
         state: latest
   when:
     - not docker_install_community_edition
-  tags:
-    - install-docker-osversion
+#  tags:
+#    - install-docker-osversion
 
 - name: Install runtime environments, packages, modules and configurations for docker nvidia support
   block:
@@ -188,8 +163,8 @@
       notify: reload docker
   when:
     - docker_install_nvidia
-  tags:
-    - install-docker-nvidia
+#  tags:
+#    - install-docker-nvidia
 
 - name: Reboot host if necessary
   block:

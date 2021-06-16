@@ -7,9 +7,10 @@ docker_compose_projects: []
 
 docker_install_community_edition: False
 docker_ce_version: stable
-docker_recreate: False
 
 docker_install_nvidia: False
+nvidia_pkg_version: 460
+libnvidia_version: 1.3.3-1
 
 docker_allowed_ports:
   - "22/tcp"
@@ -18,3 +19,11 @@ docker_allowed_ports:
   - "7946/tcp"
   - "7946/udp"
   - "4789/udp"
+
+
+docker_nvidia_workdir: /opt/nvidia
+docker_nvidia_patch_src_dir: nvidia-patch
+docker_nvidia_transcode_patch_dir: "{{ docker_nvidia_workdir }}/{{ docker_nvidia_patch_src_dir }}"
+docker_nvidia_creates: "{{ docker_nvidia_workdir }}/libnvidia-encode-backup"
+docker_nvidia_transcode_patch_repo: https://github.com/keylase/nvidia-patch.git
+docker_nvidia_transcode_patch_repo_version: master
