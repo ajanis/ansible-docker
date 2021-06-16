@@ -33,6 +33,8 @@
     recreate: "{{ item.value.recreate | default(omit) }}"
     capabilities: "{{ item.value.cap_add | default(omit) }}"
     cap_drop: "{{ item.value.cap_drop | default(omit) }}"
+    cpus: "{{ item.value.cpu_quota | default(omit) }}"
+    memory: "{{ item.value.memory | default(omit) }}"
     user: "{{ item.value.user | default(omit) }}"
     network_mode: "{{ item.value.network_mode | default('bridge') }}"
     networks: "{{ item.value.networks | default(omit) }}"

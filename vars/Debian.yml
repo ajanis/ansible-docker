@@ -26,12 +26,12 @@ docker_py26_pkgs:
   - docker-py
 
 docker_py27_pkgs:
-  - docker==4.1.0
-  - docker-compose==1.25.3
-  - zipp==1.0.0
-  - more-itertools==5.0.0
-  - requests==2.22.0
-  - requests-futures==0.9.9
+  - "docker=={{ docker_py27_docker_version }}"
+  - "docker-compose=={{ docker_py27_docker_compose_version }}"
+  - "zipp=={{ docker_py27_zipp_version }}"
+  - "more-itertools=={{ docker_py27_more_itertools_version }}"
+  - "requests=={{ docker_py27_requests_version }}"
+  - "requests-futures=={{ docker_py27_requests_futures_version }}"
 
 docker_py3_pkgs:
   - docker
