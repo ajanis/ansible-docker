@@ -4,15 +4,22 @@ Description={{ item.value.description }}
 After=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
 
 {% if shared_storage and (item.value.volumes | select('search', data_mount_root) | list | length) != 0 %}
+
 # Ensure shared storage is mounted
 ConditionPathIsMountPoint={{ data_mount_root }}
+
 # Require before starting and trigger reloads and stops from shared storage mount, docker and  docker container dependencies
 Requires={{ data_mount_root | regex_replace('^\\/', '') }}.mount docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{  item.value.container_name }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+
 ReloadPropagatedFrom={{ data_mount_root | regex_replace('^\\/', '') }}.mount docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+
 {% else %}
+
 # Require before starting and trigger reloads and stops from docker and  docker container dependencies
 Requires=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{  item.value.container_name }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+
 ReloadPropagatedFrom=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+
 {% endif %}
 
 [Service]
