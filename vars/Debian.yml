@@ -8,14 +8,9 @@ docker_dependency_pkgs:
   - gcc
   - python3-dev
 
-docker_old_pkgs:
-  - docker
-  - docker-engine
-
 docker_io_pkgs:
   - docker.io
   - containerd
-  - runc
 
 docker_ce_pkgs:
   - docker-ce
@@ -26,12 +21,12 @@ docker_py26_pkgs:
   - docker-py
 
 docker_py27_pkgs:
-  - "docker=={{ docker_py27_docker_version }}"
-  - "docker-compose=={{ docker_py27_docker_compose_version }}"
-  - "zipp=={{ docker_py27_zipp_version }}"
-  - "more-itertools=={{ docker_py27_more_itertools_version }}"
-  - "requests=={{ docker_py27_requests_version }}"
-  - "requests-futures=={{ docker_py27_requests_futures_version }}"
+  - docker==4.1.0
+  - docker-compose==1.25.3
+  - zipp==1.0.0
+  - more-itertools==5.0.0
+  - requests==2.22.0
+  - requests-futures==0.9.9
 
 docker_py3_pkgs:
   - docker
@@ -51,14 +46,14 @@ nvidia_driver_dependencies:
   - software-properties-common
 
 nvidia_driver_packages:
-  - "nvidia-headless-{{ nvidia_pkg_version }}"
-  - "libnvidia-encode-{{ nvidia_pkg_version }}"
-  - "libnvidia-decode-{{ nvidia_pkg_version }}"
-  - "libnvidia-container-tools={{ libnvidia_version }}"
-  - "libnvidia-container1={{ libnvidia_version }}"
-  - "nvidia-utils-{{ nvidia_pkg_version }}"
-  - "nvidia-kernel-common-{{ nvidia_pkg_version }}"
-  - "nvidia-kernel-source-{{ nvidia_pkg_version }}"
+  - libnvidia-encode-460
+  - libnvidia-encode-460-server
+  - libnvidia-compute-460-server
+  - libnvidia-container-tools=1.3.3-1
+  - libnvidia-container1=1.3.3-1
+  - libnvidia-decode-460-server
+  - nvidia-utils-460
+  - nvidia-driver-460
 
 nvidia_docker_packages:
   - nvidia-container-toolkit

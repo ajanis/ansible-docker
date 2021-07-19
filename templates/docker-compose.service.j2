@@ -1,33 +1,30 @@
-[Unit]
-Description=Docker-Compose {{ project_item.project_name }}_{{ item.key }} Service
-# Start dependencies before starting this container
-After=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
 
-{% if shared_storage and (item.value.volumes | select('search', data_mount_root) | list | length) != 0 %}
+[Unit]
+Description=Docker-Compose {{ project_item.project_name }}_{{ item.container_name|default(item.key) }} Service
+# Start docker container dependencies before starting this container
+After=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ item.value.container_name|default(item.key) }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+
+{% if shared_storage and (item.value.volumes is search(data_mount_root)) %}
 
 # Ensure shared storage is mounted
 ConditionPathIsMountPoint={{ data_mount_root }}
+Requires={{ data_mount_root | regex_replace('^\\/', '') }}.mount docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ item.value.container_name|default(item.key) }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
 
-# Require before starting and trigger reloads and stops from shared storage mount, docker and  docker container dependencies
-Requires={{ data_mount_root | regex_replace('^\\/', '') }}.mount docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
-
-ReloadPropagatedFrom={{ data_mount_root | regex_replace('^\\/', '') }}.mount docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
 {% else %}
+# Require shared storage mount and docker container dependencies before starting
+Requires=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ item.value.container_name|default(item.key) }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
 
-# Require before starting and trigger reloads and stops from docker and  docker container dependencies
-Requires=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
-
-ReloadPropagatedFrom=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
 {% endif %}
+
 
 [Service]
-{% if project_item.start_delay is defined and project_item.start_delay is number %}
 
+Restart=always
+{% if project_item.start_delay is defined and project_item.start_delay is number %}
 ExecStartPre=/bin/sleep {{ project_item.start_delay | int }}
 {% endif %}
-Restart=always
-ExecStart=/usr/bin/docker start -a {{ project_item.project_name }}_{{ item.value.container_name|default(item.key) }}_1
-ExecStop=/usr/bin/docker stop -t 2 {{ project_item.project_name }}_{{ item.value.container_name|default(item.key) }}_1
+ExecStart=/usr/bin/docker start -a {{ item.value.container_name|default(item.key) }}
+ExecStop=/usr/bin/docker stop -t 2 {{ item.value.container_name|default(item.key) }}
 RestartSec=1min
 
 [Install]

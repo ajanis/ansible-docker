@@ -16,9 +16,4 @@
         - shared_storage
         - storage_backend == "cephfs"
     - import_role:
-        name: nfs
-      when:
-        - shared_storage
-        - storage_backend == "nfs"
-    - import_role:
         name: docker

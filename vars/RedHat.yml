@@ -8,9 +8,7 @@ docker_dependency_pkgs:
   - gcc
   - python3-devel
 
-docker_old_pkgs:
-  - docker.io
-  - docker-engine
+docker_install_community_edition: True
 
 docker_io_pkgs:
   - docker
@@ -24,12 +22,12 @@ docker_py26_pkgs:
   - docker-py
 
 docker_py27_pkgs:
-  - "docker=={{ docker_py27_docker_version }}"
-  - "docker-compose=={{ docker_py27_docker_compose_version }}"
-  - "zipp=={{ docker_py27_zipp_version }}"
-  - "more-itertools=={{ docker_py27_more_itertools_version }}"
-  - "requests=={{ docker_py27_requests_version }}"
-  - "requests-futures=={{ docker_py27_requests_futures_version }}"
+  - docker==4.1.0
+  - docker-compose==1.25.3
+  - zipp==1.0.0
+  - more-itertools==5.0.0
+  - requests==2.22.0
+  - requests-futures==0.9.9
 
 docker_py3_pkgs:
   - docker
@@ -60,7 +58,7 @@ nvidia_driver_dependencies:
   - bind-utils
   - wget
 
-  nvidia_driver_packages:
+nvidia_driver_packages:
   - nvidia-driver-latest-dkms
   - cuda
   - cuda_drivers
@@ -70,3 +68,4 @@ nvidia_driver_dependencies:
 nvidia_docker_packages:
   - nvidia-container-toolkit
   - nvidia-docker2
+
