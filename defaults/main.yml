@@ -18,3 +18,6 @@ docker_allowed_ports:
   - "7946/tcp"
   - "7946/udp"
   - "4789/udp"
+
+docker_nvidia_transcode_patch: https://github.com/keylase/nvidia-patch.git
+docker_nvidia_transcode_patch_dir: /opt/nvidia
