@@ -159,12 +159,12 @@
 
     - name: Install dependencies for building kernel modules and drivers
       package:
-        name: "{{ nvidia_driver_dependencies }}"
+        name: "{{ docker_nvidia_driver_dependencies }}"
         state: present
 
     - name: install video driver for our card
       yum:
-        name: "{{ nvidia_driver_packages }}"
+        name: "{{ docker_nvidia_driver_dependencies }}"
         state: latest
         autoclean: yes
         update_cache: yes
@@ -172,7 +172,7 @@
 
     - name: Install nvidia-docker and container runtime
       yum:
-        name: "{{ nvidia_docker_packages }}"
+        name: "{{ docker_nvidia_driver_dependencies }}"
         state: present
         autoclean: yess
         update_cache: yes
