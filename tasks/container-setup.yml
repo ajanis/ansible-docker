@@ -4,7 +4,7 @@
   file:
     state: directory
     path: "{{ item.1.split(':')[0] }}"
-  loop: "{{ docker_containers|subelements('volumes') }}"
+  loop: "{{ docker_containers | subelements('volumes') }}"
   loop_control:
     label: "{{ item.1.split(':')[0] }}"
   when:
@@ -16,9 +16,9 @@
 - name: Create Docker Containers
   docker_container:
     name: "{{ item.key }}"
-    hostname: "{{ item.key }}"
+    hostname: "{{ item.value.hostname | default(item.key) }}"
     image: "{{ item.value.image }}"
-    runtime: "{{ item.value.runtime|default(omit) }}"
+    runtime: "{{ item.value.runtime | default(omit) }}"
     env: "{{ item.value.env | default(omit) }}"
     state: "{{ item.value.state | default('started') }}"
     pull: "{{ item.value.pull | default('no') }}"
@@ -60,29 +60,6 @@
   when:
     - docker_containers is defined
     - docker_containers != None
-
-
-#- name: Generate docker-compose project files
-#  template:
-#    src: docker-compose.yml.j2
-#    dest: "{{ item.config_path }}/docker-compose.yml"
-#  loop: "{{ docker_compose_projects }}"
-#  vars:
-#    services: "{{ item.services }}"
-#    networks: "{{ item.networks }}"
-#  when:
-#    - docker_compose_projects is defined
-#    - docker_compose_projects != None
-#
-#- name: Bring up docker-compose projects
-#  docker_compose:
-#    project_src: "{{ item.config_path }}"
-#    pull: "{{ item.pull | default('no') }}"
-#    state: present
-#  loop: "{{ docker_compose_projects }}"
-#  when:
-#    - docker_compose_projects is defined
-#    - docker_compose_projects != None
 
 - name: Bring up docker-compose projects
   docker_compose:
