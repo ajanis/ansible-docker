@@ -2,7 +2,7 @@
 [Unit]
 Description=Docker-Compose docker-{{ item.key }} Service
 # Start docker container dependencies before starting this container
-After=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container_name }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+After=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
 
 {% if shared_storage and (item.value.volumes is search(data_mount_root)) %}
 
