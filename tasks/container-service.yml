@@ -11,7 +11,7 @@
 
 - name: "Register, Enable, and Start Docker Container Services"
   systemd:
-    name: "docker-{{ item.key }}"
+    name: "docker-{{ item.key }}.service"
     state: "{% if docker_service.changed %}restarted{% else %}started{% endif %}"
     enabled: yes
     daemon_reload: yes
