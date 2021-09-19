@@ -24,7 +24,7 @@ Restart=always
 ExecStartPre=/bin/sleep {{ project_item.start_delay | int }}
 {% endif %}
 ExecStart=/usr/bin/docker start -a {{ item.key }}
-ExecStop=/usr/bin/docker stop -t 2 {{ iitem.key }}
+ExecStop=/usr/bin/docker stop -t 2 {{ item.key }}
 RestartSec=1min
 
 [Install]
