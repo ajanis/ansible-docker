@@ -1,18 +1,18 @@
 
 [Unit]
-Description=Docker-Compose {{ project_item.project_name }}_{{ item.container_name|default(item.key) }} Service
+Description=Docker-Compose docker-{{ item.container_name|default(item.key) }} Service
 # Start docker container dependencies before starting this container
-After=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ item.value.container_name|default(item.key) }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+After=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ item.value.container_name|default(item.key) }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
 
 {% if shared_storage and (item.value.volumes is search(data_mount_root)) %}
 
 # Ensure shared storage is mounted
 ConditionPathIsMountPoint={{ data_mount_root }}
-Requires={{ data_mount_root | regex_replace('^\\/', '') }}.mount docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ item.value.container_name|default(item.key) }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+Requires={{ data_mount_root | regex_replace('^\\/', '') }}.mount docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ item.value.container_name|default(item.key) }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
 
 {% else %}
 # Require shared storage mount and docker container dependencies before starting
-Requires=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ item.value.container_name|default(item.key) }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+Requires=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ item.value.container_name|default(item.key) }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
 
 {% endif %}
 
@@ -23,8 +23,8 @@ Restart=always
 {% if project_item.start_delay is defined and project_item.start_delay is number %}
 ExecStartPre=/bin/sleep {{ project_item.start_delay | int }}
 {% endif %}
-ExecStart=/usr/bin/docker start -a {{ project_item.project_name }}_{{ item.value.container_name|default(item.key) }}_1
-ExecStop=/usr/bin/docker stop -t 2 {{ project_item.project_name }}_{{ item.value.container_name|default(item.key) }}_1
+ExecStart=/usr/bin/docker start -a {{ item.value.container_name|default(item.key) }}
+ExecStop=/usr/bin/docker stop -t 2 {{ item.value.container_name|default(item.key) }}
 RestartSec=1min
 
 [Install]
