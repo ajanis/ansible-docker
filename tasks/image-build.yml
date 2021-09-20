@@ -23,7 +23,7 @@
 
 - name: Build Docker Image
   docker_image:
-    name: "{{ item.item.key ~ ':' ~ (image.image.tag | default('latest')) }}"
+    name: "{{ item.item.key ~ ':' ~ (item.item.value.tag | default('latest')) }}"
     build:
       path: "{{ data_mount_root }}/{{ git_directory }}/{{ item.item.key }}"
       dockerfile: "{{ item.item.value.dockerfile | default('Dockerfile') }}"
