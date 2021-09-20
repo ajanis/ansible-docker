@@ -23,14 +23,13 @@
 
 - name: Build Docker Image
   docker_image:
-    name: "{{ item.item.key }}"
+    name: "{{ item.item.key ~ ':' ~ (image.image.tag | default('latest'))"
     build:
       path: "{{ data_mount_root }}/{{ git_directory }}/{{ item.item.key }}"
       dockerfile: "{{ item.item.value.dockerfile | default('Dockerfile') }}"
       args: "{{ item.item.value.buildargs | default({}) }}"
       pull: yes
       target: "{{ item.item.value.target | default(omit) }}"
-      tag: "{{ item.item.value.tag | default(omit) }}"
     force_source: yes
     source: build
   loop: "{{ docker_image_repo.results }}"
