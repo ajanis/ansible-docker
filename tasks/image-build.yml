@@ -30,7 +30,7 @@
       args: "{{ item.item.value.buildargs | default({}) }}"
       pull: no
       target: "{{ item.item.value.target | default(omit) }}"
-      tag: "{{ item.item.value.tag | default('latest') }}"
+    tag: "{{ item.item.value.tag | default('latest') }}"
     force_source: yes
     source: build
   loop: "{{ docker_image_repo.results }}"
