@@ -42,6 +42,7 @@
     volumes: "{{ item.value.volumes | default(omit) }}"
     devices: "{{ item.value.devices | default(omit) }}"
     command: "{{ item.value.command | default(omit) }}"
+    tmpfs: "{{ item.value.tmps | default(omit) }}"
     restart_policy: "{{ item.restart_policy | default(omit) }}"
     links: "{{ item.value.links | default(omit) }}"
     privileged: "{{ item.value.privileged | default('no') }}"
