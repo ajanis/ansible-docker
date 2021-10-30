@@ -2,7 +2,7 @@
 - name: Create systemd files for docker containers
   template:
     src: docker-container.service.j2
-    dest: "/etc/systemd/system/docker-{{ item.key }}.service"
+    dest: "/etc/systemd/system/docker-{{ item.key|regex_replace('_','-') }}.service"
     mode: 0755
   loop: "{{ docker_containers | dict2items }}"
   loop_control:
@@ -11,7 +11,7 @@
 
 - name: "Register, Enable, and Start Docker Container Services"
   systemd:
-    name: "docker-{{ item.key }}.service"
+    name: "docker-{{ item.key|regex_replace('_','-') }}.service"
     state: "{% if docker_service.changed %}restarted{% else %}started{% endif %}"
     enabled: yes
     daemon_reload: yes
