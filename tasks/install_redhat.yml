@@ -164,7 +164,7 @@
 
     - name: install video driver for our card
       yum:
-        name: "{{ docker_nvidia_driver_dependencies }}"
+        name: "{{ docker_nvidia_driver_packages }}"
         state: latest
         autoclean: yes
         update_cache: yes
@@ -172,7 +172,7 @@
 
     - name: Install nvidia-docker and container runtime
       yum:
-        name: "{{ docker_nvidia_driver_dependencies }}"
+        name: "{{ docker_nvidia_docker_packages }}"
         state: present
         autoclean: yess
         update_cache: yes
