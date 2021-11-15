@@ -117,7 +117,7 @@
 
     - name: install video driver for our card
       apt:
-        name: "{{ docker_nvidia_driver_dependencies }}"
+        name: "{{ docker_nvidia_driver_packages }}"
         state: present
         autoclean: yes
         update_cache: yes
@@ -125,7 +125,7 @@
 
     - name: Install nvidia-docker2 and container runtime packages
       apt:
-        name: "{{ docker_nvidia_driver_dependencies }}"
+        name: "{{ nvidia_docker_packages }}"
         state: present
         autoclean: yes
         update_cache: yes
