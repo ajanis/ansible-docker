@@ -125,7 +125,7 @@
 
     - name: Install nvidia-docker2 and container runtime packages
       apt:
-        name: "{{ nvidia_docker_packages }}"
+        name: "{{ docker_nvidia_docker_packages }}"
         state: present
         autoclean: yes
         update_cache: yes
