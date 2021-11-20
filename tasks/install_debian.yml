@@ -160,6 +160,8 @@
         creates: "{{ docker_nvidia_transcode_patch_dir }}/libnvidia-encode-backup"
       register: nvidia_transcode_patch_result
       notify: reload docker
+      when:
+        - docker_nvidia_transcode_patch_dir ~ '/libnvidia-encode-backup' is not file
   when:
     - docker_install_nvidia
 #  tags:
