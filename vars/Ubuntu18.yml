@@ -24,14 +24,13 @@ docker_nvidia_driver_packages:
   - libnvidia-encode-460
   - libnvidia-decode-460
   - libnvidia-compute-460
-  - libnvidia-container-tools=1.3.3-1
-  - libnvidia-container1=1.3.3-1
   - nvidia-utils-460
   - nvidia-kernel-common-460
   - nvidia-kernel-source-460
-#  - nvidia-driver-460
 
 docker_nvidia_docker_packages:
+  - libnvidia-container-tools
+  - libnvidia-container1
   - nvidia-container-toolkit
   - nvidia-docker2
   - nvidia-container-runtime
