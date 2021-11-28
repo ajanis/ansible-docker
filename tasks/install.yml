@@ -3,12 +3,12 @@
 - name: Install Docker [Debian/Ubuntu]
   import_tasks: install_debian.yml
   when:
-    - ansible_os_family == "Debian"
+    - override_os_family | default(ansible_os_family) == "Debian"
 
 - name: Install Docker [RedHat]
   import_tasks: install_redhat.yml
   when:
-    - ansible_os_family == "RedHat"
+    - override_os_family | default(ansible_os_family) == "RedHat"
 
 - name: Start and enable docker-ce services
   block:
