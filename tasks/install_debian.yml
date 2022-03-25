@@ -8,53 +8,43 @@
     - name: Set machine architecture
       set_fact:
         dpkg_architecture: "{{ dpkg_architecture_result.stdout }}"
-    - name: Remove old Docker versions
+    - name: Remove OS Repository Docker Packages
       apt:
-        name:
-          - docker
-          - docker-engine
-          - docker.io
-          - containerd
-          - runc
+        name: "{{ docker_io_pkgs }}"
         state: absent
     - name: Install Docker GPG Key
       apt_key:
         url: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
         state: present
-    - name: Set up Docker Community Edition add-apt-repository
+    - name: Set up Docker Community Edition Repository
       apt_repository:
         repo: "deb [arch={{ dpkg_architecture }}] {{ docker_repo_url }}/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} {{ docker_ce_version }}"
         filename: docker-ce
-    - name: Install Docker Community Edition
+    - name: Install Docker Community Edition Packages
       apt:
         name: "{{ docker_ce_pkgs }}"
         update_cache: yes
         state: present
   when:
     - docker_install_community_edition
-#  tags:
-#    - install-docker-ce
+  tags:
+    - install-docker-ce
 
 - name: Install Docker from OS Repository
   block:
-    - name: Remove old Docker versions
+    - name: Remove Docker Community-Edition Packages
       apt:
-        name:
-          - docker
-          - docker-engine
-          - docker.io
-          - containerd
-          - runc
+        name: "{{ docker_ce_pkgs }}"
         state: absent
-    - name: Install Docker from OS Repo
+    - name: Install Docker Packages From OS Repository
       apt:
         name: "{{ docker_io_pkgs }}"
         update_cache: yes
         state: present
   when:
     - not docker_install_community_edition
-#  tags:
-#    - install-docker-osversion
+  tags:
+    - install-docker-os
 
 - name: Install runtime environments, packages, modules and configurations for docker nvidia support
   block:
