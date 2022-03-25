@@ -12,31 +12,22 @@
         state: enabled
       loop: "{{ docker_allowed_ports }}"
 
-- name: Install Docker Community Edition
+- name: Install Docker Community Edition (RHEL Major >= 8)
   block:
-    - name: Remove old Docker versions
+    - name: Remove OS Repository Docker Packages
       yum:
-        name:
-          - docker
-          - docker-client
-          - docker-client-latest
-          - docker-common
-          - docker-latest
-          - docker-latest-logrotate
-          - docker-logrotate
-          - docker-engine
+        name: "{{ docker_io_pkgs }}"
         state: absent
-
     - name: Install Docker GPG Key
       rpm_key:
         key: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
         state: present
-    - name: Set up Docker Community Edition repo
+    - name: Set up Docker Community Edition Repository
       yum_repository:
         baseurl: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/$releasever/$basearch/{{ docker_ce_version }}"
         name: docker-ce
         description: Docker Community Edition
-    - name: Install Docker Community Edition
+    - name: Install Docker Community Edition Packages
       yum:
         name: "{{ docker_ce_pkgs }}"
         update_cache: yes
@@ -47,34 +38,25 @@
   tags:
     - install-docker-ce
 
-- name: Install Docker Community Edition
+- name: Install Docker Community Edition (RHEL Major <= 7)
   block:
-    - name: Remove old Docker versions
+    - name: Remove OS Repository Docker Packages
       yum:
-        name:
-          - docker
-          - docker-client
-          - docker-client-latest
-          - docker-common
-          - docker-latest
-          - docker-latest-logrotate
-          - docker-logrotate
-          - docker-engine
+        name: "{{ docker_io_pkgs }}"
         state: absent
-
     - name: Install Docker GPG Key
       rpm_key:
         key: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
         state: present
-    - name: Set up Docker Community Edition repo
+    - name: Set up Docker Community Edition Repository
       yum_repository:
         baseurl: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/7/$basearch/{{ docker_ce_version }}"
         name: docker-ce
         description: Docker Community Edition
-    - name: manually install containerd.io
+    - name: Manually Install containerd.io Package
       yum:
         name: https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.6-3.3.el7.x86_64.rpm
-    - name: Install Docker Community Edition
+    - name: Install Docker Community Edition Packages
       yum:
         name: "{{ docker_ce_pkgs }}"
         update_cache: yes
@@ -87,19 +69,11 @@
 
 - name: Install Docker from OS Repository
   block:
-    - name: Remove old Docker versions
+    - name: Remove Docker Community-Edition Packages
       yum:
-        name:
-          - docker
-          - docker-client
-          - docker-client-latest
-          - docker-common
-          - docker-latest
-          - docker-latest-logrotate
-          - docker-logrotate
-          - docker-engine
+        name: "{{ docker_ce_pkgs }}"
         state: absent
-    - name: Install Docker from OS Repo
+    - name: Install Docker Packages From OS Repository
       yum:
         name: "{{ docker_io_pkgs }}"
         update_cache: yes
@@ -107,7 +81,7 @@
   when:
     - not docker_install_community_edition
   tags:
-    - install-docker-osversion
+    - install-docker-os
 
 - name: Install runtime environments, packages, modules and configurations for docker nvidia support
   block:
