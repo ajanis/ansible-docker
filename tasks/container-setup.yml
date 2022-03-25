@@ -48,6 +48,7 @@
     links: "{{ item.value.links | default(omit) }}"
     privileged: "{{ item.value.privileged | default('no') }}"
     sysctls: "{{ item.value.sysctls | default(omit) }}"
+    mounts: "{{ item.value.mounts | default(omit) }}"
     networks_cli_compatible: |
       {% if item.value.networks is defined %}
         yes
