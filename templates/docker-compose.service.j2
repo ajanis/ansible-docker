@@ -2,7 +2,7 @@
 Description=Docker-Compose docker-{{ item.value.container_name }} Service
 
 # Start docker container dependencies before starting this container
-After=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ container|regex_replace('_','-') }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+After=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container | regex_replace('_','-') }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
 
 {% if shared_storage and (item.value.volumes is search(data_mount_root)) %}
 
@@ -13,7 +13,7 @@ ConditionPathIsMountPoint={{ data_mount_root }}
 ConditionPathIsReadWrite={{ data_mount_root }}
 
 # Require mounts and containers
-Requires={{ data_mount_root | regex_replace('^\\/', '') }}.mount docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ container |regex_replace('_','-') }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+Requires={{ data_mount_root | regex_replace('^\\/', '') }}.mount docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container | regex_replace('_','-') }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
 
 # Restart if mount is restarted
 ReloadPropagatedFrom={{ data_mount_root | regex_replace('^\\/', '') }}.mount
@@ -21,7 +21,7 @@ ReloadPropagatedFrom={{ data_mount_root | regex_replace('^\\/', '') }}.mount
 {% else %}
 
 # Require shared storage mount and docker container dependencies before starting
-Requires=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ project_item.project_name }}-{{ container|regex_replace('_','-') }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+Requires=docker.service {% if item.value.depends_on is defined %}{% for container in item.value.depends_on %}docker-{{ container | regex_replace('_','-') }}.service{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
 
 {% endif %}
 
