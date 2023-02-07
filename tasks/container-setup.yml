@@ -10,7 +10,7 @@
   when:
     - docker_containers is defined
     - docker_containers != None
-    - "item.1.split(':')[0] is search('/data/')"
+    - "item.1.split(':')[0] is search('/data|media/')"
 
 
 - name: Create Docker Containers
