@@ -1,4 +1,6 @@
 {
+    "experimental": true,
+    "metrics-addr": "0.0.0.0:9323",
     "runtimes": {
         "nvidia": {
             "path": "/usr/bin/nvidia-container-runtime",
