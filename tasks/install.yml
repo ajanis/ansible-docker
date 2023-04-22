@@ -99,3 +99,108 @@
         executable: pip3
   when:
     - ansible_python.version.major == 3
+
+- name: Collect additional docker configs
+  tags:
+    - docker_daemon_config
+  block:
+
+    - name: Check for GPU presence
+      ansible.builtin.command:
+        cmd: 'nvidia-smi -L'
+      register: nvidia_presence
+      changed_when: no
+      failed_when: no
+
+    - name: Check for Docker presence
+      ansible.builtin.command:
+        cmd: 'docker -v'
+      register: docker_presence
+      changed_when: no
+      failed_when: no
+
+    - name: "GPU Configurations"
+      block:
+
+        - name: "Print GPU info"
+          ansible.builtin.debug:
+            msg: "{{ nvidia_presence.stdout }}"
+
+        - name: "Set 'has_gpu' fact"
+          ansible.builtin.set_fact:
+            has_gpu: true
+
+      when:
+        - "'GPU' in nvidia_presence.stdout"
+
+    - name: "Docker Configurations"
+      block:
+
+        - name: "Print Docker info"
+          ansible.builtin.debug:
+            msg: "{{ docker_presence.stdout }}"
+
+        - name: "Set 'has_docker' fact"
+          ansible.builtin.set_fact:
+            has_docker: true
+        - name: Check for existing docker daemon config
+          ansible.builtin.stat:
+            path: /etc/docker/daemon.json
+          register: docker_daemon_json
+        - debug:
+            var: docker_daemon_json
+            verbosity: 1
+        - name: Slurp JSON from file
+          ansible.builtin.slurp:
+            src: /etc/docker/daemon.json
+          register: docker_daemon_configfile
+          when:
+            - docker_daemon_json.stat.exists
+        - debug:
+            var: docker_daemon_configfile.content|b64decode
+            verbosity: 1
+          when:
+            - docker_daemon_json.stat.exists
+      when:
+        - "'version' in docker_presence.stdout"
+
+    - name: Update Docker daemon config
+      block:    
+        - name: Set empty array for docker daemon config
+          set_fact:
+            docker_daemon_config: {}
+        - name: Set daemon config to existing file content if found
+          set_fact:
+            docker_daemon_config: "{{docker_daemon_configfile.content|b64decode}}"
+        - debug:
+            var: docker_daemon_config|to_nice_json
+            verbosity: 1
+        - name: Add experimental metrics endpoint
+          set_fact:
+            docker_daemon_config: "{{ docker_daemon_config | combine({ 'experimental': true, 'metrics-addr': '0.0.0.0:9323' },recursive=true) }}"
+          when:
+            - has_docker|default(false)
+            - "'metrics-addr' not in docker_daemon_config|default({})"
+        - debug:
+            var: docker_daemon_config|to_nice_json
+            verbosity: 1
+        - name: Add Nvidia runtime to docker daemon config
+          set_fact:
+            docker_daemon_config: "{{ docker_daemon_config|combine({ 'runtimes': {'nvidia': { 'path': '/usr/bin/nvidia-container-runtime', 'runtimeArgs': [] } } },recursive=true) }}"
+          when:
+            - has_gpu|default(false)
+            - "'nvidia' not in docker_daemon_config.runtimes|default({})"
+        - debug:
+            var: docker_daemon_config|to_nice_json
+            verbosity: 1
+        - name: Write modified Docker daemon json
+          copy:
+            content: "{{ docker_daemon_config | to_nice_json }}"
+            dest: /etc/docker/daemon.json
+          register: docker_daemon_updated
+
+        - name: Restart docker service
+          service:
+            name: docker
+            state: restarted
+          when: docker_daemon_updated
