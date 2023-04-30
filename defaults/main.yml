@@ -4,7 +4,7 @@ docker_containers: {}
 docker_build_images: {}
 docker_networks: {}
 docker_compose_projects: []
-
+docker_daemon_config: "/etc/docker/daemon.json"
 docker_install_community_edition: False
 docker_ce_version: stable
 docker_recreate: False
