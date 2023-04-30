@@ -121,14 +121,14 @@
         update_cache: yes
       notify: reload docker
 
-    - name: Add nvidia runtime config file to docker
-      copy:
-        src: docker-daemon.json
-        dest: /etc/docker/daemon.json
-        owner: root
-        group: root
-        mode: 0664
-      notify: reload docker
+    # - name: Add nvidia runtime config file to docker
+    #   copy:
+    #     src: docker-daemon.json
+    #     dest: /etc/docker/daemon.json
+    #     owner: root
+    #     group: root
+    #     mode: 0664
+    #   notify: reload docker
 
     - name: Create nvidia patch directory
       file:

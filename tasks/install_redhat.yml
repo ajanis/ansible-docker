@@ -148,22 +148,22 @@
       yum:
         name: "{{ docker_nvidia_docker_packages }}"
         state: present
-        autoclean: yess
+        autoclean: yes
         update_cache: yes
       notify: reload docker
 
-    - name: Add nvidia runtime to docker
-      copy:
-        src: docker-daemon.json
-        dest: /etc/docker/daemon.json
-        owner: root
-        group: root
-        mode: 0664
-      notify: reload docker
-  when:
-    - docker_install_nvidia
-  tags:
-    - install-docker-nvidia
+  #   - name: Add nvidia runtime to docker
+  #     copy:
+  #       src: docker-daemon.json
+  #       dest: /etc/docker/daemon.json
+  #       owner: root
+  #       group: root
+  #       mode: 0664
+  #     notify: reload docker
+  # when:
+  #   - docker_install_nvidia
+  # tags:
+  #   - install-docker-nvidia
 
 - name: Reboot host if necessary
   block:
