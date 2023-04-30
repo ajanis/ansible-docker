@@ -64,6 +64,23 @@
     - docker_containers is defined
     - docker_containers != None
 
+- name: "Set Docker Compose Services"
+  set_fact:
+    compose_services: "{{ item.definition.services }}"
+  loop: "{{ docker_compose_projects }}"
+  
+- name: "Create Docker Compose Directories"
+  file:
+    state: directory
+    path: "{{ item.1.split(':')[0] }}"
+    owner: "{{ item.0.environment.PUID|default('root') }}"
+    group: "{{ item.0.environment.PGID|default('root') }}"
+  loop: "{{ compose_services|subelements('volumes')|list }}"
+  when:
+    - docker_compose_projects is defined
+    - docker_compose_projects != None
+    - "item.1.split(':')[0] is search('/data|media|opt/')"
+
 - name: Bring up docker-compose projects
   docker_compose:
     project_name: "{{ item.project_name }}"
