@@ -135,11 +135,9 @@
 
     - name: "Docker Configurations"
       block:
-
         - name: "Print Docker info"
           ansible.builtin.debug:
             msg: "{{ docker_presence.stdout }}"
-
         - name: "Set 'has_docker' fact"
           ansible.builtin.set_fact:
             has_docker: true
@@ -147,7 +145,8 @@
           ansible.builtin.stat:
             path: /etc/docker/daemon.json
           register: docker_daemon_json
-        - debug:
+        - name: "echo docker config content"
+          ansible.builtin.debug:
             var: docker_daemon_json
             verbosity: 1
         - name: Slurp JSON from file
@@ -156,7 +155,8 @@
           register: docker_daemon_configfile
           when:
             - docker_daemon_json.stat.exists
-        - debug:
+        - name: "echo docker config content"
+          debug:
             var: docker_daemon_configfile.content|b64decode
             verbosity: 1
           when:
@@ -167,40 +167,49 @@
     - name: Update Docker daemon config
       block:    
         - name: Set empty array for docker daemon config
-          set_fact:
+          ansible.builtin.set_fact:
             docker_daemon_config: {}
+          when:
+            - not docker_daemon_json.stat.exists
         - name: Set daemon config to existing file content if found
-          set_fact:
+          ansible.builtin.set_fact:
             docker_daemon_config: "{{docker_daemon_configfile.content|b64decode}}"
-        - debug:
+          when:
+            - docker_daemon_json.stat.exists
+        - name: "echo docker config content"
+          ansible.builtin.debug:
             var: docker_daemon_config|to_nice_json
             verbosity: 1
+          when:
+            - docker_daemon_json.stat.exists
         - name: Add experimental metrics endpoint
-          set_fact:
+          ansible.builtin.set_fact:
             docker_daemon_config: "{{ docker_daemon_config | combine({ 'experimental': true, 'metrics-addr': '0.0.0.0:9323' },recursive=true) }}"
           when:
             - has_docker|default(false)
             - "'metrics-addr' not in docker_daemon_config|default({})"
-        - debug:
+        - name: "echo docker config content"
+          ansible.builtin.debug:
             var: docker_daemon_config|to_nice_json
             verbosity: 1
         - name: Add Nvidia runtime to docker daemon config
-          set_fact:
+          ansible.builtin.set_fact:
             docker_daemon_config: "{{ docker_daemon_config|combine({ 'runtimes': {'nvidia': { 'path': '/usr/bin/nvidia-container-runtime', 'runtimeArgs': [] } } },recursive=true) }}"
           when:
             - has_gpu|default(false)
             - "'nvidia' not in docker_daemon_config.runtimes|default({})"
-        - debug:
+        - name: "echo docker config content"
+          ansible.builtin.debug:
             var: docker_daemon_config|to_nice_json
             verbosity: 1
         - name: Write modified Docker daemon json
-          copy:
+          ansible.builtin.copy:
             content: "{{ docker_daemon_config | to_nice_json }}"
             dest: /etc/docker/daemon.json
           register: docker_daemon_updated
 
         - name: Restart docker service
-          service:
+          ansible.builtin.service:
             name: docker
             state: restarted
           when: docker_daemon_updated
