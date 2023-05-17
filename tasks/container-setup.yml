@@ -1,96 +1,117 @@
 ---
 
-- name: "Ensure directory paths exist for Docker Volume"
-  file:
-    state: directory
-    path: "{{ item.1.split(':')[0] }}"
-  loop: "{{ docker_containers | subelements('volumes') }}"
-  loop_control:
-    label: "{{ item.1.split(':')[0] }}"
-  when:
-    - docker_containers is defined
-    - docker_containers != None
-    - "item.1.split(':')[0] is search('/data|media/')"
+- name: Create standalone bind-mount directories and Docker containers 
+  block:
+
+    - name: Create bind-mount directories for standalone Docker containers
+      file:
+        state: directory
+        path: "{{ item.1.split(':')[0] }}"
+      loop: "{{ docker_containers | subelements('volumes') }}"
+      loop_control:
+        label: "{{ item.1.split(':')[0] }}"
+      when:
+        - "item.1.split(':')[0] is search('/data|media/')"
 
 
-- name: Create Docker Containers
-  docker_container:
-    name: "{{ item.key }}"
-    hostname: "{{ item.value.hostname | default(item.key) }}"
-    image: "{{ item.value.image }}"
-    runtime: "{{ item.value.runtime | default(omit) }}"
-    env: "{{ item.value.env | default(omit) }}"
-    state: "{{ item.value.state | default('started') }}"
-    pull: "{{ item.value.pull | default('no') }}"
-    comparisons:
-      image: strict
-      volumes: strict
-      env: strict
-      devices: strict
-      networks: strict
-      user: strict
-      hostname: strict
-      security_opts: strict
-    security_opts: "{{ item.value.security_options | default(omit) }}"
-    recreate: "{{ item.value.recreate | default(omit) }}"
-    capabilities: "{{ item.value.cap_add | default(omit) }}"
-    cap_drop: "{{ item.value.cap_drop | default(omit) }}"
-    user: "{{ item.value.user | default(omit) }}"
-    network_mode: "{{ item.value.network_mode | default('bridge') }}"
-    networks: "{{ item.value.networks | default(omit) }}"
-    published_ports: "{{ item.value.ports | default(omit) }}"
-    volumes: "{{ item.value.volumes | default(omit) }}"
-    devices: "{{ item.value.devices | default(omit) }}"
-    command: "{{ item.value.command | default(omit) }}"
-    tmpfs: "{{ item.value.tmps | default(omit) }}"
-    memory: "{{ item.value.memory | default(omit) }}"
-    restart_policy: "{{ item.restart_policy | default(omit) }}"
-    links: "{{ item.value.links | default(omit) }}"
-    privileged: "{{ item.value.privileged | default('no') }}"
-    sysctls: "{{ item.value.sysctls | default(omit) }}"
-    mounts: "{{ item.value.mounts | default(omit) }}"
-    networks_cli_compatible: |
-      {% if item.value.networks is defined %}
-        yes
-      {% else %}
-        no
-      {% endif %}
-    log_driver: "{{ item.value.log_driver | default('journald') }}"
-    log_options: "{{ item.value.log_options | default({'tag': item.key}) }}"
-  loop: "{{ docker_containers|dict2items }}"
-  loop_control:
-    label: "{{ item.key }}"
-  when:
-    - docker_containers is defined
-    - docker_containers != None
+    - name: Create standalone Docker containers
+      docker_container:
+        name: "{{ item.key }}"
+        hostname: "{{ item.value.hostname | default(item.key) }}"
+        image: "{{ item.value.image }}"
+        runtime: "{{ item.value.runtime | default(omit) }}"
+        env: "{{ item.value.env | default(omit) }}"
+        state: "{{ item.value.state | default('started') }}"
+        pull: "{{ item.value.pull | default('no') }}"
+        comparisons:
+          image: strict
+          volumes: strict
+          env: strict
+          devices: strict
+          networks: strict
+          user: strict
+          hostname: strict
+          security_opts: strict
+        security_opts: "{{ item.value.security_options | default(omit) }}"
+        recreate: "{{ item.value.recreate | default(omit) }}"
+        capabilities: "{{ item.value.cap_add | default(omit) }}"
+        cap_drop: "{{ item.value.cap_drop | default(omit) }}"
+        user: "{{ item.value.user | default(omit) }}"
+        network_mode: "{{ item.value.network_mode | default('bridge') }}"
+        networks: "{{ item.value.networks | default(omit) }}"
+        published_ports: "{{ item.value.ports | default(omit) }}"
+        volumes: "{{ item.value.volumes | default(omit) }}"
+        devices: "{{ item.value.devices | default(omit) }}"
+        command: "{{ item.value.command | default(omit) }}"
+        tmpfs: "{{ item.value.tmps | default(omit) }}"
+        memory: "{{ item.value.memory | default(omit) }}"
+        restart_policy: "{{ item.restart_policy | default(omit) }}"
+        links: "{{ item.value.links | default(omit) }}"
+        privileged: "{{ item.value.privileged | default('no') }}"
+        sysctls: "{{ item.value.sysctls | default(omit) }}"
+        mounts: "{{ item.value.mounts | default(omit) }}"
+        networks_cli_compatible: |
+          {% if item.value.networks is defined %}
+            yes
+          {% else %}
+            no
+          {% endif %}
+        log_driver: "{{ item.value.log_driver | default('journald') }}"
+        log_options: "{{ item.value.log_options | default({'tag': item.key}) }}"
+      loop: "{{ docker_containers|dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
 
-- name: "Set Docker Compose Services"
-  set_fact:
-    compose_services: "{{ item.definition.services }}"
-  loop: "{{ docker_compose_projects }}"
-  
-- name: "Create Docker Compose Directories"
-  file:
-    state: directory
-    path: "{{ item.1.split(':')[0] }}"
-    owner: "{{ item.0.environment.PUID|default('root') }}"
-    group: "{{ item.0.environment.PGID|default('root') }}"
-  loop: "{{ compose_services|subelements('volumes')|list }}"
   when:
-    - docker_compose_projects is defined
-    - docker_compose_projects != None
-    - "item.1.split(':')[0] is search('/data|media|opt/')"
+    - (docker_containers is defined) and (docker_containers | length > 0)
 
-- name: Bring up docker-compose projects
-  docker_compose:
-    project_name: "{{ item.project_name }}"
-    pull: "{{ item.pull | default('no') }}"
-    state: present
-    definition: "{{ item.definition }}"
-  loop: "{{ docker_compose_projects }}"
-  loop_control:
-    label: "{{ item.project_name }}"
+
+
+- name: Create bind mount directories and containers for docker-compose projects
+  block:
+
+    - name: Create working list of docker-compose services
+      set_fact:
+        compose_services: "{{ item.definition.services }}"
+      loop: "{{ docker_compose_projects }}"
+
+    - name: Print docker-compose services
+      debug:
+        msg: "{{ item  }}"
+        verbosity: 1
+      loop: "{{ compose_services|default([])|subelements('volumes')|list }}"
+      loop_control:
+        label: "{{ item.0 }}"
+      when:
+        - (compose_services is defined) and (compose_services | length > 0)
+
+
+    - name: Create bind-mount directories for docker-compose containers
+      file:
+        state: directory
+        path: "{{ item.1.split(':')[0] }}"
+        owner: "{{ item.0.environment.PUID|default('root') }}"
+        group: "{{ item.0.environment.PGID|default('root') }}"
+      loop: "{{ compose_services|default([])|subelements('volumes')|list }}"
+      when:
+        - (compose_services is defined) and (compose_services | length > 0)
+        - "item.1.split(':')[0] is search('/data|media|opt/')"
+
+    - name: Bring up docker-compose projects
+      docker_compose:
+        project_name: "{{ item.project_name }}"
+        pull: "{{ item.pull | default('no') }}"
+        state: present
+        definition: "{{ item.definition }}"
+      loop: "{{ docker_compose_projects }}"
+      loop_control:
+        label: "{{ item.project_name }}"
+      register: compose_up_output
+
+    - name: Print docker-compose result
+      debug:
+        var: compose_up_output
+        verbosity: 0
+      when: compose_up_output.changed
   when:
-    - docker_compose_projects is defined
-    - docker_compose_projects != None
-  register: compose_up_output
+    - (docker_compose_projects is defined) and (docker_compose_projects | length > 0)
