@@ -18,7 +18,7 @@
   tags:
     - docker-container
 
-- import_tasks: container-service.yml
+- import_tasks: container-systemd.yml
   tags:
     - docker-container
     - docker-container-systemd
