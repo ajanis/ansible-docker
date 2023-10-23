@@ -1,104 +1,109 @@
 ---
 
 - name: Install Docker [Debian/Ubuntu]
-  import_tasks: install_debian.yml
+  ansible.builtin.import_tasks: install_debian.yml
   when:
     - ansible_os_family == "Debian"
 
 - name: Install Docker [RedHat]
-  import_tasks: install_redhat.yml
+  ansible.builtin.import_tasks: install_redhat.yml
   when:
     - ansible_os_family == "RedHat"
 
 - name: Start and enable docker-ce services
-  block:
-    - name: Start and enable docker socket
-      systemd:
-        name: docker.socket
-        state: restarted
-        masked: no
-        enabled: yes
-        daemon_reload: yes
-    - name: Start and enable docker service
-      systemd:
-        name: docker.service
-        masked: no
-        state: restarted
-        enabled: yes
-        daemon_reload: yes
   when:
     - docker_install_community_edition
+  block:
+    - name: Start and enable docker socket
+      ansible.builtin.systemd:
+        name: docker.socket
+        state: restarted
+        masked: false
+        enabled: true
+        daemon_reload: true
+    - name: Start and enable docker service
+      ansible.builtin.systemd:
+        name: docker.service
+        masked: false
+        state: restarted
+        enabled: true
+        daemon_reload: true
 
 - name: Create systemd override for Docker service
-  block:
-    - name: Create systemd Docker service.d directory
-      file:
-        path: "/etc/systemd/system/docker.service.d"
-        state: directory
-
-    - name: Create systemd Docker override config
-      template:
-        src: docker-override.conf.j2
-        dest: "/etc/systemd/system/docker.service.d/override.conf"
-        mode: 0755
-      register: docker_override
-
-    - name: Reload systemd service and restart docker service # noqa 503
-      systemd:
-        name: "docker.service"
-        masked: no
-        state: restarted
-        enabled: yes
-        daemon_reload: yes
-      when: docker_override.changed
   when:
     - ansible_os_family == "Debian"
+  block:
+    - name: Create systemd Docker service.d directory
+      ansible.builtin.file:
+        path: "/etc/systemd/system/docker.service.d"
+        state: directory
+        mode: "0755"
+        owner: root
+        group: root
+
+    - name: Create systemd Docker override config
+      ansible.builtin.template:
+        src: docker-override.conf.j2
+        dest: "/etc/systemd/system/docker.service.d/override.conf"
+        mode: "0755"
+      register: docker_override
+
+    - name: Reload systemd service and restart docker service # noqa no-handler
+      ansible.builtin.systemd:
+        name: "docker.service"
+        masked: false
+        state: restarted
+        enabled: true
+        daemon_reload: true
+      when: docker_override.changed
+
 
 - name: Install Package Dependencies
-  package:
+  ansible.builtin.package:
     name: "{{ docker_dependency_pkgs }}"
     state: present
 
 - name: Upgrade python-pip
-  pip:
+  ansible.builtin.pip:
     name: pip
     state: present
 
 - name: Install Python Packages
+  when:
+    - ansible_python.version.major == 2
   block:
-    - name: install python docker modules
-      pip:
+    - name: Install python docker modules
+      ansible.builtin.pip:
         name: "{{ docker_py26_pkgs }}"
         state: present
         executable: pip2
       when:
         - ansible_python.version.minor <= 6
-    - name: uninstall deprecated python 2.7 docker modules
-      pip:
+    - name: Uninstall deprecated python 2.7 docker modules
+      ansible.builtin.pip:
         name: "{{ docker_py26_pkgs }}"
         state: absent
         executable: pip2
       when:
         - ansible_python.version.minor >= 7
-    - name: install python 2.7 docker modules
-      pip:
+    - name: Install python 2.7 docker modules
+      ansible.builtin.pip:
         name: "{{ docker_py27_pkgs }}"
         state: present
         executable: pip2
       when:
         - ansible_python.version.minor >= 7
-  when:
-    - ansible_python.version.major == 2
+
 
 - name: Install Python3 Packages
+  when:
+    - ansible_python.version.major == 3
   block:
-    - name: install python3 docker modules
-      pip:
+    - name: Install python3 docker modules
+      ansible.builtin.pip:
         name: "{{ docker_py3_pkgs }}"
         state: present
         executable: pip3
-  when:
-    - ansible_python.version.major == 3
 
 - name: Collect additional docker configs
   tags:
@@ -109,17 +114,19 @@
       ansible.builtin.command:
         cmd: 'nvidia-smi -L'
       register: nvidia_presence
-      changed_when: no
-      failed_when: no
+      changed_when: false
+      failed_when: false
 
     - name: Check for Docker presence
       ansible.builtin.command:
         cmd: 'docker -v'
       register: docker_presence
-      changed_when: no
-      failed_when: no
+      changed_when: false
+      failed_when: false
 
     - name: "GPU Configurations"
+      when:
+        - "'GPU' in nvidia_presence.stdout"
       block:
 
         - name: "Print GPU info"
@@ -130,10 +137,9 @@
           ansible.builtin.set_fact:
             has_gpu: true
 
-      when:
-        - "'GPU' in nvidia_presence.stdout"
-
     - name: "Docker Configurations"
+      when:
+        - "'version' in docker_presence.stdout"
       block:
         - name: "Print Docker info"
           ansible.builtin.debug:
@@ -145,7 +151,7 @@
           ansible.builtin.stat:
             path: /etc/docker/daemon.json
           register: docker_daemon_json
-        - name: "echo docker config content"
+        - name: Echo docker config content
           ansible.builtin.debug:
             var: docker_daemon_json
             verbosity: 1
@@ -155,17 +161,16 @@
           register: docker_daemon_configfile
           when:
             - docker_daemon_json.stat.exists
-        - name: "echo docker config content"
-          debug:
+        - name: Echo docker config content
+          ansible.builtin.debug:
             var: docker_daemon_configfile.content|b64decode
             verbosity: 1
           when:
             - docker_daemon_json.stat.exists
-      when:
-        - "'version' in docker_presence.stdout"
+
 
     - name: Update Docker daemon config
-      block:    
+      block:
         - name: Set empty array for docker daemon config
           ansible.builtin.set_fact:
             docker_daemon_config: {}
@@ -173,10 +178,10 @@
             - not docker_daemon_json.stat.exists
         - name: Set daemon config to existing file content if found
           ansible.builtin.set_fact:
-            docker_daemon_config: "{{docker_daemon_configfile.content|b64decode}}"
+            docker_daemon_config: "{{ docker_daemon_configfile.content | b64decode }}"
           when:
             - docker_daemon_json.stat.exists
-        - name: "echo docker config content"
+        - name: Echo docker config content
           ansible.builtin.debug:
             var: docker_daemon_config|to_nice_json
             verbosity: 1
@@ -184,21 +189,22 @@
             - docker_daemon_json.stat.exists
         - name: Add experimental metrics endpoint
           ansible.builtin.set_fact:
-            docker_daemon_config: "{{ docker_daemon_config | combine({ 'experimental': true, 'metrics-addr': '0.0.0.0:9323' },recursive=true) }}"
+            docker_daemon_config: "{{ docker_daemon_config | combine({'experimental': true, 'metrics-addr': '0.0.0.0:9323'}, recursive=true) }}"
           when:
             - has_docker|default(false)
             - "'metrics-addr' not in docker_daemon_config|default({})"
-        - name: "echo docker config content"
+        - name: Echo docker config content
           ansible.builtin.debug:
             var: docker_daemon_config|to_nice_json
             verbosity: 1
         - name: Add Nvidia runtime to docker daemon config
           ansible.builtin.set_fact:
-            docker_daemon_config: "{{ docker_daemon_config|combine({ 'runtimes': {'nvidia': { 'path': '/usr/bin/nvidia-container-runtime', 'runtimeArgs': [] } } },recursive=true) }}"
+            docker_daemon_config: |
+              {{ docker_daemon_config | combine({'runtimes': {'nvidia': {'path': '/usr/bin/nvidia-container-runtime', 'runtimeArgs': []}}}, recursive=true) }}
           when:
             - has_gpu|default(false)
             - "'nvidia' not in docker_daemon_config.runtimes|default({})"
-        - name: "echo docker config content"
+        - name: Echo docker config content
           ansible.builtin.debug:
             var: docker_daemon_config|to_nice_json
             verbosity: 1
@@ -206,6 +212,7 @@
           ansible.builtin.copy:
             content: "{{ docker_daemon_config | to_nice_json }}"
             dest: /etc/docker/daemon.json
+            mode: "0755"
           register: docker_daemon_updated
 
         - name: Restart docker service

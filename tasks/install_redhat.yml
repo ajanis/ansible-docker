@@ -2,35 +2,35 @@
 - name: "Disable SELinux, Configure FirewallD ports to ACCEPT [RHEL/CentOS]"
   block:
     - name: Disable SELinux
-      selinux:
+      ansible.builtin.selinux:
         state: disabled
     - name: Configure Firewalld allowed ports
-      firewalld:
+      ansible.builtin.firewalld:
         port: "{{ item }}"
-        permanent: yes
-        immediate: yes
+        permanent: true
+        immediate: true
         state: enabled
       loop: "{{ docker_allowed_ports }}"
 
 - name: Install Docker Community Edition (RHEL Major >= 8)
   block:
     - name: Remove OS Repository Docker Packages
-      yum:
+      ansible.builtin.yum:
         name: "{{ docker_io_pkgs }}"
         state: absent
     - name: Install Docker GPG Key
-      rpm_key:
+      ansible.builtin.rpm_key:
         key: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
         state: present
     - name: Set up Docker Community Edition Repository
-      yum_repository:
+      ansible.builtin.yum_repository:
         baseurl: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/$releasever/$basearch/{{ docker_ce_version }}"
         name: docker-ce
         description: Docker Community Edition
     - name: Install Docker Community Edition Packages
-      yum:
+      ansible.builtin.yum:
         name: "{{ docker_ce_pkgs }}"
-        update_cache: yes
+        update_cache: true
         state: present
   when:
     - docker_install_community_edition
@@ -39,54 +39,56 @@
     - install-docker-ce
 
 - name: Install Docker Community Edition (RHEL Major <= 7)
-  block:
-    - name: Remove OS Repository Docker Packages
-      yum:
-        name: "{{ docker_io_pkgs }}"
-        state: absent
-    - name: Install Docker GPG Key
-      rpm_key:
-        key: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
-        state: present
-    - name: Set up Docker Community Edition Repository
-      yum_repository:
-        baseurl: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/7/$basearch/{{ docker_ce_version }}"
-        name: docker-ce
-        description: Docker Community Edition
-    - name: Manually Install containerd.io Package
-      yum:
-        name: https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.6-3.3.el7.x86_64.rpm
-    - name: Install Docker Community Edition Packages
-      yum:
-        name: "{{ docker_ce_pkgs }}"
-        update_cache: yes
-        state: latest
   when:
     - docker_install_community_edition
     - ansible_distribution_major_version is version('8', '>=')
   tags:
     - install-docker-ce
+  block:
+    - name: Remove OS Repository Docker Packages
+      ansible.builtin.yum:
+        name: "{{ docker_io_pkgs }}"
+        state: absent
+    - name: Install Docker GPG Key
+      ansible.builtin.rpm_key:
+        key: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
+        state: present
+    - name: Set up Docker Community Edition Repository
+      ansible.builtin.yum_repository:
+        baseurl: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/7/$basearch/{{ docker_ce_version }}"
+        name: docker-ce
+        description: Docker Community Edition
+    - name: Manually Install containerd.io Package
+      ansible.builtin.yum:
+        name: https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.6-3.3.el7.x86_64.rpm
+    - name: Install Docker Community Edition Packages
+      ansible.builtin.yum:
+        name: "{{ docker_ce_pkgs }}"
+        update_cache: true
+        state: present
+
 
 - name: Install Docker from OS Repository
-  block:
-    - name: Remove Docker Community-Edition Packages
-      yum:
-        name: "{{ docker_ce_pkgs }}"
-        state: absent
-    - name: Install Docker Packages From OS Repository
-      yum:
-        name: "{{ docker_io_pkgs }}"
-        update_cache: yes
-        state: latest
   when:
     - not docker_install_community_edition
   tags:
     - install-docker-os
+  block:
+    - name: Remove Docker Community-Edition Packages
+      ansible.builtin.yum:
+        name: "{{ docker_ce_pkgs }}"
+        state: absent
+    - name: Install Docker Packages From OS Repository
+      ansible.builtin.yum:
+        name: "{{ docker_io_pkgs }}"
+        update_cache: true
+        state: present
+
 
 - name: Install runtime environments, packages, modules and configurations for docker nvidia support
   block:
     - name: Blacklist nouveau kernel module when cuda cards are present
-      copy:
+      ansible.builtin.copy:
         dest: /etc/modprobe.d/blacklist-nouveau.conf
         content: |
           blacklist nouveau
@@ -114,13 +116,13 @@
         - dracut_update_result is defined
         - dracut_update_result.rc -eq 0
 
-    - name: enable EPEL repo
-      yum:
+    - name: Enable EPEL repo
+      ansible.builtin.yum:
         name: "{{ epel_rpm }}"
         state: present
 
     - name: install yum repository for drivers
-      yum_repository:
+      ansible.builtin.yum_repository:
         file: "cuda-{{ ansible_distribution }}"
         baseurl: "http://developer.download.nvidia.com/compute/cuda/repos//{{ ansible_distribution }}/{{ ansible_machine }}"
         state: present
@@ -137,23 +139,23 @@
         state: present
 
     - name: install video driver for our card
-      yum:
+      ansible.builtin.yum:
         name: "{{ docker_nvidia_driver_packages }}"
         state: latest
-        autoclean: yes
-        update_cache: yes
+        autoclean: true
+        update_cache: true
       notify: reload docker
 
     - name: Install nvidia-docker and container runtime
-      yum:
+      ansible.builtin.yum:
         name: "{{ docker_nvidia_docker_packages }}"
         state: present
-        autoclean: yes
-        update_cache: yes
+        autoclean: true
+        update_cache: true
       notify: reload docker
 
   #   - name: Add nvidia runtime to docker
-  #     copy:
+  #     ansible.builtin.copy:
   #       src: docker-daemon.json
   #       dest: /etc/docker/daemon.json
   #       owner: root
@@ -166,22 +168,24 @@
   #   - install-docker-nvidia
 
 - name: Reboot host if necessary
+  tags:
+    - always
   block:
-    - meta: flush_handlers
+    - name: Flush handlers
+      ansible.builtin.meta: flush_handlers
 
     - name: Reboot after docker updates
-      reboot:
+      ansible.builtin.reboot:
         connect_timeout: 10
         reboot_timeout: 600
         msg: Rebooting system via Ansible
       when:
         - docker_requires_reload|default(False)
 
-    - name: reload systemctl and restart docker service if necessary
+    - name: Reload systemctl and restart docker service if necessary
       systemd:
-        daemon_reload: yes
+        daemon_reload: true
         name: docker
-        state: "{% if docker_requires_reload|default(False) %}restarted{% else %}started{% endif %}"
+        state: "{% if docker_requires_reload | default(False) %}restarted{% else %}started{% endif %}"
       when: docker_requires_reload|default(False)
-  tags:
-    - always
+

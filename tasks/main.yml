@@ -1,24 +1,29 @@
 ---
 
-- name: include os specific vars
-  include_vars: "{{ item }}"
+- name: Include os specific vars
+  ansible.builtin.include_vars: "{{ item }}"
   with_first_found:
     - "{{ ansible_distribution }}{{ ansible_distribution_major_version }}.yml"
     - "{{ ansible_os_family }}.yml"
   tags:
     - always
 
-- import_tasks: install.yml
+- name: Import installer
+  ansible.builtin.import_tasks: install.yml
 
-- import_tasks: image-build.yml
+- name: Import image builder
+  ansible.builtin.import_tasks: image-build.yml
 
-- import_tasks: network-setup.yml
+- name: Import network setup
+  ansible.builtin.import_tasks: network-setup.yml
 
-- import_tasks: container-setup.yml
+- name: Import container setup
+  ansible.builtin.import_tasks: container-setup.yml
   tags:
     - docker-container
 
-- import_tasks: container-systemd.yml
+- name: Import container systemd
+  ansible.builtin.import_tasks: container-systemd.yml
   tags:
     - docker-container
     - docker-container-systemd
