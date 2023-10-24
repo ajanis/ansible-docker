@@ -153,7 +153,7 @@
       when:
         - docker_nvidia_transcode_patch_dir ~ '/libnvidia-encode-backup' is not file
   when:
-    - docker_install_nvidia
+    - docker_install_nvidia|default(false)
 #  tags:
 #    - install-docker-nvidia
 
