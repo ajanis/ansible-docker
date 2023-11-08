@@ -13,10 +13,12 @@
         label: "{{ item.1.split(':')[0] }}"
       when:
         - item.1.split(':')[0] is defined
-        - item.1.split(':')[0] is not None
+        - item.1.split(':')[0] != None
         - "item.1.split(':')[0] is not search('/data')"
         - "item.1.split(':')[0] is not search('/media')"
         - "item.1.split(':')[0] is not search('/etc/localtime')"
+        - "item.1.split(':')[0] is not search('/dev/rtc')"
+
 
     - name: Create standalone Docker containers
       community.docker.docker_container:

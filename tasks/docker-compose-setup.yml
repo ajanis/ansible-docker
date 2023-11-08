@@ -31,6 +31,7 @@
         - "item.1.split(':')[0] is not search('/data')"
         - "item.1.split(':')[0] is not search('/media')"
         - "item.1.split(':')[0] is not search('/etc/localtime')"
+        - "item.1.split(':')[0] is not search('/dev/rtc')"
 
 
     - name: Bring up docker-compose projects
