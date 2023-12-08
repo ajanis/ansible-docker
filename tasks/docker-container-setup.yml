@@ -8,7 +8,7 @@
         path: "{{ item.1.split(':')[0] }}"
         owner: "{{ item.0.env.PUID | default('root') }}"
         group: "{{ item.0.env.PGID | default('root') }}"
-      loop: "{{ docker_containers | subelements('volumes') | default(omit)}}"
+      loop: "{{ docker_containers | selectattr('volumes', 'defined') | subelements('volumes') | default(omit)}}"
       loop_control:
         label: "{{ item.1.split(':')[0] }}"
       when:
