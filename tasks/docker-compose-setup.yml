@@ -24,13 +24,13 @@
         mode: "0755"
         owner: "{{ item.0.environment.PUID | default('root') }}"
         group: "{{ item.0.environment.PGID | default('root') }}"
-      loop: "{{ (compose_services | selectattr('volumes', 'defined') | subelements('volumes')) }}"
+      loop: "{{ (compose_services | subelements('volumes', skip_missing=True)) }}"
       when:
         - item.1.split(':')[0] is defined
         - item.1.split(':')[0] != None
         - item.1.split(':')[0] is not search('/var/run/docker.sock')  # Ignore docker socket
         - item.1.split(':')[0] is not match('^.*?\.[^/]+$')  # Ignore file bindings
-        - item.1.split(':')[0] is not match(''^[^\/]+$')  # Ignore docker volumes
+        - item.1.split(':')[0] is not match('^[^\/]+$')  # Ignore docker volumes
         - "item.1.split(':')[0] is not search('/data')"
         - "item.1.split(':')[0] is not search('/media')"
         - "item.1.split(':')[0] is not search('/etc/localtime')"
