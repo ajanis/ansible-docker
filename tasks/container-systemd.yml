@@ -13,4 +13,4 @@
   loop_control:
     loop_var: project_item
   when:
-    - docker_containers is not defined
+    - docker_compose_projects is defined
