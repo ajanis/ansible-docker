@@ -1,12 +1,14 @@
 ---
 
 - name: Install Docker [Debian/Ubuntu]
-  ansible.builtin.import_tasks: install_debian.yml
+  ansible.builtin.include_tasks:
+    file: install_debian.yml
   when:
     - ansible_os_family == "Debian"
 
 - name: Install Docker [RedHat]
-  ansible.builtin.import_tasks: install_redhat.yml
+  ansible.builtin.include_tasks:
+    file: install_redhat.yml
   when:
     - ansible_os_family == "RedHat"
 
@@ -106,8 +108,6 @@
         executable: pip3
 
 - name: Collect additional docker configs
-  tags:
-    - docker_daemon_config
   block:
 
     - name: Check for GPU presence

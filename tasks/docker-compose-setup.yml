@@ -8,9 +8,6 @@
 - name: Print docker-compose services
   ansible.builtin.debug:
     msg: "Docker containers: {{ compose_services | list | join(',') }}"
-  # loop: "{{ compose_services | list }}"
-  # loop_control:
-  #   label: "{{ item }}"
 
 - name: Create bind-mount directories for docker-compose containers
   ansible.builtin.file:

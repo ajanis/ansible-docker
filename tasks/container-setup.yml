@@ -10,4 +10,4 @@
   ansible.builtin.include_tasks:
     file: docker-compose-setup.yml
   when:
-    - docker_containers is not defined
+    - docker_compose_projects is defined

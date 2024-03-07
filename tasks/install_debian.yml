@@ -1,9 +1,8 @@
 - name: Install Docker Community Edition
   when:
     - docker_install_community_edition
-  tags:
-    - install-docker-ce
   block:
+
     - name: Get dpkg architecture
       ansible.builtin.command: dpkg --print-architecture
       register: dpkg_architecture_result
@@ -12,18 +11,22 @@
     - name: Set machine architecture
       ansible.builtin.set_fact:
         dpkg_architecture: "{{ dpkg_architecture_result.stdout }}"
+
     - name: Remove OS Repository Docker Packages
       ansible.builtin.apt:
         name: "{{ docker_io_pkgs }}"
         state: absent
+
     - name: Install Docker GPG Key
       ansible.builtin.apt_key:
         url: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
         state: present
+
     - name: Set up Docker Community Edition Repository
       ansible.builtin.apt_repository:
         repo: deb [arch={{ dpkg_architecture }}] {{ docker_repo_url }}/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} {{ docker_ce_version }}
         filename: docker-ce
+
     - name: Install Docker Community Edition Packages
       ansible.builtin.apt:
         name: "{{ docker_ce_pkgs }}"
@@ -34,13 +37,13 @@
 - name: Install Docker from OS Repository
   when:
     - not docker_install_community_edition
-  tags:
-    - install-docker-os
   block:
+
     - name: Remove Docker Community-Edition Packages
       ansible.builtin.apt:
         name: "{{ docker_ce_pkgs }}"
         state: absent
+
     - name: Install Docker Packages From OS Repository
       ansible.builtin.apt:
         name: "{{ docker_io_pkgs }}"
@@ -50,6 +53,8 @@
 - name: Install runtime environments, packages, modules and configurations for docker nvidia support
   when:
     - docker_install_nvidia | default(false)
+  tags:
+    - install-docker-nvidia
   block:
     - name: Blacklist nouveau kernel module when cuda cards are present
       ansible.builtin.copy:
@@ -116,15 +121,6 @@
         update_cache: true
       notify: reload docker
 
-    # - name: Add nvidia runtime config file to docker
-    #   copy:
-    #     src: docker-daemon.json
-    #     dest: /etc/docker/daemon.json
-    #     owner: root
-    #     group: root
-    #     mode: "0664"
-    #   notify: reload docker
-
     - name: Create nvidia patch directory
       ansible.builtin.file:
         path: "{{ docker_nvidia_transcode_patch_dir }}"
@@ -152,13 +148,10 @@
       when:
         - docker_nvidia_transcode_patch_dir ~ '/libnvidia-encode-backup' is not file
 
-#  tags:
-#    - install-docker-nvidia
 
 - name: Reboot host if necessary
-  tags:
-    - always
   block:
+
     - name: Flush handlers
       ansible.builtin.meta: flush_handlers
 
@@ -168,11 +161,11 @@
         reboot_timeout: 600
         msg: Rebooting system via Ansible
       when:
-        - docker_requires_reload|default(False)
+        - docker_requires_reload | default(False)
 
     - name: Reload systemctl and restart docker service if necessary
       ansible.builtin.systemd:
         daemon_reload: true
         name: docker
         state: "{% if docker_requires_reload | default(False) %}restarted{% else %}started{% endif %}"
-      when: docker_requires_reload|default(false)
+      when: docker_requires_reload | default(false)
