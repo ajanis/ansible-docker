@@ -5,11 +5,29 @@
   loop_control:
     label: "{{ item.project_name }}"
 
-- name: Print docker-compose services
+- name: Print containers in docker-compose project
   ansible.builtin.debug:
-    msg: "Docker containers: {{ compose_services | list | join(',') }}"
+    msg: |
+      {{ item.project_name }}:
+      {% for container in compose_services %}
+        - {{ container }}
+      {% endfor %}
+  loop: "{{ docker_compose_projects }}"
+  loop_control:
+    label: "{{ item.project_name }}"
 
-- name: Create bind-mount directories for docker-compose containers
+- name: Print bind-mounts for each container in docker-compopse project
+  ansible.builtin.debug:
+    msg: |
+      {{ item.key }}:
+      {% for volume in item.value.volumes %}
+        - {{ volume }}
+      {% endfor %}
+  loop: "{{ compose_services | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: Create bind-mount directories for each container in docker-compose project
   ansible.builtin.file:
     state: directory
     path: "{{ item.1.split(':')[0] }}"
