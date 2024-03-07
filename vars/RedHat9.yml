@@ -6,7 +6,7 @@ docker_dependency_pkgs:
   - python3-devel
   - python3-urllib3
 
-docker_install_community_edition: True
+docker_install_community_edition: true
 
 docker_io_pkgs:
   - docker

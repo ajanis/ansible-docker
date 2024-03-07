@@ -1,17 +1,17 @@
 ---
 
-- name: "Create Docker Networks"
-  docker_network:
+- name: Create Docker Networks
+  community.docker.docker_network:
     name: "{{ item.key }}"
     appends: "{{ item.value.appends | default('no') }}"
     attachable: "{{ item.value.attachable | default('no') }}"
     internal: "{{ item.value.internal | default('no') }}"
     scope: "{{ item.value.scope | default('local') }}"
     driver: "{{ item.value.driver | default(omit) }}"
-    ipam_config: "{{ item.value.ipam_config|default(omit) }}"
-    ipam_driver: "{{ item.value.ipam_driver|default(omit) }}"
+    ipam_config: "{{ item.value.ipam_config | default(omit) }}"
+    ipam_driver: "{{ item.value.ipam_driver | default(omit) }}"
     state: "present"
-    enable_ipv6: no
+    enable_ipv6: false
   loop: "{{ docker_networks | dict2items }}"
   loop_control:
     label: "{{ item.key }}"

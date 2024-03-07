@@ -11,21 +11,26 @@
     - always
 
 - name: Import installer
-  ansible.builtin.import_tasks: install.yml
+  ansible.builtin.include_tasks:
+    file: install.yml
 
 - name: Import image builder
-  ansible.builtin.import_tasks: image-build.yml
+  ansible.builtin.include_tasks:
+    file: image-build.yml
 
 - name: Import network setup
-  ansible.builtin.import_tasks: network-setup.yml
+  ansible.builtin.include_tasks:
+    file: network-setup.yml
 
 - name: Import container setup
-  ansible.builtin.import_tasks: container-setup.yml
+  ansible.builtin.include_tasks:
+    file: container-setup.yml
   tags:
     - docker-container
 
 - name: Import container systemd
-  ansible.builtin.import_tasks: container-systemd.yml
+  ansible.builtin.include_tasks:
+    file: container-systemd.yml
   tags:
     - docker-container
     - docker-container-systemd

@@ -1,72 +1,69 @@
-- name: Create standalone bind-mount directories and Docker containers
+- name: Create bind-mount directories for standalone Docker containers
+  ansible.builtin.file:
+    state: directory
+    mode: "0774"
+    path: "{{ item.1.split(':')[0] }}"
+    owner: "{{ item.0.env.PUID | default('root') }}"
+    group: "{{ item.0.env.PGID | default('root') }}"
+  loop: "{{ docker_containers | subelements('volumes', skip_missing=True) | default(omit) }}"
+  loop_control:
+    label: "{{ item.1.split(':')[0] }}"
   when:
-    - (docker_containers is defined) and (docker_containers | length > 0)
-  block:
-    - name: Create bind-mount directories for standalone Docker containers
-      ansible.builtin.file:
-        state: directory
-        path: "{{ item.1.split(':')[0] }}"
-        owner: "{{ item.0.env.PUID | default('root') }}"
-        group: "{{ item.0.env.PGID | default('root') }}"
-      loop: "{{ docker_containers | subelements('volumes', skip_missing=True) | default(omit)}}"
-      loop_control:
-        label: "{{ item.1.split(':')[0] }}"
-      when:
-        - item.1.split(':')[0] is defined
-        - item.1.split(':')[0] != None
-        - item.1.split(':')[0] is not search('/var/run/docker.sock')  # Ignore docker socket
-        - item.1.split(':')[0] is not match('^.*?\.[^/]+$')  # Ignore file bindings
-        - item.1.split(':')[0] is not match('^[^\/]+$')  # Ignore docker volumes
-        - "item.1.split(':')[0] is not search('/data')"
-        - "item.1.split(':')[0] is not search('/media')"
-        - "item.1.split(':')[0] is not search('/etc/localtime')"
-        - "item.1.split(':')[0] is not search('/dev/rtc')"
+    - item.1.split(':')[0] is defined
+    - item.1.split(':')[0] != None
+    - item.1.split(':')[0] is not search('/var/run/docker.sock')  # Ignore docker socket
+    - item.1.split(':')[0] is not match('^.*?\.[^/]+$')  # Ignore file bindings
+    - item.1.split(':')[0] is not match('^[^\/]+$')  # Ignore docker volumes
+    - "item.1.split(':')[0] is not search('/data')"
+    - "item.1.split(':')[0] is not search('/media')"
+    - "item.1.split(':')[0] is not search('/etc/localtime')"
+    - "item.1.split(':')[0] is not search('/dev/rtc')"
 
 
-    - name: Create standalone Docker containers
-      community.docker.docker_container:
-        name: "{{ item.key }}"
-        hostname: "{{ item.value.hostname | default(item.key) }}"
-        image: "{{ item.value.image }}"
-        runtime: "{{ item.value.runtime | default(omit) }}"
-        env: "{{ item.value.env | default(omit) }}"
-        state: "{{ item.value.state | default('started') }}"
-        pull: "{{ item.value.pull | default('no') }}"
-        comparisons:
-          image: strict
-          volumes: strict
-          env: strict
-          devices: strict
-          networks: strict
-          user: strict
-          hostname: strict
-          security_opts: strict
-        security_opts: "{{ item.value.security_options | default(omit) }}"
-        recreate: "{{ item.value.recreate | default(omit) }}"
-        capabilities: "{{ item.value.cap_add | default(omit) }}"
-        cap_drop: "{{ item.value.cap_drop | default(omit) }}"
-        user: "{{ item.value.user | default(omit) }}"
-        network_mode: "{{ item.value.network_mode | default('bridge') }}"
-        networks: "{{ item.value.networks | default(omit) }}"
-        published_ports: "{{ item.value.ports | default(omit) }}"
-        volumes: "{{ item.value.volumes | default(omit) }}"
-        devices: "{{ item.value.devices | default(omit) }}"
-        command: "{{ item.value.command | default(omit) }}"
-        tmpfs: "{{ item.value.tmps | default(omit) }}"
-        memory: "{{ item.value.memory | default(omit) }}"
-        restart_policy: "{{ item.restart_policy | default(omit) }}"
-        links: "{{ item.value.links | default(omit) }}"
-        privileged: "{{ item.value.privileged | default('no') }}"
-        sysctls: "{{ item.value.sysctls | default(omit) }}"
-        mounts: "{{ item.value.mounts | default(omit) }}"
-        networks_cli_compatible: |
-          {% if item.value.networks is defined %}
-            yes
-          {% else %}
-            no
-          {% endif %}
-        log_driver: "{{ item.value.log_driver | default('journald') }}"
-        log_options: "{{ item.value.log_options | default({'tag': item.key}) }}"
-      loop: "{{ docker_containers | dict2items }}"
-      loop_control:
-        label: "{{ item.key }}"
+- name: Create standalone Docker containers
+  community.docker.docker_container:
+    name: "{{ item.key }}"
+    hostname: "{{ item.value.hostname | default(item.key) }}"
+    image: "{{ item.value.image }}"
+    runtime: "{{ item.value.runtime | default(omit) }}"
+    env: "{{ item.value.env | default(omit) }}"
+    state: "{{ item.value.state | default('started') }}"
+    pull: "{{ item.value.pull | default('no') }}"
+    comparisons:
+      image: strict
+      volumes: strict
+      env: strict
+      devices: strict
+      networks: strict
+      user: strict
+      hostname: strict
+      security_opts: strict
+    security_opts: "{{ item.value.security_options | default(omit) }}"
+    recreate: "{{ item.value.recreate | default(omit) }}"
+    capabilities: "{{ item.value.cap_add | default(omit) }}"
+    cap_drop: "{{ item.value.cap_drop | default(omit) }}"
+    user: "{{ item.value.user | default(omit) }}"
+    network_mode: "{{ item.value.network_mode | default('bridge') }}"
+    networks: "{{ item.value.networks | default(omit) }}"
+    published_ports: "{{ item.value.ports | default(omit) }}"
+    volumes: "{{ item.value.volumes | default(omit) }}"
+    devices: "{{ item.value.devices | default(omit) }}"
+    command: "{{ item.value.command | default(omit) }}"
+    tmpfs: "{{ item.value.tmps | default(omit) }}"
+    memory: "{{ item.value.memory | default(omit) }}"
+    restart_policy: "{{ item.restart_policy | default(omit) }}"
+    links: "{{ item.value.links | default(omit) }}"
+    privileged: "{{ item.value.privileged | default('no') }}"
+    sysctls: "{{ item.value.sysctls | default(omit) }}"
+    mounts: "{{ item.value.mounts | default(omit) }}"
+    networks_cli_compatible: |
+      {% if item.value.networks is defined %}
+        yes
+      {% else %}
+        no
+      {% endif %}
+    log_driver: "{{ item.value.log_driver | default('journald') }}"
+    log_options: "{{ item.value.log_options | default({'tag': item.key}) }}"
+  loop: "{{ docker_containers | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"

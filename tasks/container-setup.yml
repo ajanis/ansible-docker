@@ -1,13 +1,13 @@
 ---
 
-- name: Configure systemd services for standalone Docker containers
-  ansible.builtin.include_tasks: docker-container-setup.yml
+- name: Create standalone Docker containers
+  ansible.builtin.include_tasks:
+    file: docker-container-setup.yml
   when:
     - docker_containers is defined
-    - docker_containers | length > 0
 
-- name: Configure systemd services for docker-compose containers
-  ansible.builtin.include_tasks: docker-compose-setup.yml
+- name: Create docker-compose containers
+  ansible.builtin.include_tasks:
+    file: docker-compose-setup.yml
   when:
-    - docker_compose_projects is defined
-    - docker_compose_projects | length > 0
+    - docker_containers is not defined

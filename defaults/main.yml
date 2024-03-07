@@ -1,15 +1,14 @@
 ---
-shared_storage: False
-docker_containers: {}
-docker_build_images: {}
-docker_networks: {}
-docker_compose_projects: []
+shared_storage: false
 docker_daemon_config: "/etc/docker/daemon.json"
-docker_install_community_edition: False
+docker_install_community_edition: true
 docker_ce_version: stable
-docker_recreate: False
 
-docker_install_nvidia: False
+docker_install_nvidia: false
+docker_nvidia_gpu_ids: 0
+docker_nvidia_gpu_caps: compute,video,utility
+
+docker_recreate: false
 
 docker_allowed_ports:
   - "22/tcp"
