@@ -20,3 +20,11 @@ docker_allowed_ports:
 
 docker_nvidia_transcode_patch: https://github.com/keylase/nvidia-patch.git
 docker_nvidia_transcode_patch_dir: /opt/nvidia
+
+# docker_ramdisk:
+#   create: false
+#   mount_path: /media-processing
+#   uid: 2000
+#   gid: 2000
+#   size: 70G
+#   mode: 774

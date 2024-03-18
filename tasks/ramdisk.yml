@@ -1,0 +1,26 @@
+---
+- name: Create and mount a docker_ramdisk in Docker container
+  block:
+    - name: Create mount for ram disk
+      ansible.posix.mount:
+        name: "{{ docker_ramdisk.mount_path }}"
+        src: "{{ docker_ramdisk.device_name | default('docker_ramdisk') }}"
+        fstype: "{{ docker_ramdisk.fstype | default('tmpfs') }}"
+        state: "{{ 'mounted' if docker_ramdisk.create else 'absent' }}"
+        opts: "{{ docker_ramdisk_mount_options | default('defaults') }},size={{ docker_ramdisk.size }}"
+        backup: true
+      register: docker_ramdisk_modified
+    - name: Set permissions on transcode directory
+      ansible.builtin.file:
+        path: "{{ docker_ramdisk.mount_path }}"
+        state: "{{ 'directory' if docker_ramdisk.create else 'absent' }}"
+        owner: "{{ docker_ramdisk.uid | default('2000') }}"
+        group: "{{ docker_ramdisk.gid | default('2000') }}"
+        mode: "{{ docker_ramdisk.file_mode | default('0774') }}"
+      register: transcode_directory_created
+  rescue:
+    - name: Remove transcode directory if failed
+      ansible.builtin.debug:
+        var:
+          - transcode_directory_created
+          - docker_ramdisk_modified
