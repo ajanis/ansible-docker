@@ -4,14 +4,14 @@
 name: Tag on Merge
 
 on:
-  pull_request:
-    branches:
-      - master
-    types:
-      - closed
-  # push:
+  # pull_request:
   #   branches:
-  #     - main
+  #     - master
+  #   types:
+  #     - closed
+  push:
+    branches:
+      - main
 
 env:
   CI: true
@@ -43,12 +43,7 @@ jobs:
           WITH_V: 'true'
           DEFAULT_BUMP: ${{ env.BUMP }}
       - name: Commit Package Version
-        id: commit
-        shell: bash
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git tag -a "${{ env.NEW_TAG }}" -m "${{ env.NEW_TAG }}"
-          git push --tags
-        env:
-          NEW_TAG: ${{ steps.new_version.outputs.new_tag}}
+        uses: actions-ecosystem/action-push-tag@v1
+        with:
+          tag: ${{steps.new_version.outputs.new_tag}}
+          message: '${{ steps.new_version.outputs.new_tagn }}: PR #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}'
