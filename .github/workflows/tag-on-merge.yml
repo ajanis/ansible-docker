@@ -11,7 +11,7 @@ on:
   #     - closed
   push:
     branches:
-      - main
+      - maser
 
 env:
   CI: true
@@ -20,7 +20,6 @@ permissions: write-all
 
 jobs:
   version_tag:
-    if: github.event.pull_request.merged == true
     env:
       BUMP: |-
         ${{
