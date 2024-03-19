@@ -1,0 +1,54 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Tag on Merge
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+  # push:
+  #   branches:
+  #     - main
+
+env:
+  CI: true
+
+permissions: write-all
+
+jobs:
+  version_tag:
+    if: github.event.pull_request.merged == true
+    env:
+      BUMP: |-
+        ${{
+          contains(github.event.pull_request.labels.*.name, 'major') && 'major'
+          || contains(github.event.pull_request.labels.*.name, 'minor') && 'minor'
+          || 'patch'
+        }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: main
+          fetch-tags: true
+      - name: Bump version and get tag
+        id: new_version
+        uses: anothrNick/github-tag-action@1.67.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          WITH_V: 'true'
+          DEFAULT_BUMP: ${{ env.BUMP }}
+      - name: Commit Package Version
+        id: commit
+        shell: bash
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "${{ env.NEW_TAG }}" -m "${{ env.NEW_TAG }}"
+          git push --tags
+        env:
+          NEW_TAG: ${{ steps.new_version.outputs.new_tag}}
