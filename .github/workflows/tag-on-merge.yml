@@ -4,14 +4,14 @@
 name: Tag on Merge
 
 on:
-  # pull_request:
-  #   branches:
-  #     - master
-  #   types:
-  #     - closed
-  push:
+  pull_request:
     branches:
-      - maser
+      - master
+    types:
+      - closed
+  # push:
+  #   branches:
+  #     - maser
 
 env:
   CI: true
@@ -20,6 +20,7 @@ permissions: write-all
 
 jobs:
   version_tag:
+    if: github.event.pull_request.merged == true
     env:
       BUMP: |-
         ${{
