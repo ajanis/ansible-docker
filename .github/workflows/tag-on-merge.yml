@@ -39,8 +39,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           WITH_V: 'true'
           DEFAULT_BUMP: ${{ env.BUMP }}
-      - name: Commit Package Version
-        uses: actions-ecosystem/action-push-tag@v1
-        with:
-          tag: ${{steps.new_version.outputs.new_tag}}
-          message: '${{ steps.new_version.outputs.new_tagn}}: PR #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}'
