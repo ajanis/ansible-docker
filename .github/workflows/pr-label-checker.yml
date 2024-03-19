@@ -2,7 +2,7 @@ name: PR Label - Checker
 on:
   pull_request:
     branches:
-      - main
+      - master
     types:
       - reopened
       - labeled
