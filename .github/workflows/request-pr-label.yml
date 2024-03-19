@@ -2,7 +2,7 @@ name: 'PR Open: Request Label'
 on:
   pull_request:
     branches:
-      - main
+      - master
     types:
       - opened
 jobs:
