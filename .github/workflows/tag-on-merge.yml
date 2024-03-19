@@ -9,9 +9,6 @@ on:
       - master
     types:
       - closed
-  # push:
-  #   branches:
-  #     - maser
 
 env:
   CI: true
