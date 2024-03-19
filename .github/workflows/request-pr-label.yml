@@ -19,4 +19,4 @@ jobs:
           message:
             Please set a versioning label of either `major`, `minor`, or `patch`
             to the pull request.
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token: ${{ secrets.GH_TOKEN }}
