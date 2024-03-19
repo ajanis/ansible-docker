@@ -5,15 +5,21 @@
     file: ramdisk.yml
   when:
     - docker_ramdisk is defined
+  tags:
+    - docker-container
 
 - name: Create standalone Docker containers
   ansible.builtin.include_tasks:
     file: docker-container-setup.yml
   when:
     - docker_containers is defined
+  tags:
+    - docker-container
 
 - name: Create docker-compose containers
   ansible.builtin.include_tasks:
     file: docker-compose-setup.yml
   when:
     - docker_compose_projects is defined
+  tags:
+    - docker-container

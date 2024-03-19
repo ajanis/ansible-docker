@@ -5,6 +5,9 @@
     file: docker-container-systemd.yml
   when:
     - docker_containers is defined
+  tags:
+    - docker-container
+    - docker-container-systemd
 
 - name: Configure systemd services for docker-compose containers
   ansible.builtin.include_tasks:
@@ -14,3 +17,6 @@
     loop_var: project_item
   when:
     - docker_compose_projects is defined
+  tags:
+    - docker-container
+    - docker-container-systemd

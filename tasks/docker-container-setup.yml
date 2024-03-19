@@ -18,6 +18,8 @@
     - "item.1.split(':')[0] is not search('/media')"
     - "item.1.split(':')[0] is not search('/etc/localtime')"
     - "item.1.split(':')[0] is not search('/dev/rtc')"
+  tags:
+    - docker-container
 
 
 - name: Create standalone Docker containers
@@ -67,3 +69,5 @@
   loop: "{{ docker_containers | dict2items }}"
   loop_control:
     label: "{{ item.key }}"
+  tags:
+    - docker-container
