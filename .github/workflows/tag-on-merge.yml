@@ -11,7 +11,7 @@ on:
   #     - closed
   push:
     branches:
-      - main
+      - maser
 
 env:
   CI: true
