@@ -8,6 +8,9 @@
   loop_control:
     label: "{{ item.key }}"
   register: docker_service
+  tags:
+    - docker-container
+    - docker-container-systemd
 
 - name: Register, enable, and start systemd services for standalone Docker containers
   ansible.builtin.systemd:
@@ -18,3 +21,6 @@
   loop: "{{ docker_containers | dict2items }}"
   loop_control:
     label: "{{ item.key }}"
+  tags:
+    - docker-container
+    - docker-container-systemd

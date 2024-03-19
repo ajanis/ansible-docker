@@ -4,6 +4,8 @@
   loop: "{{ docker_compose_projects }}"
   loop_control:
     label: "{{ item.project_name }}"
+  tags:
+    - docker-container
 
 - name: Print containers in docker-compose project
   ansible.builtin.debug:
@@ -15,6 +17,8 @@
   loop: "{{ docker_compose_projects }}"
   loop_control:
     label: "{{ item.project_name }}"
+  tags:
+    - docker-container
 
 - name: Print bind-mounts for each container in docker-compopse project
   ansible.builtin.debug:
@@ -26,6 +30,8 @@
   loop: "{{ compose_services | dict2items }}"
   loop_control:
     label: "{{ item.key }}"
+  tags:
+    - docker-container
 
 - name: Create bind-mount directories for each container in docker-compose project
   ansible.builtin.file:
@@ -47,6 +53,8 @@
     - "item.1.split(':')[0] is not search('/media')"
     - "item.1.split(':')[0] is not search('/etc/localtime')"
     - "item.1.split(':')[0] is not search('/dev/rtc')"
+  tags:
+    - docker-container
 
 - name: Bring up docker-compose projects
   community.docker.docker_compose:
@@ -58,9 +66,13 @@
   loop_control:
     label: "{{ item.project_name }}"
   register: compose_up_output
+  tags:
+    - docker-container
 
 - name: Print docker-compose result
   ansible.builtin.debug:
     var: compose_up_output
     verbosity: 0
   when: compose_up_output
+  tags:
+    - docker-container
