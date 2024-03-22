@@ -1,5 +1,8 @@
 ---
 - name: Create and mount a docker_ramdisk in Docker container
+  tags:
+    - docker-container
+
   block:
     - name: Create mount for ram disk
       ansible.posix.mount:
@@ -30,5 +33,3 @@
           - docker_ramdisk_modified
       tags:
         - docker-container
-  tags:
-    - docker-container

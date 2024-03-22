@@ -1,5 +1,7 @@
 ---
 - name: "Disable SELinux, Configure FirewallD ports to ACCEPT [RHEL/CentOS]"
+  tags:
+    - docker-install
   block:
 
     - name: Disable SELinux
@@ -17,10 +19,10 @@
       loop: "{{ docker_allowed_ports }}"
       tags:
         - docker-install
-  tags:
-    - docker-install
 
 - name: Install Docker Community Edition (RHEL Major >= 8)
+  tags:
+    - docker-install
   when:
     - docker_install_community_edition
     - ansible_distribution_major_version is version('7', '<=')
@@ -55,14 +57,14 @@
         state: present
       tags:
         - docker-install
-  tags:
-    - docker-install
 
 
 - name: Install Docker Community Edition (RHEL Major <= 7)
   when:
     - docker_install_community_edition
     - ansible_distribution_major_version is version('8', '>=')
+  tags:
+    - docker-install
   block:
 
     - name: Remove OS Repository Docker Packages
@@ -100,13 +102,13 @@
         state: present
       tags:
         - docker-install
-  tags:
-    - docker-install
 
 
 - name: Install Docker from OS Repository
   when:
     - not docker_install_community_edition
+  tags:
+    - docker-install
   block:
 
     - name: Remove Docker Community-Edition Packages
@@ -123,11 +125,11 @@
         state: present
       tags:
         - docker-install
-  tags:
-    - docker-install
 
 
 - name: Install runtime environments, packages, modules and configurations for docker nvidia support
+  tags:
+    - install-docker-nvidia
   block:
     - name: Blacklist nouveau kernel module when cuda cards are present
       ansible.builtin.copy:
@@ -216,13 +218,12 @@
       notify: reload docker
       tags:
         - install-docker-nvidia
-  tags:
-    - install-docker-nvidia
 
 
 - name: Reboot host if necessary
   tags:
     - always
+    - docker-install
   block:
     - name: Flush handlers
       ansible.builtin.meta: flush_handlers
@@ -247,5 +248,3 @@
       when: docker_requires_reload|default(False)
       tags:
         - docker-install
-  tags:
-    - docker-installs

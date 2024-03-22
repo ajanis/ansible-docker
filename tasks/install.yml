@@ -15,6 +15,8 @@
 - name: Start and enable docker-ce services
   when:
     - docker_install_community_edition
+  tags:
+    - docker-install
   block:
     - name: Start and enable docker socket
       ansible.builtin.systemd:
@@ -34,12 +36,13 @@
         daemon_reload: true
       tags:
         - docker-install
-  tags:
-    - docker-install
+
 
 - name: Create systemd override for Docker service
   when:
     - ansible_os_family == "Debian"
+  tags:
+    - docker-install
   block:
     - name: Create systemd Docker service.d directory
       ansible.builtin.file:
@@ -70,8 +73,6 @@
       when: docker_override.changed
       tags:
         - docker-install
-  tags:
-    - docker-install
 
 
 - name: Install Package Dependencies
@@ -91,6 +92,8 @@
 - name: Install Python Packages
   when:
     - ansible_python.version.major == 2
+  tags:
+    - docker-install
   block:
     - name: Install python docker modules
       ansible.builtin.pip:
@@ -119,13 +122,13 @@
         - ansible_python.version.minor >= 7
       tags:
         - docker-install
-  tags:
-    - docker-install
 
 
 - name: Install Python3 Packages
   when:
     - ansible_python.version.major == 3
+  tags:
+    - docker-install
   block:
     - name: Install python3 docker modules
       ansible.builtin.pip:
@@ -134,10 +137,11 @@
         executable: pip3
       tags:
         - docker-install
-  tags:
-    - docker-install
+
 
 - name: Collect additional docker configs
+  tags:
+    - docker-install
   block:
 
     - name: Check for GPU presence
@@ -161,6 +165,8 @@
     - name: "GPU Configurations"
       when:
         - "'GPU' in nvidia_presence.stdout"
+      tags:
+        - docker-install
       block:
 
         - name: "Print GPU info"
@@ -174,12 +180,14 @@
             has_gpu: true
           tags:
             - docker-install
-      tags:
-        - docker-install
+
 
     - name: "Docker Configurations"
       when:
         - "'version' in docker_presence.stdout"
+      tags:
+        - docker-install
+
       block:
         - name: "Print Docker info"
           ansible.builtin.debug:
@@ -219,11 +227,11 @@
             - docker_daemon_json.stat.exists
           tags:
             - docker-install
-      tags:
-        - docker-install
 
 
     - name: Update Docker daemon config
+      tags:
+        - docker-install
       block:
         - name: Set empty array for docker daemon config
           ansible.builtin.set_fact:
@@ -292,7 +300,3 @@
           when: docker_daemon_updated
           tags:
             - docker-install
-      tags:
-        - docker-install
-  tags:
-    - docker-install

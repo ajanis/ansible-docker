@@ -1,4 +1,6 @@
 - name: Install Docker Community Edition
+  tags:
+    - docker-install
   when:
     - docker_install_community_edition
   block:
@@ -44,11 +46,12 @@
         state: present
       tags:
         - docker-install
-  tags:
-    - docker-install
+
 
 
 - name: Install Docker from OS Repository
+  tags:
+    - docker-install
   when:
     - not docker_install_community_edition
   block:
@@ -66,8 +69,7 @@
         state: present
       tags:
         - docker-install
-  tags:
-    - docker-install
+
 
 - name: Install runtime environments, packages, modules and configurations for docker nvidia support
   when:
@@ -189,11 +191,11 @@
         - docker_nvidia_transcode_patch_dir ~ '/libnvidia-encode-backup' is not file
       tags:
         - install-docker-nvidia
-  tags:
-    - install-docker-nvidia
 
 
 - name: Reboot host if necessary
+  tags:
+    - docker-install
   block:
 
     - name: Flush handlers
@@ -219,5 +221,3 @@
       when: docker_requires_reload | default(false)
       tags:
         - docker-install
-  tags:
-    - docker-install
