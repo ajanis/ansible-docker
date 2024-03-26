@@ -24,18 +24,24 @@
         state: absent
       tags:
         - docker-install
-
-    - name: Install Docker GPG Key
-      ansible.builtin.apt_key:
-        url: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
-        state: present
+    - name: Remove old repo file
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/docker-ce.list
+        state: absent
       tags:
         - docker-install
 
-    - name: Set up Docker Community Edition Repository
-      ansible.builtin.apt_repository:
-        repo: deb [arch={{ dpkg_architecture }}] {{ docker_repo_url }}/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} {{ docker_ce_version }}
-        filename: docker-ce
+    - name: Add Docker repository and GPG Key
+      ansible.builtin.deb822_repository:
+        name: docker-ce
+        types: deb
+        enabled: true
+        state: present
+        allow_insecure: true
+        uris: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}"
+        suites: "{{ ansible_distribution_release }}"
+        components: "{{ docker_ce_version }}"
+        signed_by: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
       tags:
         - docker-install
 
@@ -46,8 +52,6 @@
         state: present
       tags:
         - docker-install
-
-
 
 - name: Install Docker from OS Repository
   tags:
@@ -116,20 +120,40 @@
       tags:
         - install-docker-nvidia
 
-    - name: Import nvidia-docker GPG key
-      ansible.builtin.apt_key:
-        url: https://nvidia.github.io/nvidia-docker/gpgkey
-        state: present
+    - name: Remove old repo file
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/nvidia-docker.list
+        state: absent
       tags:
         - install-docker-nvidia
 
-    - name: Add repositories for nvidia docker drivers, runtime environments, packages
-      ansible.builtin.get_url:
-        url: "https://nvidia.github.io/nvidia-docker/{{ ansible_distribution | lower }}{{ ansible_lsb.release }}/nvidia-docker.list"
-        dest: /etc/apt/sources.list.d/nvidia-docker.list
-        mode: "0644"
+    - name: Add nvidia-docker2 repository and gpg-key
+      ansible.builtin.deb822_repository:
+        name: nvidia-docker
+        types: deb
+        allow_insecure: true
+        uris:
+          - "{{ nvidia_repo_url }}/libnvidia-container/{{ docker_nvidia_version }}/deb/$(ARCH)/"
+        suites:
+          - '/'
+        signed_by: "{{ nvidia_repo_url }}/nvidia-container-runtime/gpgkey"
       tags:
         - install-docker-nvidia
+
+    # - name: Import nvidia-docker GPG key
+    #   ansible.builtin.apt_key:
+    #     url: https://nvidia.github.io/nvidia-docker/gpgkey
+    #     state: present
+    #   tags:
+    #     - install-docker-nvidia
+
+    # - name: Add repositories for nvidia docker drivers, runtime environments, packages
+    #   ansible.builtin.get_url:
+    #     url: "https://nvidia.github.io/nvidia-docker/{{ ansible_lsb.id | lower }}{{ ansible_lsb.release }}/nvidia-docker.list"
+    #     dest: /etc/apt/sources.list.d/nvidia-docker.list
+    #     mode: "0644"
+    #   tags:
+    #     - install-docker-nvidia
 
     - name: Install dependencies for building kernel modules and drivers
       ansible.builtin.apt:
