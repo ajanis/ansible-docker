@@ -1,3 +1,4 @@
+---
 - name: Create bind-mount directories for standalone Docker containers
   ansible.builtin.file:
     state: directory
@@ -11,16 +12,15 @@
   when:
     - item.1.split(':')[0] is defined
     - item.1.split(':')[0] != None
-    - item.1.split(':')[0] is not search('/var/run/docker.sock')  # Ignore docker socket
-    - item.1.split(':')[0] is not match('^.*?\.[^/]+$')  # Ignore file bindings
-    - item.1.split(':')[0] is not match('^[^\/]+$')  # Ignore docker volumes
-    - "item.1.split(':')[0] is not search('/data')"
-    - "item.1.split(':')[0] is not search('/media')"
-    - "item.1.split(':')[0] is not search('/etc/localtime')"
-    - "item.1.split(':')[0] is not search('/dev/rtc')"
+    - item.1.split(':')[0] is not search('/var/run/docker.sock') # Ignore docker socket
+    - item.1.split(':')[0] is not match('^.*?\.[^/]+$') # Ignore file bindings
+    - item.1.split(':')[0] is not match('^[^\/]+$') # Ignore docker volumes
+    - item.1.split(':')[0] is not search('/data')
+    - item.1.split(':')[0] is not search('/media')
+    - item.1.split(':')[0] is not search('/etc/localtime')
+    - item.1.split(':')[0] is not search('/dev/rtc')
   tags:
     - docker-container
-
 
 - name: Create standalone Docker containers
   community.docker.docker_container:

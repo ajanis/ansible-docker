@@ -15,7 +15,7 @@ Calls the docker role with the following group_vars to build a docker image from
 
 #### group_vars/unifi/vars.yml
 ```yaml
-docker_containers: 
+docker_containers:
   unifi:
     description: "Unifi Admin Controller"
     image: linuxserver/unifi:unstable
@@ -36,7 +36,7 @@ docker_containers:
     network_mode: host
     volumes:
       - '{{ data_mount_root }}/{{ configs_directory }}/unifi_exporter:/etc/unifi_exporter'
-      
+
 docker_build_images:
   unifi_exporter:
     repo: "https://github.com/mdlayher/unifi_exporter.git"
@@ -47,9 +47,9 @@ docker_build_images:
   hosts: unifi
   become: True
   tasks:
-    - import_role:
+    - include_role:
         name: docker
-    - import_role:
+    - include_role:
         name: unifi
 ```
 ### Unifi-Admin related tasks
@@ -129,4 +129,3 @@ Provides restart handlers for docker containers
     enabled: yes
     daemon_reload: yes
 ```
-

@@ -1,5 +1,4 @@
 ---
-
 - name: Include os specific vars
   ansible.builtin.include_vars: "{{ item }}"
   with_first_found:

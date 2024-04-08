@@ -1,5 +1,4 @@
 ---
-
 - name: Create standalone Docker containers
   ansible.builtin.include_tasks:
     file: ramdisk.yml

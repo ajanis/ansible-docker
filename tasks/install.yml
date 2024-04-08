@@ -1,5 +1,4 @@
 ---
-
 - name: Install Docker [Debian/Ubuntu]
   ansible.builtin.include_tasks:
     file: install_debian.yml
@@ -37,7 +36,6 @@
       tags:
         - docker-install
 
-
 - name: Create systemd override for Docker service
   when:
     - ansible_os_family == "Debian"
@@ -46,7 +44,7 @@
   block:
     - name: Create systemd Docker service.d directory
       ansible.builtin.file:
-        path: "/etc/systemd/system/docker.service.d"
+        path: /etc/systemd/system/docker.service.d
         state: directory
         mode: "0755"
         owner: root
@@ -57,7 +55,7 @@
     - name: Create systemd Docker override config
       ansible.builtin.template:
         src: docker-override.conf.j2
-        dest: "/etc/systemd/system/docker.service.d/override.conf"
+        dest: /etc/systemd/system/docker.service.d/override.conf
         mode: "0755"
       register: docker_override
       tags:
@@ -65,7 +63,7 @@
 
     - name: Reload systemd service and restart docker service # noqa no-handler
       ansible.builtin.systemd:
-        name: "docker.service"
+        name: docker.service
         masked: false
         state: restarted
         enabled: true
