@@ -1,5 +1,4 @@
 ---
-
 - name: Create Docker Networks
   community.docker.docker_network:
     name: "{{ item.key }}"
@@ -10,7 +9,7 @@
     driver: "{{ item.value.driver | default(omit) }}"
     ipam_config: "{{ item.value.ipam_config | default(omit) }}"
     ipam_driver: "{{ item.value.ipam_driver | default(omit) }}"
-    state: "present"
+    state: present
     enable_ipv6: false
   loop: "{{ docker_networks | dict2items }}"
   loop_control:

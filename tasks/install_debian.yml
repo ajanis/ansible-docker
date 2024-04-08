@@ -1,10 +1,10 @@
+---
 - name: Install Docker Community Edition
   tags:
     - docker-install
   when:
     - docker_install_community_edition
   block:
-
     - name: Get dpkg architecture
       ansible.builtin.command: dpkg --print-architecture
       register: dpkg_architecture_result
@@ -74,7 +74,6 @@
       tags:
         - docker-install
 
-
 - name: Install runtime environments, packages, modules and configurations for docker nvidia support
   when:
     - docker_install_nvidia | default(false)
@@ -135,7 +134,7 @@
         uris:
           - "{{ nvidia_repo_url }}/libnvidia-container/{{ docker_nvidia_version }}/deb/$(ARCH)/"
         suites:
-          - '/'
+          - /
         signed_by: "{{ nvidia_repo_url }}/nvidia-container-runtime/gpgkey"
       tags:
         - install-docker-nvidia
@@ -216,12 +215,10 @@
       tags:
         - install-docker-nvidia
 
-
 - name: Reboot host if necessary
   tags:
     - docker-install
   block:
-
     - name: Flush handlers
       ansible.builtin.meta: flush_handlers
       tags:

@@ -1,9 +1,8 @@
 ---
-- name: "Disable SELinux, Configure FirewallD ports to ACCEPT [RHEL/CentOS]"
+- name: Disable SELinux, Configure FirewallD ports to ACCEPT [RHEL/CentOS]
   tags:
     - docker-install
   block:
-
     - name: Disable SELinux
       ansible.posix.selinux:
         state: disabled
@@ -27,7 +26,6 @@
     - docker_install_community_edition
     - ansible_distribution_major_version is version('7', '<=')
   block:
-
     - name: Remove OS Repository Docker Packages
       ansible.builtin.yum:
         name: "{{ docker_io_pkgs }}"
@@ -58,7 +56,6 @@
       tags:
         - docker-install
 
-
 - name: Install Docker Community Edition (RHEL Major <= 7)
   when:
     - docker_install_community_edition
@@ -66,7 +63,6 @@
   tags:
     - docker-install
   block:
-
     - name: Remove OS Repository Docker Packages
       ansible.builtin.yum:
         name: "{{ docker_io_pkgs }}"
@@ -103,14 +99,12 @@
       tags:
         - docker-install
 
-
 - name: Install Docker from OS Repository
   when:
     - not docker_install_community_edition
   tags:
     - docker-install
   block:
-
     - name: Remove Docker Community-Edition Packages
       ansible.builtin.yum:
         name: "{{ docker_ce_pkgs }}"
@@ -125,7 +119,6 @@
         state: present
       tags:
         - docker-install
-
 
 - name: Install runtime environments, packages, modules and configurations for docker nvidia support
   tags:
@@ -180,15 +173,15 @@
     - name: Install yum repository for drivers
       ansible.builtin.yum_repository:
         name: cuda-"{{ ansible_distribution }}"
-        file: "cuda-{{ ansible_distribution }}"
-        baseurl: "http://developer.download.nvidia.com/compute/cuda/repos//{{ ansible_distribution }}/{{ ansible_machine }}"
+        file: cuda-{{ ansible_distribution }}
+        baseurl: http://developer.download.nvidia.com/compute/cuda/repos//{{ ansible_distribution }}/{{ ansible_machine }}
         state: present
       tags:
         - install-docker-nvidia
 
     - name: Add repositories for nvidia docker drivers, runtime environments, packages
       ansible.builtin.get_url:
-        url: "https://nvidia.github.io/nvidia-docker/{{ ansible_distribution | lower }}{{ ansible_lsb.release }}/nvidia-docker.list"
+        url: https://nvidia.github.io/nvidia-docker/{{ ansible_distribution | lower }}{{ ansible_lsb.release }}/nvidia-docker.list
         dest: /etc/apt/sources.list.d/nvidia-docker.list
         mode: 644
       tags:
@@ -218,7 +211,6 @@
       notify: reload docker
       tags:
         - install-docker-nvidia
-
 
 - name: Reboot host if necessary
   tags:

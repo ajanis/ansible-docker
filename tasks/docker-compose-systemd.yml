@@ -2,7 +2,7 @@
 - name: Create systemd files for docker-compose containers
   ansible.builtin.template:
     src: docker-compose.service.j2
-    dest: "/etc/systemd/system/docker-{{ item.value.container_name | regex_replace('_', '-') }}.service"
+    dest: /etc/systemd/system/docker-{{ item.value.container_name | regex_replace('_', '-') }}.service
     mode: "0755"
   loop: "{{ project_item.definition.services | dict2items }}"
   register: docker_compose_service
@@ -14,7 +14,7 @@
 
 - name: Register, enable, and start systemd services for docker-compose containers
   ansible.builtin.systemd:
-    name: "docker-{{ item.value.container_name | regex_replace('_', '-') }}.service"
+    name: docker-{{ item.value.container_name | regex_replace('_', '-') }}.service
     state: "{% if docker_compose_service.changed %}restarted{% else %}started{% endif %}"
     enabled: true
     daemon_reload: true

@@ -1,11 +1,11 @@
+---
 - name: Collect additional docker configs
   tags:
     - docker-install
   block:
-
     - name: Check for GPU presence
       ansible.builtin.command:
-        cmd: 'nvidia-smi -L'
+        cmd: nvidia-smi -L
       register: nvidia_presence
       changed_when: false
       failed_when: false
@@ -14,46 +14,44 @@
 
     - name: Check for Docker presence
       ansible.builtin.command:
-        cmd: 'docker -v'
+        cmd: docker -v
       register: docker_presence
       changed_when: false
       failed_when: false
       tags:
         - docker-install
 
-    - name: "GPU Configurations"
+    - name: GPU Configurations
       when:
         - "'GPU' in nvidia_presence.stdout"
       tags:
         - docker-install
       block:
-
-        - name: "Print GPU info"
+        - name: Print GPU info
           ansible.builtin.debug:
             msg: "{{ nvidia_presence.stdout }}"
           tags:
             - docker-install
 
-        - name: "Set 'has_gpu' fact"
+        - name: Set 'has_gpu' fact
           ansible.builtin.set_fact:
             has_gpu: true
           tags:
             - docker-install
 
-
-    - name: "Docker Configurations"
+    - name: Docker Configurations
       when:
         - "'version' in docker_presence.stdout"
       tags:
         - docker-install
 
       block:
-        - name: "Print Docker info"
+        - name: Print Docker info
           ansible.builtin.debug:
             msg: "{{ docker_presence.stdout }}"
           tags:
             - docker-install
-        - name: "Set 'has_docker' fact"
+        - name: Set 'has_docker' fact
           ansible.builtin.set_fact:
             has_docker: true
           tags:
@@ -86,7 +84,6 @@
             - docker_daemon_json.stat.exists
           tags:
             - docker-install
-
 
     - name: Update Docker daemon config
       tags:
