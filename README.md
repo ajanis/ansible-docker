@@ -99,7 +99,7 @@ Creates config directory, SSL keys, and script to import SSL cert into JVM
   shell: "{{ data_mount_root }}/{{ configs_directory }}/unifi/unifi_ssl_import.sh >> /var/log/docker_unifi_ssl_upgrade.log"
   args:
     executable: /bin/bash
-  notify: Restart docker_unifi
+  notify: restart docker_unifi
 ```
 
 ### Unfi-Exporter related tasks
@@ -111,7 +111,7 @@ Generates config for unifi-exporter container
   template:
     src: unifi_exporter_config.yml.j2
     dest: '{{ data_mount_root }}/{{ configs_directory }}/unifi_exporter/config.yml'
-  notify: Restart docker_unifi_exporter
+  notify: restart docker_unifi_exporter
 ```
 
 ### Unifi-Exporter Config Template

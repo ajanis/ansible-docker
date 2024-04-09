@@ -131,7 +131,7 @@
           blacklist nouveau
           options nouveau modset=0
         mode: "0644"
-      notify: Initramfs requires update
+      notify: initramfs requires update
       register: blacklist_nouveau
       tags:
         - install-docker-nvidia
@@ -199,7 +199,7 @@
         name: "{{ docker_nvidia_driver_packages }}"
         state: present
         update_cache: true
-      notify: Reload docker
+      notify: reload docker
       tags:
         - install-docker-nvidia
 
@@ -208,7 +208,7 @@
         name: "{{ docker_nvidia_docker_packages }}"
         state: present
         update_cache: true
-      notify: Reload docker
+      notify: reload docker
       tags:
         - install-docker-nvidia
 

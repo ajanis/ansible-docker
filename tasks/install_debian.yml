@@ -87,7 +87,7 @@
           blacklist nouveau
           options nouveau modset=0
         mode: "0644"
-      notify: Initramfs requires update
+      notify: initramfs requires update
       register: blacklist_nouveau
       tags:
         - install-docker-nvidia
@@ -169,7 +169,7 @@
         state: present
         autoclean: true
         update_cache: true
-      notify: Reload docker
+      notify: reload docker
       tags:
         - install-docker-nvidia
 
@@ -179,7 +179,7 @@
         state: present
         autoclean: true
         update_cache: true
-      notify: Reload docker
+      notify: reload docker
       tags:
         - install-docker-nvidia
 
@@ -209,7 +209,7 @@
         chdir: "{{ docker_nvidia_transcode_patch_dir }}/nvidia-patch"
         creates: "{{ docker_nvidia_transcode_patch_dir }}/libnvidia-encode-backup"
       register: nvidia_transcode_patch_result
-      notify: Reload docker
+      notify: reload docker
       when:
         - docker_nvidia_transcode_patch_dir ~ '/libnvidia-encode-backup' is not file
       tags:

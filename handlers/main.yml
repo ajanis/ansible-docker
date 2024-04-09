@@ -1,14 +1,14 @@
 ---
-- name: Initramfs requires update
+- name: initramfs requires update
   ansible.builtin.set_fact:
     initramfs_requires_update: true
   when: blacklist_nouveau is changed
 
-- name: Dracut requires update
+- name: dracut requires update
   ansible.builtin.set_fact:
     dracut_requires_update: true
   when: blacklist_nouveau is changed
 
-- name: Reload docker
+- name: reload docker
   ansible.builtin.set_fact:
     docker_requires_reload: true
