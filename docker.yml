@@ -1,19 +1,34 @@
 ---
-- name: Deploy Docker Server
+- name: Deploy Docker containers via Docker-Ansible Role
   hosts: all
   remote_user: root
   gather_facts: true
 
+  vars_files:
+    - vault.yml
+
   tasks:
-    - ansible.builtin.include_role:
-        name: common
-    - ansible.builtin.include_role:
-        name: openldap
-      when: openldap_server_ip is defined and openldap_server_ip != None
-    - ansible.builtin.include_role:
-        name: ceph-fs
-      when:
-        - shared_storage
-        - storage_backend == "cephfs"
-    - ansible.builtin.include_role:
+    - name: Create config dirs
+      ansible.builtin.file:
+        state: directory
+        mode: "0755"
+        path: "{{ item.path | dirname }}"
+      loop: "{{ docker_config_files }}"
+      tags:
+        - docker-container
+      when: docker_config_files is defined
+
+    - name: Create config files
+      # Comment
+      ansible.builtin.copy:
+        dest: "{{ item.path }}"
+        mode: "0755"
+        content: "{{ item.config | string }}"
+      loop: "{{ docker_config_files }}"
+      tags:
+        - docker-container
+      when: docker_config_files is defined
+
+    - name: Add docker role
+      ansible.builtin.import_role:
         name: docker
