@@ -1,7 +1,9 @@
 # Ansible role for Docker containers and image build
+
 This role is intended to be included into playbooks for deploying containerized services.  The service role should include group_vars defining the container run parameters and container image parameters (including git repository), along with any container-specific prerequisites and config files.  The role is intended to make it easier to deploy several containerized services on a specified host.
 
 ## Example
+
 The following example **ansible-unifi** role uses this **ansible-docker** role to build the container image for the unifi-exporter service (prometheus exporter for unifi AP data) and run the Unifi-Admin and the Unifi-Exporter containers.  The role itself creates config files on the docker host that are used by the Unifi-Exporter service and runs additional setup steps required by the Unifi-Admin service.
 
 Together, the roles deploy the complete containerized services and related configurations.
@@ -11,9 +13,11 @@ Below are the key components of the role.  You may check out the full role here:
 **NOTE:** You will need Prometheus set up somewhere to use the Unifi-Exporter.  You may want to look at [This InfluxDB Role](https://github.com/ajanis/ansible-influxdb) for deploying InfluxDB + Prometheus, which also includes the required Prometheus configuration for the Unifi-Exporter.
 
 ### group_vars used in service role
+
 Calls the docker role with the following group_vars to build a docker image from the specified git repo and deploy the containerized service and systemd configs.
 
 #### group_vars/unifi/vars.yml
+
 ```yaml
 docker_containers:
   unifi:
@@ -41,7 +45,9 @@ docker_build_images:
   unifi_exporter:
     repo: "https://github.com/mdlayher/unifi_exporter.git"
 ```
+
 ### Sample Service Role Playbook
+
 ```yaml
 - name: Deploy Unifi Controller
   hosts: unifi
@@ -52,8 +58,11 @@ docker_build_images:
     - include_role:
         name: unifi
 ```
+
 ### Unifi-Admin related tasks
+
 Creates config directory, SSL keys, and script to import SSL cert into JVM
+
 ```yaml
 - name: Ensure Unifi Data Directory Exists
   file:
@@ -92,8 +101,11 @@ Creates config directory, SSL keys, and script to import SSL cert into JVM
     executable: /bin/bash
   notify: restart docker_unifi
 ```
+
 ### Unfi-Exporter related tasks
+
 Generates config for unifi-exporter container
+
 ```yaml
 - name: Generate Unifi Prometheus Collector config file
   template:
@@ -101,8 +113,11 @@ Generates config for unifi-exporter container
     dest: '{{ data_mount_root }}/{{ configs_directory }}/unifi_exporter/config.yml'
   notify: restart docker_unifi_exporter
 ```
+
 ### Unifi-Exporter Config Template
+
 Template used by unifi-exporter task above
+
 ```yaml
 listen:
   address: :9130
@@ -115,9 +130,13 @@ unifi:
   insecure: true
   timeout: 5s
 ```
+
 ### systemd container service handlers
+
 Provides restart handlers for docker containers
-```
+
+```yaml
+
 - name: restart docker_unifi
   service:
     name: docker-unifi
