@@ -11,11 +11,15 @@ docker_dependency_pkgs:
 docker_io_pkgs:
   - docker.io
   - containerd
+  - docker-compose-plugin
+  - docker-buildx-plugin
 
 docker_ce_pkgs:
   - docker-ce
   - containerd.io
   - docker-ce-cli
+  - docker-compose-plugin
+  - docker-buildx-plugin
 
 docker_py26_pkgs:
   - docker-py

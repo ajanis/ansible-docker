@@ -7,6 +7,8 @@ docker_dependency_pkgs:
 docker_io_pkgs:
   - docker.io
   - containerd
+  - docker-compose-plugin
+  - docker-buildx-plugin
 
 docker_nvidia_driver_dependencies:
   - gcc
@@ -42,5 +44,7 @@ docker_ce_pkgs:
 docker_py3_pkgs:
   - docker
   - docker-compose
+  - docker-compose-plugin
+  - docker-buildx-plugin
 
 docker_repo_url: https://download.docker.com/linux

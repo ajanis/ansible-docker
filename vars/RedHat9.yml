@@ -10,11 +10,15 @@ docker_install_community_edition: true
 
 docker_io_pkgs:
   - docker
+  - docker-compose-plugin
+  - docker-buildx-plugin
 
 docker_ce_pkgs:
   - docker-ce
   - docker-ce-cli
   - containerd.io
+  - docker-compose-plugin
+  - docker-buildx-plugin
 
 docker_py3_pkgs:
   - docker
