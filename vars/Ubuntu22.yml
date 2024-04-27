@@ -3,13 +3,16 @@ docker_dependency_pkgs:
   - gcc
   - python3-dev
   - python3-pip
-
+  - python3-docker
+  - python3-compose
+  - python3-dockerpycreds
+  - python3-dockerpty
 docker_io_pkgs:
   - docker.io
   - containerd
   - docker-compose-plugin
   - docker-buildx-plugin
-
+  - docker-compose-v2
 docker_nvidia_driver_dependencies:
   - gcc
   - binutils
@@ -42,10 +45,8 @@ docker_ce_pkgs:
   - containerd.io
   - docker-ce-cli
   - docker-compose-plugin
+  - docker-compose-v2
   - docker-buildx-plugin
 
 docker_py3_pkgs:
-  - docker==6.1.3
-  - docker-compose
-
 docker_repo_url: https://download.docker.com/linux

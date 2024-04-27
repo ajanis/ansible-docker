@@ -50,6 +50,10 @@
         name: "{{ docker_ce_pkgs }}"
         update_cache: true
         state: present
+        allow_change_held_packages: true
+        allow_downgrade: true
+        install_recommends: true
+        upgrade: true
       tags:
         - docker-install
 
@@ -71,6 +75,10 @@
         name: "{{ docker_io_pkgs }}"
         update_cache: true
         state: present
+        allow_change_held_packages: true
+        allow_downgrade: true
+        install_recommends: true
+        upgrade: true
       tags:
         - docker-install
 
