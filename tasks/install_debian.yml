@@ -54,7 +54,6 @@
         allow_change_held_packages: true
         allow_downgrade: true
         install_recommends: true
-        upgrade: true
       register: docker_pkg_install
       until: docker_pkg_install is not failed
       retries: 10
@@ -86,7 +85,6 @@
         allow_downgrade: true
         install_recommends: true
         only_upgrade: true
-        upgrade: true
       register: docker_pkg_install
       until: docker_pkg_install is not failed
       retries: 10
