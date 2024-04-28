@@ -11,66 +11,74 @@
   when:
     - ansible_os_family == "RedHat"
 
-- name: Start and enable docker-ce services
-  when:
-    - docker_install_community_edition
+- name: Enable and start or restart docker socket and service
   tags:
     - docker-install
   block:
     - name: Start and enable docker socket
       ansible.builtin.systemd:
         name: docker.socket
-        state: restarted
+        state: "{{ 'restarted' if (docker_requires_reload | default(false)) else 'started' }}"
         masked: false
         enabled: true
         daemon_reload: true
+      register: docker_socket_service
+      until: docker_socket_service is not failed
+      retries: 10
+      timeout: 60
+      delay: 10
       tags:
         - docker-install
     - name: Start and enable docker service
       ansible.builtin.systemd:
         name: docker.service
         masked: false
-        state: restarted
+        state: "{{ 'restarted' if (docker_requires_reload | default(false)) else 'started' }}"
         enabled: true
         daemon_reload: true
+      register: docker_container_service
+      until: docker_container_service is not failed
+      retries: 10
+      timeout: 60
+      delay: 10
       tags:
         - docker-install
 
-- name: Create systemd override for Docker service
-  when:
-    - ansible_os_family == "Debian"
-  tags:
-    - docker-install
-  block:
-    - name: Create systemd Docker service.d directory
-      ansible.builtin.file:
-        path: /etc/systemd/system/docker.service.d
-        state: directory
-        mode: "0755"
-        owner: root
-        group: root
-      tags:
-        - docker-install
+# - name: Create systemd override for Docker service
+#   when:
+#     - ansible_os_family == "Debian"
+#   tags:
+#     - docker-install
+#   block:
+#     - name: Create systemd Docker service.d directory
+#       ansible.builtin.file:
+#         path: /etc/systemd/system/docker.service.d
+#         state: directory
+#         mode: "0755"
+#         owner: root
+#         group: root
+#       tags:
+#         - docker-install
 
-    - name: Create systemd Docker override config
-      ansible.builtin.template:
-        src: docker-override.conf.j2
-        dest: /etc/systemd/system/docker.service.d/override.conf
-        mode: "0755"
-      register: docker_override
-      tags:
-        - docker-install
+#     - name: Create systemd Docker override config
+#       ansible.builtin.template:
+#         src: docker-override.conf.j2
+#         dest: /etc/systemd/system/docker.service.d/override.conf
+#         mode: "0755"
+#       register: docker_override
+#       tags:
+#         - docker-install
 
-    - name: Reload systemd service and restart docker service # noqa no-handler
-      ansible.builtin.systemd:
-        name: docker.service
-        masked: false
-        state: restarted
-        enabled: true
-        daemon_reload: true
-      when: docker_override.changed
-      tags:
-        - docker-install
+#     - name: Reload systemd service and restart docker service # noqa no-handler
+#       ansible.builtin.systemd:
+#         name: docker.service
+#         masked: false
+#         state: restarted
+#         enabled: true
+#         daemon_reload: true
+#       when: docker_override.changed
+#       tags:
+#         - docker-install
 
 - name: Install Package Dependencies
   ansible.builtin.package:

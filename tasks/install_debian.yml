@@ -49,11 +49,18 @@
       ansible.builtin.apt:
         name: "{{ docker_ce_pkgs }}"
         update_cache: true
-        state: present
+        state: latest
+        only_upgrade: true
         allow_change_held_packages: true
         allow_downgrade: true
         install_recommends: true
         upgrade: true
+      register: docker_pkg_install
+      until: docker_pkg_install is not failed
+      retries: 10
+      timeout: 60
+      delay: 10
+      notify: reload docker
       tags:
         - docker-install
 
@@ -74,11 +81,45 @@
       ansible.builtin.apt:
         name: "{{ docker_io_pkgs }}"
         update_cache: true
-        state: present
+        state: latest
         allow_change_held_packages: true
         allow_downgrade: true
         install_recommends: true
+        only_upgrade: true
         upgrade: true
+      register: docker_pkg_install
+      until: docker_pkg_install is not failed
+      retries: 10
+      timeout: 60
+      delay: 10
+      notify: reload docker
+      tags:
+        - docker-install
+
+- name: Create systemd override for Docker service
+  when:
+    - ansible_os_family == "Debian"
+  tags:
+    - docker-install
+  block:
+    - name: Create systemd Docker service.d directory
+      ansible.builtin.file:
+        path: /etc/systemd/system/docker.service.d
+        state: directory
+        mode: "0755"
+        owner: root
+        group: root
+      notify: reload docker
+      tags:
+        - docker-install
+
+    - name: Create systemd Docker override config
+      ansible.builtin.template:
+        src: docker-override.conf.j2
+        dest: /etc/systemd/system/docker.service.d/override.conf
+        mode: "0755"
+      register: docker_override
+      notify: reload docker
       tags:
         - docker-install
 
@@ -109,6 +150,10 @@
       ansible.builtin.command:
         cmd: update-initramfs -u
       register: initramfs_update_result
+      until: initramfs_update_result is not failed
+      retries: 10
+      timeout: 60
+      delay: 10
       changed_when: initramfs_update_result is changed
       when:
         - initramfs_requires_update|default(false)
@@ -147,27 +192,18 @@
       tags:
         - install-docker-nvidia
 
-    # - name: Import nvidia-docker GPG key
-    #   ansible.builtin.apt_key:
-    #     url: https://nvidia.github.io/nvidia-docker/gpgkey
-    #     state: present
-    #   tags:
-    #     - install-docker-nvidia
-
-    # - name: Add repositories for nvidia docker drivers, runtime environments, packages
-    #   ansible.builtin.get_url:
-    #     url: "https://nvidia.github.io/nvidia-docker/{{ ansible_lsb.id | lower }}{{ ansible_lsb.release }}/nvidia-docker.list"
-    #     dest: /etc/apt/sources.list.d/nvidia-docker.list
-    #     mode: "0644"
-    #   tags:
-    #     - install-docker-nvidia
-
     - name: Install dependencies for building kernel modules and drivers
       ansible.builtin.apt:
         name: "{{ docker_nvidia_driver_dependencies }}"
         state: present
         autoclean: true
         update_cache: true
+      register: install_nvidia_dependencies
+      until: install_nvidia_dependencies is not failed
+      retries: 10
+      timeout: 60
+      delay: 10
+      notify: reload docker
       tags:
         - install-docker-nvidia
 
@@ -177,6 +213,11 @@
         state: present
         autoclean: true
         update_cache: true
+      register: install_nvidia_drivers
+      until: install_nvidia_drivers is not failed
+      retries: 10
+      timeout: 60
+      delay: 10
       notify: reload docker
       tags:
         - install-docker-nvidia
@@ -187,6 +228,11 @@
         state: present
         autoclean: true
         update_cache: true
+      register: install_nvidia_runtime
+      until: install_nvidia_runtime is not failed
+      retries: 10
+      timeout: 60
+      delay: 10
       notify: reload docker
       tags:
         - install-docker-nvidia
@@ -217,6 +263,10 @@
         chdir: "{{ docker_nvidia_transcode_patch_dir }}/nvidia-patch"
         creates: "{{ docker_nvidia_transcode_patch_dir }}/libnvidia-encode-backup"
       register: nvidia_transcode_patch_result
+      until: nvidia_transcode_patch_result is not failed
+      retries: 10
+      timeout: 60
+      delay: 10
       notify: reload docker
       when:
         - docker_nvidia_transcode_patch_dir ~ '/libnvidia-encode-backup' is not file
@@ -242,11 +292,10 @@
       tags:
         - docker-install
 
-    - name: Reload systemctl and restart docker service if necessary
-      ansible.builtin.systemd:
-        daemon_reload: true
-        name: docker
-        state: "{% if docker_requires_reload | default(False) %}restarted{% else %}started{% endif %}"
-      when: docker_requires_reload | default(false)
-      tags:
-        - docker-install
+    # - name: Reload systemctl and restart docker service if necessary
+    #   ansible.builtin.systemd:
+    #     daemon_reload: true
+    #     name: docker
+    #     state: "{{ 'restarted' if (docker_requires_reload | default(false)) else 'started' }}"
+    #   tags:
+    #     - docker-install

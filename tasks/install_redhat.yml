@@ -52,7 +52,14 @@
       ansible.builtin.yum:
         name: "{{ docker_ce_pkgs }}"
         update_cache: true
-        state: present
+        state: latest
+        update_only: true
+      register: docker_pkg_install
+      until: docker_pkg_install is not failed
+      retries: 10
+      timeout: 60
+      delay: 10
+      notify: reload docker
       tags:
         - docker-install
 
@@ -95,7 +102,14 @@
       ansible.builtin.yum:
         name: "{{ docker_ce_pkgs }}"
         update_cache: true
-        state: present
+        state: latest
+        update_only: true
+      register: docker_pkg_install
+      until: docker_pkg_install is not failed
+      retries: 10
+      timeout: 60
+      delay: 10
+      notify: reload docker
       tags:
         - docker-install
 
@@ -116,7 +130,14 @@
       ansible.builtin.yum:
         name: "{{ docker_io_pkgs }}"
         update_cache: true
-        state: present
+        state: latest
+        update_only: true
+      register: docker_pkg_install
+      until: docker_pkg_install is not failed
+      retries: 10
+      timeout: 60
+      delay: 10
+      notify: reload docker
       tags:
         - docker-install
 
@@ -145,9 +166,13 @@
       ansible.builtin.command:
         cmd: dracut --force
       register: dracut_update_result
+      until: dracut_update_result is not failed
+      retries: 10
+      timeout: 60
+      delay: 10
       when:
         - dracut_requires_update | default(False)
-      changed_when: dracut_update_result is changed
+      changed_when: dracut_update_result is defined
       tags:
         - install-docker-nvidia
 
@@ -191,6 +216,12 @@
       ansible.builtin.package:
         name: "{{ docker_nvidia_driver_dependencies }}"
         state: present
+      register: install_nvidia_dependencies
+      until: install_nvidia_dependencies is not failed
+      retries: 10
+      timeout: 60
+      delay: 10
+      notify: reload docker
       tags:
         - install-docker-nvidia
 
@@ -199,6 +230,11 @@
         name: "{{ docker_nvidia_driver_packages }}"
         state: present
         update_cache: true
+      register: install_nvidia_drivers
+      until: install_nvidia_drivers is not failed
+      retries: 10
+      timeout: 60
+      delay: 10
       notify: reload docker
       tags:
         - install-docker-nvidia
@@ -208,6 +244,11 @@
         name: "{{ docker_nvidia_docker_packages }}"
         state: present
         update_cache: true
+      register: install_nvidia_runtime
+      until: install_nvidia_runtime is not failed
+      retries: 10
+      timeout: 60
+      delay: 10
       notify: reload docker
       tags:
         - install-docker-nvidia
@@ -232,11 +273,10 @@
       tags:
         - docker-install
 
-    - name: Reload systemctl and restart docker service if necessary
-      ansible.builtin.systemd:
-        daemon_reload: true
-        name: docker
-        state: "{% if docker_requires_reload | default(False) %}restarted{% else %}started{% endif %}"
-      when: docker_requires_reload|default(False)
-      tags:
-        - docker-install
+    # - name: Reload systemctl and restart docker service if necessary
+    #   ansible.builtin.systemd:
+    #     daemon_reload: true
+    #     name: docker
+    #     state: "{{ 'restarted' if (docker_requires_reload | default(false)) else 'started' }}"
+    #   tags:
+    #     - docker-install

@@ -145,14 +145,20 @@
             content: "{{ docker_daemon_config | to_nice_json }}"
             dest: /etc/docker/daemon.json
             mode: "0755"
-          register: docker_daemon_updated
+          notify: reload docker
           tags:
             - docker-install
 
-        - name: Restart docker service
-          ansible.builtin.service:
+        - name: Flush handlers
+          ansible.builtin.meta: flush_handlers
+          tags:
+            - docker-install
+
+        - name: Register, enable and start or restart docker service
+          ansible.builtin.systemd:
             name: docker
-            state: restarted
-          when: docker_daemon_updated
+            state: "{{ 'restarted' if (docker_requires_reload | default(false)) else 'started' }}"
+            enabled: true
+            daemon_reload: true
           tags:
             - docker-install
