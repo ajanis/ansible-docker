@@ -19,7 +19,10 @@ docker_ce_pkgs:
   - containerd.io
   - docker-ce-cli
   - docker-compose-plugin
+  - docker-compose-v2
+  - docker-compose
   - docker-buildx-plugin
+  - docker-buildx
 
 docker_py26_pkgs:
   - docker-py
