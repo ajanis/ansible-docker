@@ -25,13 +25,13 @@ docker_nvidia_driver_dependencies:
   - software-properties-common
 
 docker_nvidia_driver_packages:
-  - nvidia-headless-515
-  - libnvidia-encode-515
-  - libnvidia-decode-515
-  - libnvidia-compute-515
-  - nvidia-utils-515
-  - nvidia-kernel-common-515
-  - nvidia-kernel-source-515
+  - nvidia-headless-550
+  - libnvidia-encode-550
+  - libnvidia-decode-550
+  - libnvidia-compute-550
+  - nvidia-utils-550
+  - nvidia-kernel-common-550
+  - nvidia-kernel-source-550
 
 docker_nvidia_docker_packages:
   - libnvidia-container-tools
