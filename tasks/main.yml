@@ -8,31 +8,31 @@
   tags:
     - always
 
-- name: Import installer
+- name: Include installation tasks
   ansible.builtin.include_tasks:
     file: install.yml
   tags:
     - docker-install
 
-- name: Import image builder
+- name: Include image build tasks
   ansible.builtin.include_tasks:
     file: image-build.yml
   tags:
     - image-build
 
-- name: Import network setup
+- name: Include network setup tasks
   ansible.builtin.include_tasks:
     file: network-setup.yml
   tags:
     - docker-network
 
-- name: Import container setup
+- name: Include container setup tasks
   ansible.builtin.include_tasks:
     file: container-setup.yml
   tags:
     - docker-container
 
-- name: Import container systemd
+- name: Include systemd service tasks
   ansible.builtin.include_tasks:
     file: container-systemd.yml
   tags:
