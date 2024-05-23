@@ -68,7 +68,7 @@
     label: "{{ item.project_name }}"
   register: compose_up_output
   tags:
-    - docker-container
+    - docker-compose
 
 - name: Print docker-compose result
   ansible.builtin.debug:
@@ -76,4 +76,4 @@
     verbosity: 0
   when: compose_up_output
   tags:
-    - docker-container
+    - docker-compose

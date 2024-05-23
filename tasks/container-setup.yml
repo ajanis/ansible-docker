@@ -1,17 +1,10 @@
 ---
 - name: Create standalone Docker containers
   ansible.builtin.include_tasks:
-    file: ramdisk.yml
-  when:
-    - docker_ramdisk is defined
-  tags:
-    - docker-container
-
-- name: Create standalone Docker containers
-  ansible.builtin.include_tasks:
     file: docker-container-setup.yml
   when:
     - docker_containers is defined
+    - (docker_containers | length) > 0
   tags:
     - docker-container
 
@@ -20,5 +13,6 @@
     file: docker-compose-setup.yml
   when:
     - docker_compose_projects is defined
+    - (docker_compose_projects | length) > 0
   tags:
-    - docker-container
+    - docker-compose

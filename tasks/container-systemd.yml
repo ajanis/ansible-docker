@@ -4,6 +4,7 @@
     file: docker-container-systemd.yml
   when:
     - docker_containers is defined
+    - (docker_containers | length )> 0
   tags:
     - docker-container
     - docker-container-systemd
@@ -16,6 +17,7 @@
     loop_var: project_item
   when:
     - docker_compose_projects is defined
+    - (docker_compose_projects | length) > 0
   tags:
-    - docker-container
-    - docker-container-systemd
+    - docker-compose
+    - docker-compose-systemd
