@@ -1,15 +1,7 @@
 ---
 - name: Install Docker [Debian/Ubuntu]
   ansible.builtin.include_tasks:
-    file: install_debian.yml
-  when:
-    - ansible_os_family == "Debian"
-
-- name: Install Docker [RedHat]
-  ansible.builtin.include_tasks:
-    file: install_redhat.yml
-  when:
-    - ansible_os_family == "RedHat"
+    file: install_{{ ansible_os_family | lower }}.yml
 
 - name: Enable and start or restart docker socket and service
   tags:
