@@ -128,10 +128,21 @@
         - name: Add Nvidia runtime to docker daemon config
           ansible.builtin.set_fact:
             docker_daemon_config: |
-              {{ docker_daemon_config | combine({'runtimes': {'nvidia': {'path': 'nvidia-container-runtime', 'args': []}}}, recursive=true) }}
+              {{ docker_daemon_config 
+                | combine({
+                  'default-runtime': 'nvidia',
+                  'runtimes': {
+                    'nvidia': {
+                      'path': 'nvidia-container-runtime',
+                      'args': []
+                    }
+                  }
+                }, recursive=true) 
+              }}
           when:
             - has_gpu|default(false)
             - "'nvidia' not in docker_daemon_config.runtimes|default({})"
+            - "'default-runtime' not in docker_daemon_configs|default({})"
           tags:
             - docker-install
         - name: Echo docker config content
