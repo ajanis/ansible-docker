@@ -1,12 +1,10 @@
 ---
 docker_dependency_pkgs:
-  - python-pip
   - gcc
-  - python-devel
-  - python-urllib3
   - python3-pip
   - gcc
   - python3-devel
+  - python3-urllib3
 
 docker_install_community_edition: true
 
@@ -24,17 +22,6 @@ docker_ce_pkgs:
   - docker-compose
   - docker-buildx-plugin
   - docker-buildx
-
-docker_py26_pkgs:
-  - docker-py
-
-docker_py27_pkgs:
-  - docker==4.1.0
-  - docker-compose==1.25.3
-  - zipp==1.0.0
-  - more-itertools==5.0.0
-  - requests==2.22.0
-  - requests-futures==0.9.9
 
 docker_py3_pkgs:
   - docker
@@ -59,18 +46,15 @@ docker_nvidia_driver_dependencies:
   - pciutils
   - elfutils-libelf-devel
   - libglvnd-devel
-  - iptables
-  - firewalld
-  - vim
-  - bind-utils
-  - wget
 
 docker_nvidia_driver_packages:
-  - nvidia-driver-latest-dkms
-  - cuda
-  - cuda_drivers
   - kernel-headers-{{ ansible_kernel }}
   - kernel-devel-{{ ansible_kernel }}
+  - nvidia-driver:latest-dkms
+  - kernel
+  - kernel-core
+  - kernel-modules
+  - cuda
 
 docker_nvidia_docker_packages:
   - nvidia-container-toolkit
