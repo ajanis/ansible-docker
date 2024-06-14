@@ -33,14 +33,14 @@
 
     - name: Add Docker repository and GPG Key
       ansible.builtin.deb822_repository:
-        name: docker
+        name: docker-ce
         types: deb
         enabled: true
         state: present
         allow_insecure: true
         uris: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}"
         suites: "{{ ansible_distribution_release }}"
-        components: "{{ docker_version }}"
+        components: "{{ docker_ce_version }}"
         signed_by: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
       tags:
         - docker-install
@@ -50,9 +50,10 @@
         name: "{{ docker_ce_pkgs }}"
         update_cache: true
         state: latest
+        autoclean: true
         only_upgrade: true
+        autoremove: true
         allow_change_held_packages: true
-        allow_downgrade: true
 
       register: docker_pkg_install
       until: docker_pkg_install is not failed
@@ -81,7 +82,6 @@
         name: "{{ docker_io_pkgs }}"
         update_cache: true
         state: latest
-        allow_change_held_packages: true
         allow_downgrade: true
         only_upgrade: true
       register: docker_pkg_install
@@ -149,7 +149,7 @@
       register: initramfs_update_result
       until: initramfs_update_result is not failed
       retries: 10
-      timeout: 300
+      timeout: 60
       delay: 10
       changed_when: initramfs_update_result is changed
       when:
@@ -198,7 +198,7 @@
       register: install_nvidia_dependencies
       until: install_nvidia_dependencies is not failed
       retries: 10
-      timeout: 300
+      timeout: 60
       delay: 10
       notify: reload docker
       tags:
@@ -213,7 +213,7 @@
       register: install_nvidia_drivers
       until: install_nvidia_drivers is not failed
       retries: 10
-      timeout: 300
+      timeout: 60
       delay: 10
       notify: reload docker
       tags:
@@ -228,7 +228,7 @@
       register: install_nvidia_runtime
       until: install_nvidia_runtime is not failed
       retries: 10
-      timeout: 300
+      timeout: 60
       delay: 10
       notify: reload docker
       tags:
@@ -262,7 +262,7 @@
       register: nvidia_transcode_patch_result
       until: nvidia_transcode_patch_result is not failed
       retries: 10
-      timeout: 300
+      timeout: 60
       delay: 10
       notify: reload docker
       when:

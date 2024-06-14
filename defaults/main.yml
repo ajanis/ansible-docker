@@ -2,7 +2,7 @@
 shared_storage: false
 docker_daemon_config: /etc/docker/daemon.json
 docker_install_community_edition: true
-docker_version: stable
+docker_ce_version: stable
 docker_repo_url: https://download.docker.com/linux
 nvidia_repo_url: https://nvidia.github.io
 docker_nvidia_version: stable
