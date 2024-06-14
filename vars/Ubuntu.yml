@@ -30,14 +30,12 @@ docker_nvidia_driver_dependencies:
   - curl
   - gnupg-agent
   - software-properties-common
-
+  
 docker_nvidia_driver_packages:
   - libnvidia-common-550-server
   - libnvidia-decode-550-server
   - libnvidia-encode-550-server
   - nvidia-driver-550-server
-  - nvidia-firmware-550-server-550.54.15
-  - nvidia-headless-550-server
   - nvidia-headless-no-dkms-550-server
   - nvidia-kernel-common-550-server
   - nvidia-kernel-source-550-server
@@ -48,14 +46,13 @@ docker_nvidia_docker_packages:
   - libnvidia-container1
   - nvidia-docker2
   - nvidia-container-runtime
-  - nvidia-container-toolkit-base
   - nvidia-container-toolkit
 
 docker_nvidia_cuda_packages:
   - libnvidia-ml-dev
+  - nvidia-cudnn
   - nvidia-compute-utils-550-server
   - libnvidia-compute-550-server
-  - nvidia-cudnn
   - nvidia-cuda-dev
   - nvidia-cuda-gdb
   - nvidia-cuda-toolkit-doc
