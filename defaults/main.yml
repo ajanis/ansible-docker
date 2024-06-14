@@ -1,8 +1,8 @@
 ---
 shared_storage: false
-docker_daemon_config: "/etc/docker/daemon.json"
+docker_daemon_config: /etc/docker/daemon.json
 docker_install_community_edition: true
-docker_ce_version: stable
+docker_version: stable
 docker_repo_url: https://download.docker.com/linux
 nvidia_repo_url: https://nvidia.github.io
 docker_nvidia_version: stable
@@ -13,12 +13,12 @@ docker_nvidia_gpu_caps: compute,video,utility
 docker_recreate: false
 
 docker_allowed_ports:
-  - "22/tcp"
-  - "2376/tcp"
-  - "2377/tcp"
-  - "7946/tcp"
-  - "7946/udp"
-  - "4789/udp"
+  - 22/tcp
+  - 2376/tcp
+  - 2377/tcp
+  - 7946/tcp
+  - 7946/udp
+  - 4789/udp
 
 docker_nvidia_transcode_patch: https://github.com/keylase/nvidia-patch.git
 docker_nvidia_transcode_patch_dir: /opt/nvidia

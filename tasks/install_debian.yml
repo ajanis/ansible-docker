@@ -33,14 +33,14 @@
 
     - name: Add Docker repository and GPG Key
       ansible.builtin.deb822_repository:
-        name: docker-ce
+        name: docker
         types: deb
         enabled: true
         state: present
         allow_insecure: true
         uris: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}"
         suites: "{{ ansible_distribution_release }}"
-        components: "{{ docker_ce_version }}"
+        components: "{{ docker_version }}"
         signed_by: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
       tags:
         - docker-install
