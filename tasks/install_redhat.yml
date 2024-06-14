@@ -27,7 +27,7 @@
     - ansible_distribution_major_version is version('7', '<=')
   block:
     - name: Remove OS Repository Docker Packages
-      ansible.builtin.yum:
+      ansible.builtin.dnf:
         name: "{{ docker_io_pkgs }}"
         state: absent
       tags:
@@ -49,7 +49,7 @@
         - docker-install
 
     - name: Install Docker Community Edition Packages
-      ansible.builtin.yum:
+      ansible.builtin.dnf:
         name: "{{ docker_ce_pkgs }}"
         update_cache: true
         state: latest
@@ -71,7 +71,7 @@
     - docker-install
   block:
     - name: Remove OS Repository Docker Packages
-      ansible.builtin.yum:
+      ansible.builtin.dnf:
         name: "{{ docker_io_pkgs }}"
         state: absent
       tags:
@@ -93,13 +93,13 @@
         - docker-install
 
     - name: Manually Install containerd.io Package
-      ansible.builtin.yum:
+      ansible.builtin.dnf:
         name: https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.6-3.3.el7.x86_64.rpm
       tags:
         - docker-install
 
     - name: Install Docker Community Edition Packages
-      ansible.builtin.yum:
+      ansible.builtin.dnf:
         name: "{{ docker_ce_pkgs }}"
         update_cache: true
         state: latest
@@ -120,14 +120,14 @@
     - docker-install
   block:
     - name: Remove Docker Community-Edition Packages
-      ansible.builtin.yum:
+      ansible.builtin.dnf:
         name: "{{ docker_ce_pkgs }}"
         state: absent
       tags:
         - docker-install
 
     - name: Install Docker Packages From OS Repository
-      ansible.builtin.yum:
+      ansible.builtin.dnf:
         name: "{{ docker_io_pkgs }}"
         update_cache: true
         state: latest
@@ -189,7 +189,7 @@
         - install-docker-nvidia
 
     - name: Enable EPEL repo
-      ansible.builtin.yum:
+      ansible.builtin.dnf:
         name: "{{ epel_rpm }}"
         state: present
       tags:
@@ -226,7 +226,7 @@
         - install-docker-nvidia
 
     - name: Install video driver for our card
-      ansible.builtin.yum:
+      ansible.builtin.dnf:
         name: "{{ docker_nvidia_driver_packages }}"
         state: present
         update_cache: true
@@ -240,7 +240,7 @@
         - install-docker-nvidia
 
     - name: Install nvidia-docker and container runtime
-      ansible.builtin.yum:
+      ansible.builtin.dnf:
         name: "{{ docker_nvidia_docker_packages }}"
         state: present
         update_cache: true
