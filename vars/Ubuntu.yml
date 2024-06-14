@@ -47,4 +47,6 @@ docker_nvidia_docker_packages:
   - nvidia-container-runtime
 
 docker_py3_pkgs:
+  - docker
+  - docker-compose
 docker_repo_url: https://download.docker.com/linux
