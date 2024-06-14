@@ -9,9 +9,16 @@ docker_dependency_pkgs:
 docker_io_pkgs:
   - docker.io
   - containerd
+  - docker-compose-v2
+  - docker-buildx
+
+docker_ce_pkgs:
+  - docker-ce
+  - containerd.io
+  - docker-ce-cli
   - docker-compose-plugin
   - docker-buildx-plugin
-  - docker-compose-v2
+
 docker_nvidia_driver_dependencies:
   - gcc
   - binutils
@@ -38,16 +45,6 @@ docker_nvidia_docker_packages:
   - nvidia-container-toolkit
   - nvidia-docker2
   - nvidia-container-runtime
-
-docker_ce_pkgs:
-  - docker-ce
-  - containerd.io
-  - docker-ce-cli
-  - docker-compose-plugin
-  - docker-compose-v2
-  - docker-compose
-  - docker-buildx-plugin
-  - docker-buildx
 
 docker_py3_pkgs:
 docker_repo_url: https://download.docker.com/linux
