@@ -6,6 +6,8 @@ docker_dependency_pkgs:
   - python3-docker
   - python3-dockerpycreds
   - python3-dockerpty
+  - python3-debian
+
 docker_io_pkgs:
   - docker.io
   - containerd
