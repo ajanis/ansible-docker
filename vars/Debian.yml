@@ -8,6 +8,7 @@ docker_dependency_pkgs:
   - python3-dockerpty
   - python3-debian
   - build-essential
+  - libffi-dev
 
 docker_io_pkgs:
   - docker.io
