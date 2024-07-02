@@ -10,6 +10,10 @@ docker_install_nvidia: false
 docker_nvidia_gpu_ids: 0
 docker_nvidia_gpu_caps: compute,video,utility
 
+docker_vgpu:
+#  driver_url: http://example.com
+#  license_ur: http://example.com
+
 docker_recreate: false
 
 docker_allowed_ports:
