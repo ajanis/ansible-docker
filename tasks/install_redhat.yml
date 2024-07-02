@@ -260,8 +260,6 @@
       delay: 10
       notify: reload docker
       when:
-        - 'driver_url' is in docker_vgpu
-        - docker_vgpu.driver_url | default(None) is not none
         - docker_vgpu.driver_url | default(None) is string
       tags:
         - install-docker-nvidia
@@ -274,8 +272,6 @@
         validate_certs: false
         mode: '0644'
       when:
-        - 'license_url' is in docker_vgpu
-        - docker_vgpu.license_url | default(None) is not none
         - docker_vgpu.license_url | default(None) is string
       tags:
         - install-docker-nvidia
