@@ -185,7 +185,7 @@
         signed_by: "{{ nvidia_repo_url }}/nvidia-container-runtime/gpgkey"
       tags:
         - install-docker-nvidia
-
+ 
     - name: Install dependencies for building kernel modules and drivers
       ansible.builtin.apt:
         name: "{{ docker_nvidia_driver_dependencies }}"

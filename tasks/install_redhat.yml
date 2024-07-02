@@ -154,6 +154,8 @@
         mode: "0644"
       notify: initramfs requires update
       register: blacklist_nouveau
+      when:
+        - not docker_vgpu | default(False)
       tags:
         - install-docker-nvidia
 
@@ -172,6 +174,7 @@
       delay: 10
       when:
         - dracut_requires_update | default(False)
+        - not docker_vgpu | default(False)
       changed_when: dracut_update_result is defined
       tags:
         - install-docker-nvidia
@@ -185,6 +188,7 @@
         - dracut_requires_update|default(False)
         - dracut_update_result is defined
         - dracut_update_result.rc -eq 0
+        - not docker_vgpu | default(False)
       tags:
         - install-docker-nvidia
 
@@ -222,6 +226,8 @@
       timeout: 60
       delay: 10
       notify: reload docker
+      when:
+        - not docker_vgpu | default(False)
       tags:
         - install-docker-nvidia
 
@@ -236,6 +242,41 @@
       timeout: 60
       delay: 10
       notify: reload docker
+      when:
+        - not docker_vgpu | default(False)
+      tags:
+        - install-docker-nvidia
+
+    - name: Install grid video driver
+      ansible.builtin.dnf:
+        name: "{{ docker_vgpu.driver_url }}"
+        state: present
+        update_cache: true
+        validate_certs: false
+      register: install_nvidia_drivers
+      until: install_nvidia_drivers is not failed
+      retries: 10
+      timeout: 60
+      delay: 10
+      notify: reload docker
+      when:
+        - docker_vgpu | default({}) | attr('driver_url') is defined
+        - docker_vgpu | default({}) | attr('driver_url') is not none
+        - docker_vgpu | default({}) | attr('driver_url') is string
+      tags:
+        - install-docker-nvidia
+
+    - name: Retrieve grid license token
+      ansible.builtin.uri:
+        uri: "{{ docker_vgpu.license_url | trim('/') }}/-/client-token"
+        method: GET
+        dest: "/etc/nvidia/ClientConfigToken/client_configuration_token_{{ '%d-%m-%Y-%H-%M-%S' | strftime }}.tok"
+        validate_certs: false
+        mode: '0644'
+      when:
+        - docker_vgpu | default({}) | attr('license_url') is defined
+        - docker_vgpu | default({}) | attr('license_url') is not none
+        - docker_vgpu | default({}) | attr('license_url') is string
       tags:
         - install-docker-nvidia
 
