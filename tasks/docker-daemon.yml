@@ -156,7 +156,7 @@
             content: "{{ docker_daemon_config | to_nice_json }}"
             dest: /etc/docker/daemon.json
             mode: "0755"
-          notify: reload docker
+          notify: Reload Docker
           tags:
             - docker-install
 
