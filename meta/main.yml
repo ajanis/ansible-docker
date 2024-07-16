@@ -1,3 +1,4 @@
+---
 galaxy_info:
   author: Alan Janis
   description: Deploy Docker containers with Systemd configurations. Optionally, build custom Docker images.

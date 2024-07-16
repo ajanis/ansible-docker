@@ -57,7 +57,7 @@
       retries: 10
       timeout: 300
       delay: 10
-      notify: reload docker
+      notify: Reload Docker
       tags:
         - docker-install
 
@@ -86,7 +86,7 @@
       retries: 10
       timeout: 300
       delay: 10
-      notify: reload docker
+      notify: Reload Docker
       tags:
         - docker-install
 
@@ -103,7 +103,7 @@
         mode: "0644"
         owner: root
         group: root
-      notify: reload docker
+      notify: Reload Docker
       tags:
         - docker-install
 
@@ -113,7 +113,7 @@
         dest: /etc/systemd/system/docker.service.d/override.conf
         mode: "0644"
       register: docker_override
-      notify: reload docker
+      notify: Reload Docker
       tags:
         - docker-install
 
@@ -130,7 +130,7 @@
           blacklist nouveau
           options nouveau modset=0
         mode: "0644"
-      notify: initramfs requires update
+      notify: Update Initramfs
       register: blacklist_nouveau
       tags:
         - install-docker-nvidia
@@ -185,7 +185,7 @@
         signed_by: "{{ nvidia_repo_url }}/nvidia-container-runtime/gpgkey"
       tags:
         - install-docker-nvidia
- 
+
     - name: Install dependencies for building kernel modules and drivers
       ansible.builtin.apt:
         name: "{{ docker_nvidia_driver_dependencies }}"
@@ -197,7 +197,7 @@
       retries: 10
       timeout: 60
       delay: 10
-      notify: reload docker
+      notify: Reload Docker
       when:
         - not (docker_vgpu | default(False))
       tags:
@@ -214,7 +214,7 @@
       retries: 10
       timeout: 60
       delay: 10
-      notify: reload docker
+      notify: Reload Docker
       when:
         - not (docker_vgpu | default(False))
       tags:
@@ -232,7 +232,7 @@
       retries: 10
       timeout: 60
       delay: 10
-      notify: reload docker
+      notify: Reload Docker
       when:
         - docker_vgpu.driver_url | default(None) is string
       tags:
@@ -242,9 +242,9 @@
       ansible.builtin.uri:
         uri: "{{ docker_vgpu.license_url | trim('/') }}/-/client-token"
         method: GET
-        dest: "/etc/nvidia/ClientConfigToken/client_configuration_token_{{ '%d-%m-%Y-%H-%M-%S' | strftime }}.tok"
+        dest: /etc/nvidia/ClientConfigToken/client_configuration_token_{{ '%d-%m-%Y-%H-%M-%S' | strftime }}.tok
         validate_certs: false
-        mode: '0644'
+        mode: "0644"
       when:
         - docker_vgpu.license_url | default(None) is string
       tags:
@@ -261,7 +261,7 @@
       retries: 10
       timeout: 60
       delay: 10
-      notify: reload docker
+      notify: Reload Docker
       tags:
         - install-docker-nvidia
 
@@ -299,7 +299,7 @@
       retries: 10
       timeout: 60
       delay: 10
-      notify: reload docker
+      notify: Reload Docker
       when:
         - docker_nvidia_transcode_patch_dir ~ '/libnvidia-encode-backup' is not file
         - not (docker_vgpu | default(False))
