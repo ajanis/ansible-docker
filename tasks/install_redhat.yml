@@ -1,4 +1,8 @@
 ---
+- name: Wait for locks
+  ansible.builtin.include_tasks:
+    file: wait_for_locks.yml
+
 - name: Disable SELinux, Configure FirewallD ports to ACCEPT [RHEL/CentOS]
   tags:
     - docker-install
@@ -191,6 +195,10 @@
         - not (docker_vgpu | default(False))
       tags:
         - install-docker-nvidia
+
+    - name: Wait for locks
+      ansible.builtin.include_tasks:
+        file: wait_for_locks.yml
 
     - name: Enable EPEL repo
       ansible.builtin.dnf:

@@ -1,4 +1,8 @@
 ---
+- name: Wait for locks
+  ansible.builtin.include_tasks:
+    file: wait_for_locks.yml
+
 - name: Install Docker Community Edition
   tags:
     - docker-install
@@ -42,21 +46,25 @@
         suites: "{{ ansible_distribution_release }}"
         components: "{{ docker_ce_version }}"
         signed_by: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
+      register: docker_repo_added
       tags:
         - docker-install
 
-    - name: Install Docker Community Edition Packages
+    - name: packages-debian | Update APT Repos # noqa no-handler
+      ansible.builtin.apt:
+        update_cache: true
+      register: cache_updated
+      until:
+        - cache_updated is not failed
+      when:
+        - docker_repo_added is changed
+
+    - name: Install Docker Community Edition Packages # noqa package-latest
       ansible.builtin.apt:
         name: "{{ docker_ce_pkgs }}"
-        update_cache: true
         state: latest
-        autoremove: true
-        autoclean: true
       register: docker_pkg_install
       until: docker_pkg_install is not failed
-      retries: 10
-      timeout: 300
-      delay: 10
       notify: Reload Docker
       tags:
         - docker-install
@@ -74,18 +82,19 @@
       tags:
         - docker-install
 
-    - name: Install Docker Packages From OS Repository
+    - name: packages-debian | Update APT Repos # noqa no-handler
+      ansible.builtin.apt:
+        update_cache: true
+      register: cache_updated
+      until:
+        - cache_updated is not failed
+
+    - name: Install Docker Packages From OS Repository # noqa package-latest
       ansible.builtin.apt:
         name: "{{ docker_io_pkgs }}"
-        update_cache: true
         state: latest
-        allow_downgrade: true
-        only_upgrade: true
       register: docker_pkg_install
       until: docker_pkg_install is not failed
-      retries: 10
-      timeout: 300
-      delay: 10
       notify: Reload Docker
       tags:
         - docker-install
@@ -166,6 +175,10 @@
       tags:
         - install-docker-nvidia
 
+    - name: Wait for locks
+      ansible.builtin.include_tasks:
+        file: wait_for_locks.yml
+
     - name: Remove old repo file
       ansible.builtin.file:
         path: /etc/apt/sources.list.d/nvidia-docker.list
@@ -183,19 +196,27 @@
         suites:
           - /
         signed_by: "{{ nvidia_repo_url }}/nvidia-container-runtime/gpgkey"
+      register: nvidia_repo_added
       tags:
         - install-docker-nvidia
+
+    - name: packages-debian | Update APT Repos # noqa no-handler
+      ansible.builtin.apt:
+        update_cache: true
+      register: cache_updated
+      until:
+        - cache_updated is not failed
+      when:
+        - nvidia_repo_added is changed
 
     - name: Install dependencies for building kernel modules and drivers
       ansible.builtin.apt:
         name: "{{ docker_nvidia_driver_dependencies }}"
         state: present
-        autoclean: true
-        update_cache: true
       register: install_nvidia_dependencies
       until: install_nvidia_dependencies is not failed
       retries: 10
-      timeout: 60
+      timeout: 300
       delay: 10
       notify: Reload Docker
       when:
@@ -207,12 +228,10 @@
       ansible.builtin.apt:
         name: "{{ docker_nvidia_driver_packages }}"
         state: present
-        autoclean: true
-        update_cache: true
       register: install_nvidia_drivers
       until: install_nvidia_drivers is not failed
       retries: 10
-      timeout: 60
+      timeout: 300
       delay: 10
       notify: Reload Docker
       when:
@@ -224,13 +243,10 @@
       ansible.builtin.apt:
         deb: "{{ docker_vgpu.driver_url }}"
         state: present
-        autoclean: true
-        update_cache: true
-        validate_certs: false
       register: install_nvidia_drivers
       until: install_nvidia_drivers is not failed
       retries: 10
-      timeout: 60
+      timeout: 300
       delay: 10
       notify: Reload Docker
       when:
@@ -254,12 +270,10 @@
       ansible.builtin.apt:
         name: "{{ docker_nvidia_docker_packages }}"
         state: present
-        autoclean: true
-        update_cache: true
       register: install_nvidia_runtime
       until: install_nvidia_runtime is not failed
       retries: 10
-      timeout: 60
+      timeout: 300
       delay: 10
       notify: Reload Docker
       tags:
@@ -297,7 +311,7 @@
       register: nvidia_transcode_patch_result
       until: nvidia_transcode_patch_result is not failed
       retries: 10
-      timeout: 60
+      timeout: 300
       delay: 10
       notify: Reload Docker
       when:
