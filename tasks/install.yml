@@ -71,6 +71,9 @@
 #       when: docker_override.changed
 #       tags:
 #         - docker-install
+- name: Wait for locks
+  ansible.builtin.include_tasks:
+    file: wait_for_locks.yml
 
 - name: Install Package Dependencies
   ansible.builtin.package:
