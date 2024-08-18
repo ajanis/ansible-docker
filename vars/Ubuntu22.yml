@@ -58,7 +58,7 @@ docker_nvidia_cuda_packages:
   - nvidia-cuda-toolkit
 
 docker_py3_pkgs:
-  - docker
-  - docker-compose
+  - docker==5.0.3
+  - docker-compose==1.29.2
 
 docker_repo_url: https://download.docker.com/linux
