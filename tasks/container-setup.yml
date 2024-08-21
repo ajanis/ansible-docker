@@ -2,17 +2,23 @@
 - name: Create standalone Docker containers
   ansible.builtin.include_tasks:
     file: docker-container-setup.yml
+    apply:
+      tags:
+        - container-setup
   when:
     - docker_containers is defined
     - (docker_containers | length) > 0
   tags:
-    - docker-container
+    - container-setup
 
 - name: Create docker-compose containers
   ansible.builtin.include_tasks:
     file: docker-compose-setup.yml
+    apply:
+      tags:
+        - container-setup
   when:
     - docker_compose_projects is defined
     - (docker_compose_projects | length) > 0
   tags:
-    - docker-compose
+    - container-setup

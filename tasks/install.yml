@@ -2,10 +2,14 @@
 - name: Install Docker [Debian/Ubuntu]
   ansible.builtin.include_tasks:
     file: install_{{ ansible_os_family | lower }}.yml
+    apply:
+      tags:
+        - install
+  tags:
+    - install
+    - install-nvidia
 
 - name: Enable and start or restart docker socket and service
-  tags:
-    - docker-install
   block:
     - name: Start and enable docker service
       ansible.builtin.systemd:
@@ -16,61 +20,7 @@
         daemon_reload: true
       register: docker_container_service
       until: docker_container_service is not failed
-      retries: 10
-      timeout: 300
-      delay: 10
-      tags:
-        - docker-install
-# - name: Start and enable docker socket
-#   ansible.builtin.systemd:
-#     name: docker.socket
-#     state: "{{ 'restarted' if (docker_requires_reload | default(false)) else 'started' }}"
-#     masked: false
-#     enabled: true
-#     daemon_reload: true
-#   register: docker_socket_service
-#   until: docker_socket_service is not failed
-#   retries: 10
-#   timeout: 300
-#   delay: 10
-#   tags:
-#     - docker-install
 
-# - name: Create systemd override for Docker service
-#   when:
-#     - ansible_os_family == "Debian"
-#   tags:
-#     - docker-install
-#   block:
-#     - name: Create systemd Docker service.d directory
-#       ansible.builtin.file:
-#         path: /etc/systemd/system/docker.service.d
-#         state: directory
-#         mode: "0755"
-#         owner: root
-#         group: root
-#       tags:
-#         - docker-install
-
-#     - name: Create systemd Docker override config
-#       ansible.builtin.template:
-#         src: docker-override.conf.j2
-#         dest: /etc/systemd/system/docker.service.d/override.conf
-#         mode: "0755"
-#       register: docker_override
-#       tags:
-#         - docker-install
-
-#     - name: Reload systemd service and restart docker service # noqa no-handler
-#       ansible.builtin.systemd:
-#         name: docker.service
-#         masked: false
-#         state: restarted
-#         enabled: true
-#         daemon_reload: true
-#       when: docker_override.changed
-#       tags:
-#         - docker-install
 - name: Wait for locks
   ansible.builtin.include_tasks:
     file: wait_for_locks.yml
@@ -79,21 +29,15 @@
   ansible.builtin.package:
     name: "{{ docker_dependency_pkgs }}"
     state: present
-  tags:
-    - docker-install
 
 - name: Upgrade python-pip
   ansible.builtin.pip:
     name: pip
     state: present
-  tags:
-    - docker-install
 
 - name: Install Python Packages
   when:
     - ansible_python.version.major == 2
-  tags:
-    - docker-install
   block:
     - name: Install python docker modules
       ansible.builtin.pip:
@@ -102,8 +46,6 @@
         executable: pip2
       when:
         - ansible_python.version.minor <= 6
-      tags:
-        - docker-install
     - name: Uninstall deprecated python 2.7 docker modules
       ansible.builtin.pip:
         name: "{{ docker_py26_pkgs }}"
@@ -111,8 +53,6 @@
         executable: pip2
       when:
         - ansible_python.version.minor >= 7
-      tags:
-        - docker-install
     - name: Install python 2.7 docker modules
       ansible.builtin.pip:
         name: "{{ docker_py27_pkgs }}"
@@ -120,25 +60,19 @@
         executable: pip2
       when:
         - ansible_python.version.minor >= 7
-      tags:
-        - docker-install
 
 - name: Install Python3 Packages
   when:
     - ansible_python.version.major == 3
-  tags:
-    - docker-install
   block:
     - name: Install python3 docker modules
       ansible.builtin.pip:
         name: "{{ docker_py3_pkgs }}"
         state: present
         executable: pip3
-      tags:
-        - docker-install
 
 - name: Include Docker daemon.json common tasks
   ansible.builtin.include_tasks:
     file: docker-daemon.yml
   tags:
-    - docker-install
+    - daemon-config

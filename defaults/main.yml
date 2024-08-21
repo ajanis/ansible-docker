@@ -34,3 +34,123 @@ docker_nvidia_transcode_patch_dir: /opt/nvidia
 #   gid: 2000
 #   size: 70G
 #   mode: 774
+
+docker_compose_project_name:
+docker_compose_services:
+docker_compose_args: |-
+  {%- set ns = namespace(services={}, service={}, ports=[], envs={}, mounts=[], devices=[], root_dir=undefined) -%}
+  {%- for service_name, service in docker_compose_services.items() -%}
+    {%- if service.root_dir | default(False) -%}
+      {%- if service.root_dir | regex_search("^.*/$") is not none -%}
+        {%- set ns.root_dir = service.root_dir -%}
+      {%- else -%}
+        {%- set ns.root_dir = service.root_dir + "/" -%}
+      {%- endif -%}
+    {%- endif -%}
+    {%- set ns.service = {} -%}
+    {%- set ns.ports = [] -%}
+    {%- set ns.envs = {
+      "TZ": timezone
+    } -%}
+    {%- set ns.mounts=[
+      "/etc/localtime:/etc/localtime:ro"
+    ] -%}
+    {%- set ns.service = {
+      "container_name": service_name,
+      "hostname": service_name | regex_replace("[^a-z0-9]+","-"),
+      "restart": "unless-stopped",
+      "image": service.image + ":" + service.version,
+      "logging": {
+        "driver": "journald",
+        "options": {
+          "tag": service_name
+        }
+      }
+    } -%}
+    {%- if service.gpu | default(False) -%}
+      {%- set ns.devices = ns.devices + [
+        "/dev/dri/card0:/dev/dri/card0",
+        "/dev/dri/renderD128:/dev/dri/renderD128"
+      ] -%}
+      {%- set ns.service = ns.service | combine({
+        "deploy": {
+          "resources": {
+            "reservations": {
+              "devices": [{
+                "driver": "nvidia",
+                "count": "all" if (service.gpu.count is undefined and service.gpu.ids is undefined) else count | default("all"),
+                "device_ids": service.gpu.ids | default(omit),
+                "capabilities": ["gpu", "utility", "video", "compute"] if service.gpu is boolean else service.gpu.capabilities | default(["gpu", "utility", "video", "compute"])
+              }]
+            }
+          }
+        }
+      }) -%}
+      {%- set ns.envs = ns.envs | combine({
+        "CUDA_VISIBLE_DEVICES": "all",
+        "CUDA_VISIBLE_CAPABILITIES": "all" if service.gpu is boolean else (service.gpu.capabilities | string)  | default("all"),
+        "NVIDIA_VISIBLE_DEVICES": "all",
+        "NVIDIA_DRIVER_CAPABILITIES": "all" if service.gpu is boolean else (service.gpu.capabilities | string) | default("all")
+      }) -%}
+    {%- endif -%}
+    {%- if service.network_mode | default(None) is not none -%}
+      {%- set ns.service = ns.service | combine({
+        "network_mode": service.network_mode | default(omit)
+      }) -%}
+    {%- endif -%}
+    {%- if service.ports | default(None) is not none -%}
+      {%- for port_name, port in service.ports.items() -%}
+        {%- if port is string and ":" in port -%}
+          {%- set ns.ports = ns.ports + [
+            port
+          ] -%}
+        {%- else -%}
+          {%- set ns.ports = ns.ports + [
+            (port | string) + ':' + (port | string)
+          ] -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {%- set ns.service = ns.service | combine({
+        "ports": ns.ports | default(omit)
+      }) -%}
+    {%- endif -%}
+    {%- if service.environment | default(None) is not none -%}
+      {%- for item in service.environment -%}
+        {%- set ns.envs = ns.envs | combine(item) -%}
+      {%- endfor -%}
+    {%- endif -%}
+    {%- if service.mounts | default(None) is not none -%}
+      {%- for mount in service.mounts -%}
+        {%- set ns.mounts = ns.mounts + [
+          mount if (mount | regex_search("^/.*$") is not none) else (ns.root_dir | default('') + mount)
+        ] -%}
+      {%- endfor -%}
+    {%- endif -%}
+    {%- if service.privileged | default(None) is not none -%}
+      {%- set ns.service = ns.service | combine({
+        "privileged": service.privileged | default(false)
+      }) -%}
+    {%- endif -%}
+    {%- set ns.service = ns.service | combine({
+      "environment": ns.envs,
+      "runtime": service.runtime | default(omit),
+      "volumes": ns.mounts,
+      "devices": ns.devices
+    }) -%}
+    {%- set ns.services = ns.services | combine({service_name: ns.service}) -%}
+  {%- endfor -%}
+  {{ ns.services }}
+
+docker_compose_projects:
+  - project_name: "{{ docker_compose_project_name | default('docker') }}"
+    pull: "{{ docker_recreate | default(False) }}"
+    build: "{{ docker_recreate | default(False) }}"
+    nocache: "{{ docker_recreate | default(False) }}"
+    recreate: "{{ docker_recreate | default(False) }}"
+    definition:
+      version: "3.8"
+
+      x-logging:
+        driver: journald
+
+      services: "{{ docker_compose_args }}"

@@ -1,7 +1,5 @@
 ---
 - name: Collect additional docker configs
-  tags:
-    - docker-install
   block:
     - name: Check for GPU presence
       ansible.builtin.command:
@@ -9,8 +7,6 @@
       register: nvidia_presence
       changed_when: false
       failed_when: false
-      tags:
-        - docker-install
 
     - name: Check for Docker presence
       ansible.builtin.command:
@@ -18,113 +14,83 @@
       register: docker_presence
       changed_when: false
       failed_when: false
-      tags:
-        - docker-install
 
     - name: GPU Configurations
       when:
         - "'GPU' in nvidia_presence.stdout"
-      tags:
-        - docker-install
       block:
         - name: Print GPU info
           ansible.builtin.debug:
             msg: "{{ nvidia_presence.stdout }}"
-          tags:
-            - docker-install
 
         - name: Set 'has_gpu' fact
           ansible.builtin.set_fact:
             has_gpu: true
-          tags:
-            - docker-install
 
     - name: Docker Configurations
       when:
         - "'version' in docker_presence.stdout"
-      tags:
-        - docker-install
 
       block:
         - name: Print Docker info
           ansible.builtin.debug:
             msg: "{{ docker_presence.stdout }}"
-          tags:
-            - docker-install
         - name: Set 'has_docker' fact
           ansible.builtin.set_fact:
             has_docker: true
-          tags:
-            - docker-install
         - name: Check for existing docker daemon config
           ansible.builtin.stat:
             path: /etc/docker/daemon.json
           register: docker_daemon_json
-          tags:
-            - docker-install
         - name: Echo docker config content
           ansible.builtin.debug:
             var: docker_daemon_json
             verbosity: 1
-          tags:
-            - docker-install
         - name: Slurp JSON from file
           ansible.builtin.slurp:
             src: /etc/docker/daemon.json
           register: docker_daemon_configfile
           when:
             - docker_daemon_json.stat.exists
-          tags:
-            - docker-install
         - name: Echo docker config content
           ansible.builtin.debug:
             var: docker_daemon_configfile.content|b64decode
             verbosity: 1
           when:
             - docker_daemon_json.stat.exists
-          tags:
-            - docker-install
 
     - name: Update Docker daemon config
-      tags:
-        - docker-install
       block:
         - name: Set empty array for docker daemon config
           ansible.builtin.set_fact:
             docker_daemon_config: {}
           when:
             - not docker_daemon_json.stat.exists
-          tags:
-            - docker-install
         - name: Set daemon config to existing file content if found
           ansible.builtin.set_fact:
             docker_daemon_config: "{{ docker_daemon_configfile.content | b64decode }}"
           when:
             - docker_daemon_json.stat.exists
-          tags:
-            - docker-install
+
         - name: Echo docker config content
           ansible.builtin.debug:
             var: docker_daemon_config|to_nice_json
             verbosity: 1
           when:
             - docker_daemon_json.stat.exists
-          tags:
-            - docker-install
+
         - name: Add experimental metrics endpoint
           ansible.builtin.set_fact:
             docker_daemon_config: "{{ docker_daemon_config | combine({'experimental': true, 'metrics-addr': '0.0.0.0:9323'}, recursive=true) }}"
           when:
             - has_docker|default(false)
             - "'metrics-addr' not in docker_daemon_config|default({})"
-          tags:
-            - docker-install
+
         - name: Echo docker config content
           ansible.builtin.debug:
             var: docker_daemon_config|to_nice_json
             verbosity: 1
-          tags:
-            - docker-install
+
         - name: Add Nvidia runtime to docker daemon config
           ansible.builtin.set_fact:
             docker_daemon_config: |
@@ -143,27 +109,21 @@
             - has_gpu|default(false)
             - "'nvidia' not in docker_daemon_config.runtimes|default({})"
             - "'default-runtime' not in docker_daemon_configs|default({})"
-          tags:
-            - docker-install
+
         - name: Echo docker config content
           ansible.builtin.debug:
             var: docker_daemon_config|to_nice_json
             verbosity: 1
-          tags:
-            - docker-install
+
         - name: Write modified Docker daemon json
           ansible.builtin.copy:
             content: "{{ docker_daemon_config | to_nice_json }}"
             dest: /etc/docker/daemon.json
             mode: "0755"
           notify: Reload Docker
-          tags:
-            - docker-install
 
         - name: Flush handlers
           ansible.builtin.meta: flush_handlers
-          tags:
-            - docker-install
 
         - name: Register, enable and start or restart docker service
           ansible.builtin.systemd:
@@ -171,5 +131,3 @@
             state: "{{ 'restarted' if (docker_requires_reload | default(false)) else 'started' }}"
             enabled: true
             daemon_reload: true
-          tags:
-            - docker-install
