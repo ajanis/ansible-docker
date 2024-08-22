@@ -8,9 +8,6 @@
   register: docker_compose_service
   loop_control:
     label: "{{ item.key }}"
-  tags:
-    - docker-compose
-    - docker-compose-systemd
 
 - name: Register, enable, and start systemd services for docker-compose containers
   ansible.builtin.systemd:
@@ -21,6 +18,3 @@
   loop: "{{ project_item.definition.services | dict2items }}"
   loop_control:
     label: "{{ item.key }}"
-  tags:
-    - docker-compose
-    - docker-compose-systemd

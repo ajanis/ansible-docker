@@ -4,14 +4,10 @@
     file: wait_for_locks.yml
 
 - name: Disable SELinux, Configure FirewallD ports to ACCEPT [RHEL/CentOS]
-  tags:
-    - docker-install
   block:
     - name: Disable SELinux
       ansible.posix.selinux:
         state: disabled
-      tags:
-        - docker-install
 
     - name: Configure Firewalld allowed ports
       ansible.posix.firewalld:
@@ -20,12 +16,8 @@
         immediate: true
         state: enabled
       loop: "{{ docker_allowed_ports }}"
-      tags:
-        - docker-install
 
 - name: Install Docker Community Edition (RHEL Major >= 8)
-  tags:
-    - docker-install
   when:
     - docker_install_community_edition
     - ansible_distribution_major_version is version('7', '<=')
@@ -34,23 +26,17 @@
       ansible.builtin.dnf:
         name: "{{ docker_io_pkgs }}"
         state: absent
-      tags:
-        - docker-install
 
     - name: Install Docker GPG Key
       ansible.builtin.rpm_key:
         key: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
         state: present
-      tags:
-        - docker-install
 
     - name: Set up Docker Community Edition Repository
       ansible.builtin.yum_repository:
         baseurl: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/$releasever/$basearch/{{ docker_ce_version }}"
         name: docker-ce
         description: Docker Community Edition
-      tags:
-        - docker-install
 
     - name: Install Docker Community Edition Packages
       ansible.builtin.dnf:
@@ -60,47 +46,33 @@
         update_only: true
       register: docker_pkg_install
       until: docker_pkg_install is not failed
-      retries: 10
-      timeout: 60
-      delay: 10
       notify: Reload Docker
-      tags:
-        - docker-install
 
 - name: Install Docker Community Edition (RHEL Major <= 7)
   when:
     - docker_install_community_edition
     - ansible_distribution_major_version is version('8', '>=')
-  tags:
-    - docker-install
+
   block:
     - name: Remove OS Repository Docker Packages
       ansible.builtin.dnf:
         name: "{{ docker_io_pkgs }}"
         state: absent
-      tags:
-        - docker-install
 
     - name: Install Docker GPG Key
       ansible.builtin.rpm_key:
         key: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
         state: present
-      tags:
-        - docker-install
 
     - name: Set up Docker Community Edition Repository
       ansible.builtin.yum_repository:
         baseurl: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/7/$basearch/{{ docker_ce_version }}"
         name: docker-ce
         description: Docker Community Edition
-      tags:
-        - docker-install
 
     - name: Manually Install containerd.io Package
       ansible.builtin.dnf:
         name: https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.6-3.3.el7.x86_64.rpm
-      tags:
-        - docker-install
 
     - name: Install Docker Community Edition Packages
       ansible.builtin.dnf:
@@ -110,25 +82,16 @@
         update_only: true
       register: docker_pkg_install
       until: docker_pkg_install is not failed
-      retries: 10
-      timeout: 60
-      delay: 10
       notify: Reload Docker
-      tags:
-        - docker-install
 
 - name: Install Docker from OS Repository
   when:
     - not docker_install_community_edition
-  tags:
-    - docker-install
   block:
     - name: Remove Docker Community-Edition Packages
       ansible.builtin.dnf:
         name: "{{ docker_ce_pkgs }}"
         state: absent
-      tags:
-        - docker-install
 
     - name: Install Docker Packages From OS Repository
       ansible.builtin.dnf:
@@ -138,16 +101,11 @@
         update_only: true
       register: docker_pkg_install
       until: docker_pkg_install is not failed
-      retries: 10
-      timeout: 60
-      delay: 10
       notify: Reload Docker
-      tags:
-        - docker-install
 
 - name: Install runtime environments, packages, modules and configurations for docker nvidia support
   tags:
-    - install-docker-nvidia
+    - install-nvidia
   block:
     - name: Blacklist nouveau kernel module when cuda cards are present
       ansible.builtin.copy:
@@ -160,28 +118,19 @@
       register: blacklist_nouveau
       when:
         - not (docker_vgpu | default(False))
-      tags:
-        - install-docker-nvidia
 
     - name: Flush handlers
       ansible.builtin.meta: flush_handlers
-      tags:
-        - install-docker-nvidia
 
     - name: Update dracut
       ansible.builtin.command:
         cmd: dracut --force
       register: dracut_update_result
       until: dracut_update_result is not failed
-      retries: 10
-      timeout: 60
-      delay: 10
       when:
         - dracut_requires_update | default(False)
         - not (docker_vgpu | default(False))
       changed_when: dracut_update_result is defined
-      tags:
-        - install-docker-nvidia
 
     - name: Reboot after initramfs update and nouveau module blacklist
       ansible.builtin.reboot:
@@ -193,8 +142,6 @@
         - dracut_update_result is defined
         - dracut_update_result.rc -eq 0
         - not (docker_vgpu | default(False))
-      tags:
-        - install-docker-nvidia
 
     - name: Wait for locks
       ansible.builtin.include_tasks:
@@ -204,8 +151,6 @@
       ansible.builtin.dnf:
         name: "{{ epel_rpm }}"
         state: present
-      tags:
-        - install-docker-nvidia
 
     - name: Install yum repository for drivers
       ansible.builtin.yum_repository:
@@ -213,16 +158,16 @@
         file: cuda-{{ ansible_distribution }}
         baseurl: http://developer.download.nvidia.com/compute/cuda/repos//{{ ansible_distribution }}/{{ ansible_machine }}
         state: present
-      tags:
-        - install-docker-nvidia
 
     - name: Add repositories for nvidia docker drivers, runtime environments, packages
       ansible.builtin.get_url:
         url: https://nvidia.github.io/nvidia-docker/{{ ansible_distribution | lower }}{{ ansible_lsb.release }}/nvidia-docker.list
         dest: /etc/apt/sources.list.d/nvidia-docker.list
         mode: 644
-      tags:
-        - install-docker-nvidia
+
+    - name: Wait for locks
+      ansible.builtin.include_tasks:
+        file: wait_for_locks.yml
 
     - name: Install dependencies for building kernel modules and drivers
       ansible.builtin.package:
@@ -230,14 +175,9 @@
         state: present
       register: install_nvidia_dependencies
       until: install_nvidia_dependencies is not failed
-      retries: 10
-      timeout: 60
-      delay: 10
       notify: Reload Docker
       when:
         - not (docker_vgpu | default(False))
-      tags:
-        - install-docker-nvidia
 
     - name: Install video driver for our card
       ansible.builtin.dnf:
@@ -246,14 +186,9 @@
         update_cache: true
       register: install_nvidia_drivers
       until: install_nvidia_drivers is not failed
-      retries: 10
-      timeout: 60
-      delay: 10
       notify: Reload Docker
       when:
         - not (docker_vgpu | default(False))
-      tags:
-        - install-docker-nvidia
 
     - name: Install grid video driver
       ansible.builtin.dnf:
@@ -263,14 +198,9 @@
         validate_certs: false
       register: install_nvidia_drivers
       until: install_nvidia_drivers is not failed
-      retries: 10
-      timeout: 60
-      delay: 10
       notify: Reload Docker
       when:
         - docker_vgpu.driver_url | default(None) is string
-      tags:
-        - install-docker-nvidia
 
     - name: Retrieve grid license token
       ansible.builtin.uri:
@@ -281,8 +211,10 @@
         mode: "0644"
       when:
         - docker_vgpu.license_url | default(None) is string
-      tags:
-        - install-docker-nvidia
+
+    - name: Wait for locks
+      ansible.builtin.include_tasks:
+        file: wait_for_locks.yml
 
     - name: Install nvidia-docker and container runtime
       ansible.builtin.dnf:
@@ -291,22 +223,14 @@
         update_cache: true
       register: install_nvidia_runtime
       until: install_nvidia_runtime is not failed
-      retries: 10
-      timeout: 60
-      delay: 10
       notify: Reload Docker
-      tags:
-        - install-docker-nvidia
 
 - name: Reboot host if necessary
   tags:
     - always
-    - docker-install
   block:
     - name: Flush handlers
       ansible.builtin.meta: flush_handlers
-      tags:
-        - docker-install
 
     - name: Reboot after docker updates
       ansible.builtin.reboot:
@@ -315,13 +239,3 @@
         msg: Rebooting system via Ansible
       when:
         - docker_requires_reload|default(False)
-      tags:
-        - docker-install
-
-    # - name: Reload systemctl and restart docker service if necessary
-    #   ansible.builtin.systemd:
-    #     daemon_reload: true
-    #     name: docker
-    #     state: "{{ 'restarted' if (docker_requires_reload | default(false)) else 'started' }}"
-    #   tags:
-    #     - docker-install

@@ -3,8 +3,6 @@
   ansible.builtin.package:
     name: git
     state: present
-  tags:
-    - image-build
 
 - name: Check out docker image repo
   ansible.builtin.git:
@@ -18,8 +16,6 @@
   when:
     - docker_build_images is defined
     - docker_build_images != None
-  tags:
-    - image-build
 
 - name: Build Docker Image
   community.docker.docker_image:
@@ -39,5 +35,3 @@
   when:
     - docker_build_images is defined
     - docker_build_images != None
-  tags:
-    - image-build
