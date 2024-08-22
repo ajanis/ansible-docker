@@ -147,6 +147,7 @@
     - name: Remove old repo file
       ansible.builtin.file:
         path: /etc/apt/sources.list.d/nvidia-docker.list
+        state: absent
 
     - name: Add nvidia-docker2 repository and gpg-key
       ansible.builtin.deb822_repository:
