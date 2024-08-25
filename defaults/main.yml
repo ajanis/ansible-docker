@@ -36,7 +36,6 @@ docker_nvidia_transcode_patch_dir: /opt/nvidia
 #   mode: 774
 
 docker_compose_project_name:
-docker_compose_services:
 docker_compose_args: |-
   {%- set ns = namespace(services={}, service={}, ports=[], envs={}, mounts=[], devices=[], root_dir=undefined) -%}
   {%- for service_name, service in docker_compose_services.items() -%}
