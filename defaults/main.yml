@@ -150,7 +150,6 @@ docker_compose_args: |-
     {%- endif -%}
     {%- set ns.service = ns.service | combine({
       "environment": ns.envs,
-      "runtime": service.runtime | default(omit),
       "volumes": ns.mounts,
       "devices": ns.devices
     }) -%}
