@@ -135,7 +135,17 @@ docker_compose_args: |-
     {%- endif -%}
     {%- if service.privileged | default(None) is not none -%}
       {%- set ns.service = ns.service | combine({
-        "privileged": service.privileged | default(false)
+        "privileged": service.privileged | default(omit)
+      }) -%}
+    {%- endif -%}
+    {%- if service.entrypoint | default(None) is not none -%}
+      {%- set ns.service = ns.service | combine({
+        "entrypoint": service.entrypoint | default(omit)
+      }) -%}
+    {%- endif -%}
+    {%- if service.depends_on | default(None) is not none -%}
+      {%- set ns.service = ns.service | combine({
+        "depends_on": service.depends_on | default(omit)
       }) -%}
     {%- endif -%}
     {%- set ns.service = ns.service | combine({
