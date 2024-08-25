@@ -39,7 +39,7 @@ docker_compose_project_name:
 docker_compose_args: |-
   {%- set ns = namespace(services={}, service={}, ports=[], envs={}, mounts=[], devices=[], root_dir=undefined) -%}
   {%- for service_name, service in docker_compose_services.items() -%}
-    {%- if service.root_dir | default(False) -%}
+    {%- if service.root_dir | default(None) is not none -%}
       {%- if service.root_dir | regex_search("^.*/$") is not none -%}
         {%- set ns.root_dir = service.root_dir -%}
       {%- else -%}
