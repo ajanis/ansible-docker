@@ -36,11 +36,10 @@ docker_nvidia_transcode_patch_dir: /opt/nvidia
 #   mode: 774
 
 docker_compose_project_name:
-docker_compose_services:
 docker_compose_args: |-
   {%- set ns = namespace(services={}, service={}, ports=[], envs={}, mounts=[], devices=[], root_dir=undefined) -%}
   {%- for service_name, service in docker_compose_services.items() -%}
-    {%- if service.root_dir | default(False) -%}
+    {%- if service.root_dir | default(None) is not none -%}
       {%- if service.root_dir | regex_search("^.*/$") is not none -%}
         {%- set ns.root_dir = service.root_dir -%}
       {%- else -%}
@@ -72,6 +71,9 @@ docker_compose_args: |-
         "/dev/dri/card0:/dev/dri/card0",
         "/dev/dri/renderD128:/dev/dri/renderD128"
       ] -%}
+      {%- set ns.service = ns.service | combine({
+        "runtime": "nvidia" if (service.runtime is undefined or service.runtime == "nvidia") else service.runtime | default(omit)
+      }) -%}
       {%- set ns.service = ns.service | combine({
         "deploy": {
           "resources": {
@@ -126,14 +128,28 @@ docker_compose_args: |-
         ] -%}
       {%- endfor -%}
     {%- endif -%}
+    {%- if service.network_mode | default(None) is not none -%}
+      {%- set ns.service = ns.service | combine({
+        "network_mode": service.network_mode | default(omit)
+      }) -%}
+    {%- endif -%}
     {%- if service.privileged | default(None) is not none -%}
       {%- set ns.service = ns.service | combine({
-        "privileged": service.privileged | default(false)
+        "privileged": service.privileged | default(omit)
+      }) -%}
+    {%- endif -%}
+    {%- if service.entrypoint | default(None) is not none -%}
+      {%- set ns.service = ns.service | combine({
+        "entrypoint": service.entrypoint | default(omit)
+      }) -%}
+    {%- endif -%}
+    {%- if service.depends_on | default(None) is not none -%}
+      {%- set ns.service = ns.service | combine({
+        "depends_on": service.depends_on | default(omit)
       }) -%}
     {%- endif -%}
     {%- set ns.service = ns.service | combine({
       "environment": ns.envs,
-      "runtime": service.runtime | default(omit),
       "volumes": ns.mounts,
       "devices": ns.devices
     }) -%}
