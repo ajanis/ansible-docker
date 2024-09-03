@@ -39,7 +39,7 @@ docker_compose_project_name:
 docker_compose_args: |-
   {%- set ns = namespace(services={}, service={}, ports=[], envs={}, mounts=[], devices=[], root_dir=undefined) -%}
   {%- for service_name, service in docker_compose_services.items() -%}
-    {%- if service.root_dir | default(None) is not none -%}
+    {%- if service.root_dir | default(False) -%}
       {%- if service.root_dir | regex_search("^.*/$") is not none -%}
         {%- set ns.root_dir = service.root_dir -%}
       {%- else -%}
@@ -116,11 +116,6 @@ docker_compose_args: |-
         "ports": ns.ports | default(omit)
       }) -%}
     {%- endif -%}
-    {%- if service.environment | default(None) is not none -%}
-      {%- for item in service.environment -%}
-        {%- set ns.envs = ns.envs | combine(item) -%}
-      {%- endfor -%}
-    {%- endif -%}
     {%- if service.mounts | default(None) is not none -%}
       {%- for mount in service.mounts -%}
         {%- set ns.mounts = ns.mounts + [
@@ -149,9 +144,9 @@ docker_compose_args: |-
       }) -%}
     {%- endif -%}
     {%- set ns.service = ns.service | combine({
-      "environment": ns.envs,
+      "environment": ns.envs | combine(service.environment | default({})),
       "volumes": ns.mounts,
-      "devices": ns.devices
+      "devices": (ns.devices + (service.devices | default([]))) | unique
     }) -%}
     {%- set ns.services = ns.services | combine({service_name: ns.service}) -%}
   {%- endfor -%}
