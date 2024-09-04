@@ -72,9 +72,7 @@ docker_compose_args: |-
         "/dev/dri/renderD128:/dev/dri/renderD128"
       ] -%}
       {%- set ns.service = ns.service | combine({
-        "runtime": "nvidia" if (service.runtime is undefined or service.runtime == "nvidia") else service.runtime | default(omit)
-      }) -%}
-      {%- set ns.service = ns.service | combine({
+        "runtime": "nvidia",
         "deploy": {
           "resources": {
             "reservations": {
@@ -139,6 +137,11 @@ docker_compose_args: |-
     {%- if service.depends_on | default(None) is not none -%}
       {%- set ns.service = ns.service | combine({
         "depends_on": service.depends_on | default(omit)
+      }) -%}
+    {%- endif -%}
+    {%- if service.runtime is defined and service.runtime is string -%}
+      {%- set ns.service = ns.service | combine({
+        "runtime": service.runtime
       }) -%}
     {%- endif -%}
     {%- set ns.service = ns.service | combine({
