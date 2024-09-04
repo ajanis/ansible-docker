@@ -89,8 +89,6 @@ docker_compose_args: |-
         }
       }) -%}
       {%- set ns.envs = ns.envs | combine({
-        "CUDA_VISIBLE_DEVICES": "all",
-        "CUDA_VISIBLE_CAPABILITIES": "all" if service.gpu is boolean else (service.gpu.capabilities | string)  | default("all"),
         "NVIDIA_VISIBLE_DEVICES": "all",
         "NVIDIA_DRIVER_CAPABILITIES": "all" if service.gpu is boolean else (service.gpu.capabilities | string) | default("all")
       }) -%}
