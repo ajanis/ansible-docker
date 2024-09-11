@@ -1,24 +1,24 @@
 ---
-- name: Create bind-mount directories for standalone Docker containers
-  ansible.builtin.file:
-    state: directory
-    mode: "0774"
-    path: "{{ item.1.split(':')[0] }}"
-    owner: "{{ item.0.env.PUID | default('root') }}"
-    group: "{{ item.0.env.PGID | default('root') }}"
-  loop: "{{ docker_containers | subelements('volumes', skip_missing=True) | default(omit) }}"
-  loop_control:
-    label: "{{ item.1.split(':')[0] }}"
-  when:
-    - item.1.split(':')[0] is defined
-    - item.1.split(':')[0] != None
-    - item.1.split(':')[0] is not search('/var/run/docker.sock') # Ignore docker socket
-    - item.1.split(':')[0] is not match('^.*?\.[^/]+$') # Ignore file bindings
-    - item.1.split(':')[0] is not match('^[^\/]+$') # Ignore docker volumes
-    - item.1.split(':')[0] is not search('/data')
-    - item.1.split(':')[0] is not search('/media')
-    - item.1.split(':')[0] is not search('/etc/localtime')
-    - item.1.split(':')[0] is not search('/dev/rtc')
+# - name: Create bind-mount directories for standalone Docker containers
+#   ansible.builtin.file:
+#     state: directory
+#     mode: "0774"
+#     path: "{{ item.1.split(':')[0] }}"
+#     owner: "{{ item.0.env.PUID | default('root') }}"
+#     group: "{{ item.0.env.PGID | default('root') }}"
+#   loop: "{{ docker_containers | subelements('volumes', skip_missing=True) | default(omit) }}"
+#   loop_control:
+#     label: "{{ item.1.split(':')[0] }}"
+#   when:
+#     - item.1.split(':')[0] is defined
+#     - item.1.split(':')[0] != None
+#     - item.1.split(':')[0] is not search('/var/run/docker.sock') # Ignore docker socket
+#     - item.1.split(':')[0] is not match('^.*?\.[^/]+$') # Ignore file bindings
+#     - item.1.split(':')[0] is not match('^[^\/]+$') # Ignore docker volumes
+#     - item.1.split(':')[0] is not search('/data')
+#     - item.1.split(':')[0] is not search('/media')
+#     - item.1.split(':')[0] is not search('/etc/localtime')
+#     - item.1.split(':')[0] is not search('/dev/rtc')
 
 - name: Create standalone Docker containers
   community.docker.docker_container:
