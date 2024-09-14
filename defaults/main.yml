@@ -60,9 +60,10 @@ docker_compose_args: |-
       "restart": "unless-stopped",
       "image": service.image + ":" + service.version,
       "logging": {
-        "driver": "journald",
+        "driver": "local",
         "options": {
-          "tag": service_name
+          "max-size": "10m",
+          "max-file": "3"
         }
       }
     } -%}
@@ -155,14 +156,13 @@ docker_compose_args: |-
 
 docker_compose_projects:
   - project_name: "{{ docker_compose_project_name | default('docker') }}"
-    pull: "{{ docker_recreate | default(False) }}"
-    build: "{{ docker_recreate | default(False) }}"
-    nocache: "{{ docker_recreate | default(False) }}"
-    recreate: "{{ docker_recreate | default(False) }}"
+    pull: "{{ pull | default(omit) }}"
+    build: "{{ build | default(omit) }}"
+    recreate: "{{ recreate | default(omit) }}"
+    remove_orphans: "{{ remove_orphans | default(true) }}"
     definition:
-      version: "3.8"
 
       x-logging:
-        driver: journald
+        driver: local
 
       services: "{{ docker_compose_args }}"
