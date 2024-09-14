@@ -50,11 +50,8 @@
 #     - item.1.split(':')[0] is not search('/dev/rtc')
 
 - name: Bring up docker-compose projects
-  community.docker.docker_compose:
-    project_name: "{{ item.project_name }}"
-    pull: "{{ item.pull | default('false') }}"
-    state: present
-    definition: "{{ item.definition }}"
+  community.docker.docker_compose_v2:
+  args: "{{ item }}"
   loop: "{{ docker_compose_projects }}"
   loop_control:
     label: "{{ item.project_name }}"
