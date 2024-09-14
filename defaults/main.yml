@@ -156,10 +156,7 @@ docker_compose_args: |-
 
 docker_compose_projects:
   - project_name: "{{ docker_compose_project_name | default('docker') }}"
-    pull: "{{ pull | default(omit) }}"
-    build: "{{ build | default(omit) }}"
-    recreate: "{{ recreate | default(omit) }}"
-    remove_orphans: "{{ remove_orphans | default(true) }}"
+
     definition:
 
       x-logging:

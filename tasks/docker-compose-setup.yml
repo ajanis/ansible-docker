@@ -51,6 +51,11 @@
 
 - name: Bring up docker-compose projects
   community.docker.docker_compose_v2:
+    state: "{{ state | default('present') }}"
+    pull: "{{ pull | default(omit) | ansible.builtin.ternary('always', 'never', 'missing') }}"
+    build: "{{ build | default(omit) | ansible.builtin.ternary('always', 'never', 'policy') }}"
+    recreate: "{{ recreate | default(omit) | ansible.builtin.ternary('always', 'never', 'auto') }}"
+    remove_orphans: "{{ remove_orphans | default(omit) | ansible.builtin.ternary(true, false, false) }}"
   args: "{{ item }}"
   loop: "{{ docker_compose_projects }}"
   loop_control:
