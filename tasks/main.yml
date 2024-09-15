@@ -7,50 +7,55 @@
     - "{{ ansible_os_family }}.yml"
   tags:
     - always
+    - docker
 
 - name: Include installation tasks
   tags:
     - docker
+    - docker-install
   ansible.builtin.include_tasks:
     file: install.yml
     apply:
       tags:
-        - install
+        - docker-install
+# - name: Include image build tasks
+#   tags:
+#     - docker
+#   ansible.builtin.include_tasks:
+#     file: image-build.yml
+#     apply:
+#       tags:
+#         - docker-build
 
-- name: Include image build tasks
-  tags:
-    - docker
-  ansible.builtin.include_tasks:
-    file: image-build.yml
-    apply:
-      tags:
-        - build
-
-- name: Include network setup tasks
-  tags:
-    - docker
-  ansible.builtin.include_tasks:
-    file: network-setup.yml
-    apply:
-      tags:
-        - network
+# - name: Include network setup tasks
+#   tags:
+#     - docker
+#   ansible.builtin.include_tasks:
+#     file: network-setup.yml
+#     apply:
+#       tags:
+#         - docker-network
 
 - name: Include container setup tasks
   tags:
     - docker
+    - docker-container
+    - docker-container-setup
   ansible.builtin.include_tasks:
     file: container-setup.yml
     apply:
       tags:
-        - container-setup
-        - container
+        - docker-container
+        - docker-container-setup
 
 - name: Include systemd service tasks
   tags:
     - docker
+    - docker-container-systemd
+    - docker-container
   ansible.builtin.include_tasks:
     file: container-systemd.yml
     apply:
       tags:
-        - container-systemd
-        - container
+        - docker-container-systemd
+        - docker-container
