@@ -36,6 +36,11 @@ ExecStartPre=/bin/sleep {{ project_item.start_delay | int }}
 ExecStart=/usr/bin/docker start -a {{ item.value.container_name }}
 ExecStop=/usr/bin/docker stop -t 2 {{ item.value.container_name }}
 RestartSec=1min
+StandardError=journal
+StandardOutput=journal
+LogLevelMax=debug
+LogRateLimitIntervalSec=10000
+LogRateLimitBurst=30s
 
 [Install]
 WantedBy=multi-user.target {% if shared_storage and (data_mount_root|length > 0) %}{{ data_mount_root|regex_replace('^\\/', '') }}.mount{% else %}{% endif %}
