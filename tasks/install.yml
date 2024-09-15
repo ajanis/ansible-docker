@@ -2,12 +2,10 @@
 - name: Install Docker [Debian/Ubuntu]
   ansible.builtin.include_tasks:
     file: install_{{ ansible_os_family | lower }}.yml
-    apply:
-      tags:
-        - install
   tags:
-    - install
-    - install-nvidia
+    - docker
+    - docker-install
+    - docker-install-nvidia
 
 - name: Enable and start or restart docker socket and service
   block:

@@ -156,10 +156,7 @@ docker_compose_args: |-
 
 docker_compose_projects:
   - project_name: "{{ docker_compose_project_name | default('docker') }}"
-
     definition:
-
       x-logging:
         driver: local
-
       services: "{{ docker_compose_args }}"

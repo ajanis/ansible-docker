@@ -202,7 +202,7 @@
 
     - name: Retrieve grid license token
       ansible.builtin.uri:
-        uri: "{{ docker_vgpu.license_url | trim('/') }}/-/client-token"
+        url: "{{ docker_vgpu.license_url | trim('/') }}/-/client-token"
         method: GET
         dest: /etc/nvidia/ClientConfigToken/client_configuration_token_{{ '%d-%m-%Y-%H-%M-%S' | strftime }}.tok
         validate_certs: false
