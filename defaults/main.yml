@@ -135,6 +135,11 @@ docker_compose_args: |-
         "entrypoint": service.entrypoint | default(omit)
       }) -%}
     {%- endif -%}
+    {%- if service.command | default(None) is not none -%}
+      {%- set ns.service = ns.service | combine({
+        "command": service.command | default(omit)
+      }) -%}
+    {%- endif -%}
     {%- if service.depends_on | default(None) is not none -%}
       {%- set ns.service = ns.service | combine({
         "depends_on": service.depends_on | default(omit)
