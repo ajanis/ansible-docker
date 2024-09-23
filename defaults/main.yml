@@ -145,6 +145,11 @@ docker_compose_args: |-
         "depends_on": service.depends_on | default(omit)
       }) -%}
     {%- endif -%}
+    {%- if service.healthcheck | default(None) is not none -%}
+      {%- set ns.service = ns.service | combine({
+        "healthcheck": service.healthcheck | default(omit)
+      }) -%}
+    {%- endif -%}
     {%- if service.runtime is defined and service.runtime is string -%}
       {%- set ns.service = ns.service | combine({
         "runtime": service.runtime
