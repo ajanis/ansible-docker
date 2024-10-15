@@ -253,6 +253,19 @@
         - docker_nvidia_transcode_patch_dir ~ '/libnvidia-encode-backup' is not file
         - not (docker_vgpu | default(False))
 
+- name: Install Python3 Packages
+  tags:
+    - always
+  when:
+    - ansible_python.version.major == 3
+  block:
+    - name: Remove pyyaml, jsonschema debian package
+      ansible.builtin.apt:
+        name: 
+          - python3-yaml
+          - python3-jsonschema
+        state: absent
+
 - name: Reboot host if necessary
   tags:
     - always
