@@ -32,6 +32,7 @@
   ansible.builtin.pip:
     name: pip
     state: present
+    break_system_packages; true
 
 - name: Install Python Packages
   when:
@@ -42,6 +43,7 @@
         name: "{{ docker_py26_pkgs }}"
         state: present
         executable: pip2
+        break_system_packages; true
       when:
         - ansible_python.version.minor <= 6
     - name: Uninstall deprecated python 2.7 docker modules
@@ -49,6 +51,7 @@
         name: "{{ docker_py26_pkgs }}"
         state: absent
         executable: pip2
+        break_system_packages; true
       when:
         - ansible_python.version.minor >= 7
     - name: Install python 2.7 docker modules
@@ -56,6 +59,7 @@
         name: "{{ docker_py27_pkgs }}"
         state: present
         executable: pip2
+        break_system_packages; true
       when:
         - ansible_python.version.minor >= 7
 
@@ -68,6 +72,7 @@
         name: "{{ docker_py3_pkgs }}"
         state: present
         executable: pip3
+        break_system_packages; true
 
 - name: Include Docker daemon.json common tasks
   ansible.builtin.include_tasks:
