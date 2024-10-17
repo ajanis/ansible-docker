@@ -1,3 +1,4 @@
+---
 name: PR Label - Checker
 on:
   pull_request:
