@@ -155,6 +155,11 @@ docker_compose_args: |-
         "runtime": service.runtime
       }) -%}
     {%- endif -%}
+    {%- if service.sysctls | default(None) is not none -%}
+      {%- set ns.service = ns.service | combine({
+        "sysctls": service.sysctls | default(omit)
+      }) -%}
+    {%- endif -%}
     {%- set ns.service = ns.service | combine({
       "environment": ns.envs | combine(service.environment | default({})),
       "volumes": ns.mounts,
