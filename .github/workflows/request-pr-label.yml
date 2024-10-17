@@ -1,4 +1,5 @@
-name: 'PR Open: Request Label'
+---
+name: "PR Open: Request Label"
 on:
   pull_request:
     branches:
@@ -16,7 +17,5 @@ jobs:
     steps:
       - uses: mshick/add-pr-comment@v1
         with:
-          message:
-            Please set a versioning label of either `major`, `minor`, or `patch`
-            to the pull request.
+          message: Please set a versioning label of either `major`, `minor`, or `patch` to the pull request.
           repo-token: ${{ secrets.GH_TOKEN }}
