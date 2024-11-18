@@ -20,7 +20,7 @@
         uris: "{{ docker_vgpu.repo_url }}"
         suites: "{{ docker_vgpu.repo_suites }}"
         components: "{{ docker_vgpu.repo_components }}"
-        signed_by: "{{ docker_vgpu.pgp_license_url }}"
+        signed_by: "{{ docker_vgpu.pgp_url }}"
         by_hash: true
         allow_weak: true
       register: deb_repo_added
@@ -40,7 +40,11 @@
 
     - name: Install grid video driver
       ansible.builtin.apt:
-        deb: "{{ docker_vgpu.driver }}"
+        autoclean: true
+        autoremove: true
+        name:
+          - "{{ docker_vgpu.driver }}"
+        update_cache: false
         state: present
       register: install_nvidia_drivers
       until: install_nvidia_drivers is not failed
