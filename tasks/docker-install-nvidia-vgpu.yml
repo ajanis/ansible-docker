@@ -11,17 +11,6 @@
         - /etc/apt/sources.list.d/nvidia-docker.list
         - /etc/apt/sources.list.d/nvidia-docker.sources
 
-    - name: Retrieve grid license token
-      ansible.builtin.uri:
-        url: "{{ docker_vgpu.license_url | trim('/') }}/-/client-token"
-        method: GET
-        dest: /etc/nvidia/ClientConfigToken/client_configuration_token_{{ '%d-%m-%Y-%H-%M-%S' | strftime }}.tok
-        validate_certs: false
-        mode: "0644"
-      when:
-        - docker_vgpu.enabled | default(false)
-        - docker_vgpu.license_url | default(none) is string
-
     - name: Install Nvidia Grid repository
       ansible.builtin.deb822_repository:
         name: "{{ docker_vgpu.repo_name }}"
@@ -56,3 +45,14 @@
       register: install_nvidia_drivers
       until: install_nvidia_drivers is not failed
       notify: Reload Docker
+
+    - name: Retrieve grid license token
+      ansible.builtin.uri:
+        url: "{{ docker_vgpu.license_url | trim('/') }}/-/client-token"
+        method: GET
+        dest: /etc/nvidia/ClientConfigToken/client_configuration_token_{{ '%d-%m-%Y-%H-%M-%S' | strftime }}.tok
+        validate_certs: false
+        mode: "0644"
+      when:
+        - docker_vgpu.enabled | default(false)
+        - docker_vgpu.license_url | default(none) is string
