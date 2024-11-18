@@ -9,10 +9,18 @@ docker_nvidia_version: stable
 docker_install_nvidia: false
 docker_nvidia_gpu_ids: 0
 docker_nvidia_gpu_caps: compute,video,utility
+docker_nvidia_vgpu_enabled: false
 
+# Variables for Nvidia Grid / vGPU
 docker_vgpu:
-#  driver_url: http://example.com
-#  license_ur: http://example.com
+  enabled: "{{ docker_nvidia_vgpu_enabled | default(false) }}"
+  repo_name: "{{ docker_nvidia_vgpu_repo_name | default('example') }}"
+  repo_url: "{{ docker_nvidia_vgpu_repo_url | default('https://example.com/ubuntu') }}"
+  pgp_url: "{{ docker_nvidia_vgpu_pgp_url | default('https://example.com/ubuntu/example.pgp') }}"
+  repo_suites: "{{ docker_nvidia_vgpu_repo_suites | default('jammy') }}"
+  repo_components: "{{ docker_nvidia_vgpu_repo_components | default('main') }}"
+  driver: "{{ docker_nvidia_vgpu_repo_driver | default('nvidia-linux-grid-550') }}"
+  license_url: "{{ docker_nvidia_vgpu_repo_licence_url | default('https://vgpu-license.example.com') }}"
 
 docker_recreate: false
 
@@ -173,5 +181,5 @@ docker_compose_projects:
   - project_name: "{{ docker_compose_project_name | default('docker') }}"
     definition:
       x-logging:
-        driver: local
+        driver: journald
       services: "{{ docker_compose_args }}"

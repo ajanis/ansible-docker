@@ -2,8 +2,9 @@
 - name: Install Docker [Debian/Ubuntu]
   ansible.builtin.include_tasks:
     file: install_{{ ansible_os_family | lower }}.yml
+    apply:
+      tags: docker-install
   tags:
-    - docker
     - docker-install
     - docker-install-nvidia
 
@@ -73,4 +74,4 @@
   ansible.builtin.include_tasks:
     file: docker-daemon.yml
   tags:
-    - daemon-config
+    - docker-daemon-config
