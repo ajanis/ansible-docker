@@ -7,17 +7,17 @@
     - "{{ ansible_os_family }}.yml"
   tags:
     - always
-    - docker
 
 - name: Include installation tasks
   tags:
-    - docker
     - docker-install
+    - docker-install-nvidia
   ansible.builtin.include_tasks:
     file: install.yml
     apply:
       tags:
         - docker-install
+
 # - name: Include image build tasks
 #   tags:
 #     - docker
@@ -38,7 +38,6 @@
 
 - name: Include container setup tasks
   tags:
-    - docker
     - docker-container
     - docker-container-setup
   ansible.builtin.include_tasks:
@@ -50,7 +49,6 @@
 
 - name: Include systemd service tasks
   tags:
-    - docker
     - docker-container-systemd
     - docker-container
   ansible.builtin.include_tasks:

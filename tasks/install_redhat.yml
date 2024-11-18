@@ -105,7 +105,7 @@
 
 - name: Install runtime environments, packages, modules and configurations for docker nvidia support
   tags:
-    - install-nvidia
+    - docker-install-nvidia
   block:
     - name: Blacklist nouveau kernel module when cuda cards are present
       ansible.builtin.copy:
