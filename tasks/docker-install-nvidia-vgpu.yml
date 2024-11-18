@@ -1,0 +1,58 @@
+---
+- name: Add Nvidia Grid Driver repository and packages
+  tags:
+    - docker-nvidia
+  block:
+    - name: Remove old repo files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/apt/sources.list.d/nvidia-docker.list
+        - /etc/apt/sources.list.d/nvidia-docker.sources
+
+    - name: Retrieve grid license token
+      ansible.builtin.uri:
+        url: "{{ docker_vgpu.license_url | trim('/') }}/-/client-token"
+        method: GET
+        dest: /etc/nvidia/ClientConfigToken/client_configuration_token_{{ '%d-%m-%Y-%H-%M-%S' | strftime }}.tok
+        validate_certs: false
+        mode: "0644"
+      when:
+        - docker_vgpu.enabled | default(false)
+        - docker_vgpu.license_url | default(none) is string
+
+    - name: Install Nvidia Grid repository
+      ansible.builtin.deb822_repository:
+        name: "{{ docker_vgpu.repo_name }}"
+        types: deb
+        enabled: true
+        state: present
+        uris: "{{ docker_vgpu.repo_url }}"
+        suites: "{{ docker_vgpu.repo_suites }}"
+        components: "{{ docker_vgpu.repo_components }}"
+        signed_by: "{{ docker_vgpu.pgp_license_url }}"
+        by_hash: true
+        allow_weak: true
+      register: deb_repo_added
+      until:
+        - deb_repo_added is success
+
+    - name: Update APT Repos
+      ansible.builtin.apt:
+        update_cache: true
+      register: cache_updated
+      until:
+        - cache_updated is success
+
+    - name: apt-repo-pkgs | Wait for locks
+      ansible.builtin.include_tasks:
+        file: wait_for_locks.yml
+
+    - name: Install grid video driver
+      ansible.builtin.apt:
+        deb: "{{ docker_vgpu.driver }}"
+        state: present
+      register: install_nvidia_drivers
+      until: install_nvidia_drivers is not failed
+      notify: Reload Docker
