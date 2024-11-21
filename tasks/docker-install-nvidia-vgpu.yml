@@ -1,7 +1,7 @@
 ---
 - name: Add Nvidia Grid Driver repository and packages
   tags:
-    - docker-nvidia
+    - docker-install-nvidia
   block:
     - name: Remove old repo files
       ansible.builtin.file:
@@ -10,7 +10,13 @@
       loop:
         - /etc/apt/sources.list.d/nvidia-docker.list
         - /etc/apt/sources.list.d/nvidia-docker.sources
+        - /etc/yum/repos.d/nvidia-docker.repo
 
+- name: Add Nvidia Grid Driver repository
+  when: ansible_os_family == "Debian"
+  tags:
+    - docker-install-nvidia
+  block:
     - name: Install Nvidia Grid repository
       ansible.builtin.deb822_repository:
         name: "{{ docker_vgpu.repo_name }}"
@@ -34,17 +40,37 @@
       until:
         - cache_updated is success
 
-    - name: apt-repo-pkgs | Wait for locks
+- name: Add Nvidia Grid Driver repository
+  when: ansible_os_family == "RedHat"
+  tags:
+    - docker-install-nvidia
+  block:
+    - name: Install Nvidia Grid Repository
+      ansible.builtin.yum_repository:
+        name: "{{ docker_vgpu.repo_name }}"
+        baseurl:
+          - "{{ docker_vgpu.repo_url }}/$releasever/BaseOS/$basearch/os"
+        state: present
+        description: Local Nvidia Grid Repository
+        enabled: true
+        gpgkey:
+          - "{{ docker_vgpu.pgp_url }}"
+      register: yum_repo_added
+      until:
+        - yum_repo_added is success
+
+- name: Add Nvidia Grid Driver package and license
+  tags:
+    - docker-install-nvidia
+  block:
+    - name: Wait for locks
       ansible.builtin.include_tasks:
         file: wait_for_locks.yml
 
     - name: Install grid video driver
-      ansible.builtin.apt:
-        autoclean: true
-        autoremove: true
+      ansible.builtin.package:
         name:
           - "{{ docker_vgpu.driver }}"
-        update_cache: false
         state: present
       register: install_nvidia_drivers
       until: install_nvidia_drivers is not failed

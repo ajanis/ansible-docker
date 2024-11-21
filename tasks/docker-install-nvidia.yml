@@ -1,5 +1,6 @@
 ---
 - name: Add nvidia driver repo and packages
+  when: ansible_os_family == "Debian"
   tags:
     - docker-install-nvidia
   block:
@@ -8,7 +9,7 @@
         path: /etc/apt/sources.list.d/nvidia-docker.list
         state: absent
 
-    - name: Add nvidia-docker2 repository and gpg-key
+    - name: Add repository for nvidia container toolkit and runtime
       ansible.builtin.deb822_repository:
         name: nvidia-docker
         types: deb
@@ -31,12 +32,124 @@
       until:
         - cache_updated is success
 
-    - name: apt-repo-pkgs | Wait for locks
+# - name: Wait for locks
+#   ansible.builtin.include_tasks:
+#     file: wait_for_locks.yml
+
+# - name: Install dependencies for building kernel modules and drivers
+#   ansible.builtin.apt:
+#     name: "{{ docker_nvidia_driver_dependencies }}"
+#     state: present
+#   register: install_nvidia_dependencies
+#   until: install_nvidia_dependencies is not failed
+#   notify: Reload Docker
+
+# - name: Install video driver for our card
+#   ansible.builtin.apt:
+#     name: "{{ docker_nvidia_driver_packages }}"
+#     state: present
+#   register: install_nvidia_drivers
+#   until: install_nvidia_drivers is not failed
+#   notify: Reload Docker
+
+# - name: Install nvidia-docker2 and container runtime packages
+#   ansible.builtin.apt:
+#     name: "{{ docker_nvidia_docker_packages }}"
+#     state: present
+#   register: install_nvidia_runtime
+#   until: install_nvidia_runtime is not failed
+#   notify: Reload Docker
+
+# - name: Create nvidia patch directory
+#   ansible.builtin.file:
+#     path: "{{ docker_nvidia_transcode_patch_dir }}"
+#     state: directory
+#     mode: "0755"
+#     owner: root
+#     group: root
+
+# - name: Download patch to allow more than 2 hardware transcodes
+#   ansible.builtin.git:
+#     repo: "{{ docker_nvidia_transcode_patch }}"
+#     dest: "{{ docker_nvidia_transcode_patch_dir }}/nvidia-patch"
+#     clone: true
+#     update: true
+#     version: master
+
+# - name: Patch nvidia drivers if needed
+#   ansible.builtin.command:
+#     cmd: ./patch.sh
+#     chdir: "{{ docker_nvidia_transcode_patch_dir }}/nvidia-patch"
+#     creates: "{{ docker_nvidia_transcode_patch_dir }}/libnvidia-encode-backup"
+#   register: nvidia_transcode_patch_result
+#   until: nvidia_transcode_patch_result is not failed
+#   notify: Reload Docker
+#   when:
+#     - docker_nvidia_transcode_patch_dir ~ '/libnvidia-encode-backup' is not file
+
+- name: Add nvidia driver repo and packages
+  when: ansible_os_family == "RedHat"
+  tags:
+    - docker-install-nvidia
+  block:
+    - name: Wait for locks
+      ansible.builtin.include_tasks:
+        file: wait_for_locks.yml
+
+    - name: Enable EPEL repo
+      ansible.builtin.dnf:
+        name: "{{ epel_rpm }}"
+        state: present
+        update_cache: true
+
+    - name: Install yum repository for drivers
+      ansible.builtin.yum_repository:
+        name: cuda-{{ ansible_distribution }}
+        baseurl: http://developer.download.nvidia.com/compute/cuda/repos/{{ ansible_distribution }}/{{ ansible_machine }}
+        state: present
+
+    - name: Add yum repositories for nvidia container toolkit and runtime
+      ansible.builtin.yum_repository:
+        name: docker-nvidia
+        baseurl: "{{ nvidia_repo_url }}/libnvidia-container/{{ docker_nvidia_version }}/rpm/$basearch"
+        state: present
+
+# ansible.builtin.get_url:
+#   url: https://nvidia.github.io/nvidia-docker/{{ ansible_distribution | lower }}{{ ansible_lsb.release }}/nvidia-docker.list
+#   dest: /etc/apt/sources.list.d/nvidia-docker.list
+#   mode: 644
+
+# - name: Wait for locks
+#   ansible.builtin.include_tasks:
+#     file: wait_for_locks.yml
+
+# - name: Install dependencies for building kernel modules and drivers
+#   ansible.builtin.dnf:
+#     name: "{{ docker_nvidia_driver_dependencies }}"
+#     state: present
+#     update_cache: true
+#   register: install_nvidia_dependencies
+#   until: install_nvidia_dependencies is not failed
+#   notify: Reload Docker
+
+# - name: Install video driver for our card
+#   ansible.builtin.dnf:
+#     name: "{{ docker_nvidia_driver_packages }}"
+#     state: present
+#   register: install_nvidia_drivers
+#   until: install_nvidia_drivers is not failed
+#   notify: Reload Docker
+
+- name: Install Nvidia Docker and Container Runtime packages
+  tags:
+    - docker-install-nvidia
+  block:
+    - name: Wait for locks
       ansible.builtin.include_tasks:
         file: wait_for_locks.yml
 
     - name: Install dependencies for building kernel modules and drivers
-      ansible.builtin.apt:
+      ansible.builtin.package:
         name: "{{ docker_nvidia_driver_dependencies }}"
         state: present
       register: install_nvidia_dependencies
@@ -44,21 +157,25 @@
       notify: Reload Docker
 
     - name: Install video driver for our card
-      ansible.builtin.apt:
+      ansible.builtin.package:
         name: "{{ docker_nvidia_driver_packages }}"
         state: present
       register: install_nvidia_drivers
       until: install_nvidia_drivers is not failed
       notify: Reload Docker
 
-    - name: Install nvidia-docker2 and container runtime packages
-      ansible.builtin.apt:
+    - name: Install nvidia docker and container runtime packages
+      ansible.builtin.package:
         name: "{{ docker_nvidia_docker_packages }}"
         state: present
       register: install_nvidia_runtime
       until: install_nvidia_runtime is not failed
       notify: Reload Docker
 
+- name: Patch nvidia drivers to allow more than 2 transcodes
+  tags:
+    - docker-install-nvidia
+  block:
     - name: Create nvidia patch directory
       ansible.builtin.file:
         path: "{{ docker_nvidia_transcode_patch_dir }}"
