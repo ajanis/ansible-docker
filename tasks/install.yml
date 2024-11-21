@@ -73,5 +73,8 @@
 - name: Include Docker daemon.json common tasks
   ansible.builtin.include_tasks:
     file: docker-daemon.yml
+    apply:
+      tags:
+        - docker-daemon-config
   tags:
     - docker-daemon-config
