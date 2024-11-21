@@ -12,6 +12,7 @@
   tags:
     - docker-install
     - docker-install-nvidia
+    - docker-daemon-config
   ansible.builtin.include_tasks:
     file: install.yml
     apply:
