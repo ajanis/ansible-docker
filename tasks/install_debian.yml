@@ -152,9 +152,9 @@
 
 - name: Add nvidia driver repo and packages
   ansible.builtin.include_tasks:
+    file: docker-install-nvidia.yml
     apply:
       tags: docker-install-nvidia
-    file: docker-install-nvidia.yml
   when:
     - docker_install_nvidia | default(False)
     - not docker_vgpu.enabled | default(False)
