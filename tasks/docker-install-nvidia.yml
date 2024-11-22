@@ -1,14 +1,21 @@
 ---
+- name: Remove existing Nvidia repositories
+  tags:
+    - docker-install-nvidia
+  block:
+    - name: Remove old repo files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/apt/sources.list.d/prettybaked.sources
+        - /etc/yum/repos.d/prettybaked.repo
+
 - name: Add nvidia driver repo and packages
   when: ansible_os_family == "Debian"
   tags:
     - docker-install-nvidia
   block:
-    - name: Remove old repo file
-      ansible.builtin.file:
-        path: /etc/apt/sources.list.d/nvidia-docker.list
-        state: absent
-
     - name: Add repository for nvidia container toolkit and runtime
       ansible.builtin.deb822_repository:
         name: nvidia-docker
@@ -55,7 +62,7 @@
 
     - name: Add yum repositories for nvidia container toolkit and runtime
       ansible.builtin.yum_repository:
-        name: docker-nvidia
+        name: nvidia-docker
         baseurl: "{{ nvidia_repo_url }}/libnvidia-container/{{ docker_nvidia_version }}/rpm/$basearch"
         state: present
 

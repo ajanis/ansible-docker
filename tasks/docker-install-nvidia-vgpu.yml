@@ -1,5 +1,5 @@
 ---
-- name: Add Nvidia Grid Driver repository and packages
+- name: Remove existing Nvidia repositories
   tags:
     - docker-install-nvidia
   block:
