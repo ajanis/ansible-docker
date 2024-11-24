@@ -2,10 +2,31 @@
 - name: Install Docker [Debian/Ubuntu]
   ansible.builtin.include_tasks:
     file: install_{{ ansible_os_family | lower }}.yml
+
+- name: Set up Nvidia
+  ansible.builtin.include_tasks:
+    file: docker-nvidia-setup.yml
+    apply:
+      tags: docker-install-nvidia
+  when:
+    - docker_install_nvidia | default(False)
   tags:
-    - docker
-    - docker-install
     - docker-install-nvidia
+
+- name: Reboot host if necessary
+  tags:
+    - always
+  block:
+    - name: Flush handlers
+      ansible.builtin.meta: flush_handlers
+
+    - name: Reboot after docker updates
+      ansible.builtin.reboot:
+        connect_timeout: 10
+        reboot_timeout: 600
+        msg: Rebooting system via Ansible
+      when:
+        - docker_requires_reload|default(False)
 
 - name: Enable and start or restart docker socket and service
   block:
@@ -72,5 +93,8 @@
 - name: Include Docker daemon.json common tasks
   ansible.builtin.include_tasks:
     file: docker-daemon.yml
+    apply:
+      tags:
+        - docker-daemon-config
   tags:
-    - daemon-config
+    - docker-daemon-config

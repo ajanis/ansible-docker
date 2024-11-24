@@ -9,10 +9,17 @@ docker_nvidia_version: stable
 docker_install_nvidia: false
 docker_nvidia_gpu_ids: 0
 docker_nvidia_gpu_caps: compute,video,utility
+docker_nvidia_vgpu_enabled: false
 
 docker_vgpu:
-#  driver_url: http://example.com
-#  license_ur: http://example.com
+  enabled: "{{ docker_nvidia_vgpu_enabled }}"
+  repo_name: example
+  repo_url: https://example.com/ubuntu
+  pgp_licence_url: https://example.com/ubuntu/example.pgp
+  repo_suites: jammy
+  repo_components: main
+  driver: nvidia-linux-grid-550
+  license_url: https://vgpu-license.example.com
 
 docker_recreate: false
 
@@ -60,10 +67,9 @@ docker_compose_args: |-
       "restart": "unless-stopped",
       "image": service.image + ":" + service.version,
       "logging": {
-        "driver": "local",
+        "driver": "journald",
         "options": {
-          "max-size": "10m",
-          "max-file": "3"
+          "tag": "docker-" + service_name | regex_replace("[^a-z0-9]+","-"),
         }
       }
     } -%}
@@ -120,11 +126,6 @@ docker_compose_args: |-
         ] -%}
       {%- endfor -%}
     {%- endif -%}
-    {%- if service.network_mode | default(None) is not none -%}
-      {%- set ns.service = ns.service | combine({
-        "network_mode": service.network_mode | default(omit)
-      }) -%}
-    {%- endif -%}
     {%- if service.privileged | default(None) is not none -%}
       {%- set ns.service = ns.service | combine({
         "privileged": service.privileged | default(omit)
@@ -172,6 +173,4 @@ docker_compose_args: |-
 docker_compose_projects:
   - project_name: "{{ docker_compose_project_name | default('docker') }}"
     definition:
-      x-logging:
-        driver: local
       services: "{{ docker_compose_args }}"

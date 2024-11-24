@@ -1,0 +1,88 @@
+---
+- name: Remove existing Nvidia repositories
+  tags:
+    - docker-install-nvidia
+  block:
+    - name: Remove old repo files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/apt/sources.list.d/nvidia-docker.list
+        - /etc/apt/sources.list.d/nvidia-docker.sources
+        - /etc/yum/repos.d/nvidia-docker.repo
+
+- name: Add Nvidia Grid Driver repository
+  when: ansible_os_family == "Debian"
+  tags:
+    - docker-install-nvidia
+  block:
+    - name: Install Nvidia Grid repository
+      ansible.builtin.deb822_repository:
+        name: "{{ docker_vgpu.repo_name }}"
+        types: deb
+        enabled: true
+        state: present
+        uris: "{{ docker_vgpu.repo_url }}"
+        suites: "{{ docker_vgpu.repo_suites }}"
+        components: "{{ docker_vgpu.repo_components }}"
+        signed_by: "{{ docker_vgpu.pgp_url }}"
+        by_hash: true
+        allow_weak: true
+      register: deb_repo_added
+      until:
+        - deb_repo_added is success
+
+    - name: Update APT Repos
+      ansible.builtin.apt:
+        update_cache: true
+      register: cache_updated
+      until:
+        - cache_updated is success
+
+- name: Add Nvidia Grid Driver repository
+  when: ansible_os_family == "RedHat"
+  tags:
+    - docker-install-nvidia
+  block:
+    - name: Install Nvidia Grid Repository
+      ansible.builtin.yum_repository:
+        name: "{{ docker_vgpu.repo_name }}"
+        baseurl:
+          - "{{ docker_vgpu.repo_url }}/$releasever/BaseOS/$basearch/os"
+        state: present
+        description: Local Nvidia Grid Repository
+        enabled: true
+        gpgkey:
+          - "{{ docker_vgpu.pgp_url }}"
+      register: yum_repo_added
+      until:
+        - yum_repo_added is success
+
+- name: Add Nvidia Grid Driver package and license
+  tags:
+    - docker-install-nvidia
+  block:
+    - name: Wait for locks
+      ansible.builtin.include_tasks:
+        file: wait_for_locks.yml
+
+    - name: Install grid video driver
+      ansible.builtin.package:
+        name:
+          - "{{ docker_vgpu.driver }}"
+        state: present
+      register: install_nvidia_drivers
+      until: install_nvidia_drivers is not failed
+      notify: Reload Docker
+
+    - name: Retrieve grid license token
+      ansible.builtin.uri:
+        url: "{{ docker_vgpu.license_url | trim('/') }}/-/client-token"
+        method: GET
+        dest: /etc/nvidia/ClientConfigToken/client_configuration_token_{{ '%d-%m-%Y-%H-%M-%S' | strftime }}.tok
+        validate_certs: false
+        mode: "0644"
+      when:
+        - docker_vgpu.enabled | default(false)
+        - docker_vgpu.license_url | default(none) is string

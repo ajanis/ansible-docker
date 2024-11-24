@@ -1,14 +1,52 @@
 ---
-- name: Update Initramfs
-  ansible.builtin.set_fact:
-    initramfs_requires_update: true
-  when: blacklist_nouveau is changed
+# - name: Update Initramfs
+#   ansible.builtin.set_fact:
+#     initramfs_requires_update: true
+#   when: blacklist_nouveau is changed
 
-- name: Update Dracut
-  ansible.builtin.set_fact:
-    dracut_requires_update: true
-  when: blacklist_nouveau is changed
+# - name: Update Dracut
+#   ansible.builtin.set_fact:
+#     dracut_requires_update: true
+#   when: blacklist_nouveau is changed
 
 - name: Reload Docker
   ansible.builtin.set_fact:
     docker_requires_reload: true
+
+- name: Update dracut
+  ansible.builtin.command:
+    cmd: dracut --force
+  register: dracut_update_result
+  until: dracut_update_result is not failed
+  changed_when: dracut_update_result is changed
+  listen: Update Initrd
+  when:
+    - ansible_os_family == "RedHat"
+
+- name: Update initramfs
+  ansible.builtin.command:
+    cmd: update-initramfs -u
+  register: initramfs_update_result
+  until: initramfs_update_result is not failed
+  changed_when: initramfs_update_result is changed
+  listen: Update Initrd
+  when:
+    - ansible_os_family == "Debian"
+
+- name: Reboot System
+  ansible.builtin.reboot:
+    post_reboot_delay: 60
+    reboot_timeout: 300
+    msg: Reboot initiated by Ansible
+  register: reboot_result
+  until: reboot_result is not failed
+  changed_when: reboot_result is changed
+
+- name: Wait for System
+  # Comment
+  ansible.builtin.wait_for_connection:
+    delay: 60
+    sleep: 10
+  register: connection_result
+  until: connection_result is not failed
+  changed_when: connection_result is changed

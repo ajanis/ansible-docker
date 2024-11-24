@@ -1,0 +1,43 @@
+---
+- name: Configure kernel modules for nvidia
+  when:
+    - docker_install_nvidia | default(false)
+  tags:
+    - docker-install-nvidia
+  block:
+    - name: Blacklist nouveau kernel module when cuda cards are present
+      ansible.builtin.copy:
+        dest: /etc/modprobe.d/blacklist-nouveau.conf
+        content: |
+          blacklist nouveau
+          options nouveau modset=0
+        mode: "0644"
+      notify:
+        - Update Initrd
+        - System Reboot
+        - Wait for System
+
+    - name: Flush handlers
+      ansible.builtin.meta: flush_handlers
+
+- name: Add nvidia driver repo and packages
+  ansible.builtin.include_tasks:
+    file: docker-install-nvidia.yml
+    apply:
+      tags: docker-install-nvidia
+  when:
+    - docker_install_nvidia | default(False)
+    - not docker_vgpu.enabled | default(False)
+  tags:
+    - docker-install-nvidia
+
+- name: Add nvidia driver repo and packages
+  ansible.builtin.include_tasks:
+    file: docker-install-nvidia-vgpu.yml
+    apply:
+      tags: docker-install-nvidia
+  when:
+    - docker_install_nvidia | default(False)
+    - docker_vgpu.enabled | default(False)
+  tags:
+    - docker-install-nvidia
