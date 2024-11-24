@@ -67,10 +67,9 @@ docker_compose_args: |-
       "restart": "unless-stopped",
       "image": service.image + ":" + service.version,
       "logging": {
-        "driver": "local",
+        "driver": "journald",
         "options": {
-          "max-size": "10m",
-          "max-file": "3"
+          "tag": "docker-" + service_name | regex_replace("[^a-z0-9]+","-"),
         }
       }
     } -%}
@@ -127,11 +126,6 @@ docker_compose_args: |-
         ] -%}
       {%- endfor -%}
     {%- endif -%}
-    {%- if service.network_mode | default(None) is not none -%}
-      {%- set ns.service = ns.service | combine({
-        "network_mode": service.network_mode | default(omit)
-      }) -%}
-    {%- endif -%}
     {%- if service.privileged | default(None) is not none -%}
       {%- set ns.service = ns.service | combine({
         "privileged": service.privileged | default(omit)
@@ -179,6 +173,4 @@ docker_compose_args: |-
 docker_compose_projects:
   - project_name: "{{ docker_compose_project_name | default('docker') }}"
     definition:
-      x-logging:
-        driver: journald
       services: "{{ docker_compose_args }}"
