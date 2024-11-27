@@ -13,20 +13,20 @@
   tags:
     - docker-install-nvidia
 
-- name: Reboot host if necessary
-  tags:
-    - always
-  block:
-    - name: Flush handlers
-      ansible.builtin.meta: flush_handlers
+# - name: Reboot host if necessary
+#   tags:
+#     - always
+#   block:
+#     - name: Flush handlers
+#       ansible.builtin.meta: flush_handlers
 
-    - name: Reboot after docker updates
-      ansible.builtin.reboot:
-        connect_timeout: 10
-        reboot_timeout: 600
-        msg: Rebooting system via Ansible
-      when:
-        - docker_requires_reload|default(False)
+#     - name: Reboot after docker updates
+#       ansible.builtin.reboot:
+#         connect_timeout: 10
+#         reboot_timeout: 600
+#         msg: Rebooting system via Ansible
+#       when:
+#         - docker_requires_reload|default(False)
 
 - name: Enable and start or restart docker socket and service
   block:

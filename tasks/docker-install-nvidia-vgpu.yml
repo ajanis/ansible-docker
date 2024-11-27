@@ -39,6 +39,22 @@
       register: cache_updated
       until:
         - cache_updated is success
+    - name: Wait for locks
+      ansible.builtin.include_tasks:
+        file: wait_for_locks.yml
+
+    - name: Install grid video driver
+      ansible.builtin.apt:
+        name:
+          - "{{ docker_vgpu.driver }}"
+        state: present
+        autoremove: true
+        autocleean: true
+      when:
+        - dep_repo_added is sucess
+      register: install_nvidia_drivers
+      until: install_nvidia_drivers is not failed
+      notify: Reload Docker
 
 - name: Add Nvidia Grid Driver repository
   when: ansible_os_family == "RedHat"
@@ -58,23 +74,38 @@
       register: yum_repo_added
       until:
         - yum_repo_added is success
-
-- name: Add Nvidia Grid Driver package and license
-  tags:
-    - docker-install-nvidia
-  block:
     - name: Wait for locks
       ansible.builtin.include_tasks:
         file: wait_for_locks.yml
 
     - name: Install grid video driver
-      ansible.builtin.package:
+      ansible.builtin.dnf:
         name:
           - "{{ docker_vgpu.driver }}"
         state: present
+        alowerasing: true
+        allow_downgrade: true
+      when:
+        - yum_repo_added is success
       register: install_nvidia_drivers
       until: install_nvidia_drivers is not failed
       notify: Reload Docker
+- name: Add Nvidia Grid license
+  tags:
+    - docker-install-nvidia
+  block:
+    # - name: Wait for locks
+    #   ansible.builtin.include_tasks:
+    #     file: wait_for_locks.yml
+
+    # - name: Install grid video driver
+    #   ansible.builtin.package:
+    #     name:
+    #       - "{{ docker_vgpu.driver }}"
+    #     state: present
+    #   register: install_nvidia_drivers
+    #   until: install_nvidia_drivers is not failed
+    #   notify: Reload Docker
 
     - name: Retrieve grid license token
       ansible.builtin.uri:
