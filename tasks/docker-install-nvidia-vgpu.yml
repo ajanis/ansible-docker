@@ -46,7 +46,7 @@
           - "{{ docker_vgpu.driver }}"
         state: present
         autoremove: true
-        autocleean: true
+        autoclean: true
       register: install_nvidia_drivers
       until: install_nvidia_drivers is not failed
       notify: Reload Docker
