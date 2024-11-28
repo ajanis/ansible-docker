@@ -1,7 +1,5 @@
 ---
 - name: Remove existing Nvidia repositories
-  tags:
-    - docker-install-nvidia
   block:
     - name: Remove old repo files
       ansible.builtin.file:
@@ -13,9 +11,8 @@
         - /etc/yum/repos.d/nvidia-docker.repo
 
 - name: Add Nvidia Grid Driver repository
-  when: ansible_os_family == "Debian"
-  tags:
-    - docker-install-nvidia
+  when:
+    - ansible_os_family == "Debian"
   block:
     - name: Install Nvidia Grid repository
       ansible.builtin.deb822_repository:
@@ -50,16 +47,13 @@
         state: present
         autoremove: true
         autocleean: true
-      when:
-        - dep_repo_added is sucess
       register: install_nvidia_drivers
       until: install_nvidia_drivers is not failed
       notify: Reload Docker
 
 - name: Add Nvidia Grid Driver repository
-  when: ansible_os_family == "RedHat"
-  tags:
-    - docker-install-nvidia
+  when:
+    - ansible_os_family == "RedHat"
   block:
     - name: Install Nvidia Grid Repository
       ansible.builtin.yum_repository:
@@ -85,14 +79,11 @@
         state: present
         alowerasing: true
         allow_downgrade: true
-      when:
-        - yum_repo_added is success
       register: install_nvidia_drivers
       until: install_nvidia_drivers is not failed
       notify: Reload Docker
+
 - name: Add Nvidia Grid license
-  tags:
-    - docker-install-nvidia
   block:
     # - name: Wait for locks
     #   ansible.builtin.include_tasks:

@@ -2,8 +2,6 @@
 - name: Configure kernel modules for nvidia
   when:
     - docker_install_nvidia | default(false)
-  tags:
-    - docker-install-nvidia
   block:
     - name: Blacklist nouveau kernel module when cuda cards are present
       ansible.builtin.copy:
@@ -23,21 +21,13 @@
 - name: Add nvidia driver repo and packages
   ansible.builtin.include_tasks:
     file: docker-install-nvidia.yml
-    apply:
-      tags: docker-install-nvidia
   when:
     - docker_install_nvidia | default(False)
     - not docker_vgpu.enabled | default(False)
-  tags:
-    - docker-install-nvidia
 
-- name: Add nvidia driver repo and packages
+- name: Add nvidia grid driver repo and packages
   ansible.builtin.include_tasks:
     file: docker-install-nvidia-vgpu.yml
-    apply:
-      tags: docker-install-nvidia
   when:
     - docker_install_nvidia | default(False)
     - docker_vgpu.enabled | default(False)
-  tags:
-    - docker-install-nvidia

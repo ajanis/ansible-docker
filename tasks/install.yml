@@ -7,7 +7,8 @@
   ansible.builtin.include_tasks:
     file: docker-nvidia-setup.yml
     apply:
-      tags: docker-install-nvidia
+      tags:
+        - docker-install-nvidia
   when:
     - docker_install_nvidia | default(False)
   tags:
