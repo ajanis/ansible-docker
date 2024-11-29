@@ -1,7 +1,5 @@
 ---
 - name: Remove existing Nvidia repositories
-  tags:
-    - docker-install-nvidia
   block:
     - name: Remove old repo files
       ansible.builtin.file:
@@ -13,8 +11,6 @@
 
 - name: Add nvidia driver repo and packages
   when: ansible_os_family == "Debian"
-  tags:
-    - docker-install-nvidia
   block:
     - name: Add repository for nvidia container toolkit and runtime
       ansible.builtin.deb822_repository:
@@ -41,8 +37,6 @@
 
 - name: Add nvidia driver repo and packages
   when: ansible_os_family == "RedHat"
-  tags:
-    - docker-install-nvidia
   block:
     - name: Wait for locks
       ansible.builtin.include_tasks:
@@ -67,8 +61,6 @@
         state: present
 
 - name: Install Nvidia Docker and Container Runtime packages
-  tags:
-    - docker-install-nvidia
   block:
     - name: Wait for locks
       ansible.builtin.include_tasks:
@@ -99,8 +91,6 @@
       notify: Reload Docker
 
 - name: Patch nvidia drivers to allow more than 2 transcodes
-  tags:
-    - docker-install-nvidia
   block:
     - name: Create nvidia patch directory
       ansible.builtin.file:
