@@ -122,12 +122,45 @@
             mode: "0755"
           notify: Reload Docker
 
-        - name: Flush handlers
-          ansible.builtin.meta: flush_handlers
+- name: Update docker systemd service
+  block:
+    - name: Create systemd Docker service.d directory
+      ansible.builtin.file:
+        path: /etc/systemd/system/docker.service.d
+        state: directory
+        mode: "0644"
+        owner: root
+        group: root
+      notify: Reload Docker
 
-        - name: Register, enable and start or restart docker service
-          ansible.builtin.systemd:
-            name: docker
-            state: "{{ 'restarted' if (docker_requires_reload | default(false)) else 'started' }}"
-            enabled: true
-            daemon_reload: true
+    - name: Create systemd Docker override config
+      ansible.builtin.template:
+        src: docker-override.conf.j2
+        dest: /etc/systemd/system/docker.service.d/override.conf
+        mode: "0644"
+      register: docker_override
+      notify: Reload Docker
+
+    - name: Set docker ExecStart
+      ansible.builtin.set_fact:
+        docker_execstart: ExecStart=/usr/bin/dockerd -H unix:///var/run/docker.sock {% if docker_socket_listen %}-H tcp://{{ docker_socket_ip | default('0.0.0.0')
+          }}:{{ docker_socket_port | default('2375') }}{% endif %} --containerd=/run/containerd/containerd.sock
+
+    - name: Expose docker socket over TCP
+      ansible.builtin.lineinfile:
+        line: "{{ docker_execstart }}"
+        path: /etc/systemd/system/multi-user.target.wants/docker.service
+        backup: true
+        regexp: ^ExecStart=.*$
+        state: present
+      notify: Reload Docker
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Register, enable and start or restart docker service
+  ansible.builtin.systemd:
+    name: docker
+    state: "{{ 'restarted' if (docker_requires_reload | default(false)) else 'started' }}"
+    enabled: true
+    daemon_reload: true
