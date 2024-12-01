@@ -10,7 +10,9 @@ docker_install_nvidia: false
 docker_nvidia_gpu_ids: 0
 docker_nvidia_gpu_caps: compute,video,utility
 docker_nvidia_vgpu_enabled: false
-
+docker_socket_listen: false
+docker_socket_ip: 0.0.0.0
+docker_socket_port: "2375"
 docker_vgpu:
   enabled: "{{ docker_nvidia_vgpu_enabled }}"
   repo_name: example

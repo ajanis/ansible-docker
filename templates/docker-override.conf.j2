@@ -4,7 +4,3 @@ Documentation=https://docs.docker.com
 After=network-online.target docker.socket firewalld.service
 Wants=network-online.target
 Requires=docker.socket
-
-[Service]
-EnvironmentFile=-/etc/default/docker
-ExecStart=ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock
