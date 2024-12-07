@@ -25,6 +25,16 @@ docker_vgpu:
 
 docker_recreate: false
 
+docker_daemon_opts:
+  # experimental: true
+  # metrics-addr: "0.0.0.0:9323"
+  # network-control-plane-mtu: 9000
+  # mtu: 9000
+  # tls: false
+  # log-driver: journald
+  # log-opts:
+  #   mode: non-blocking
+
 docker_allowed_ports:
   - 22/tcp
   - 2376/tcp
