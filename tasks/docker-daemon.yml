@@ -59,9 +59,9 @@
           when:
             - docker_daemon_json.stat.exists
 
-    - name: Update Docker daemon config
+    - name: Update Docker daemon.json config
       block:
-        - name: Set empty array for docker daemon config
+        - name: Set empty array for docker daemon.json
           ansible.builtin.set_fact:
             docker_daemon_config: {}
           when:
@@ -79,19 +79,7 @@
           when:
             - docker_daemon_json.stat.exists
 
-        - name: Add experimental metrics endpoint
-          ansible.builtin.set_fact:
-            docker_daemon_config: "{{ docker_daemon_config | combine({'experimental': true, 'metrics-addr': '0.0.0.0:9323'}, recursive=true) }}"
-          when:
-            - has_docker|default(false)
-            - "'metrics-addr' not in docker_daemon_config|default({})"
-
-        - name: Echo docker config content
-          ansible.builtin.debug:
-            var: docker_daemon_config|to_nice_json
-            verbosity: 1
-
-        - name: Add Nvidia runtime to docker daemon config
+        - name: Add Nvidia runtime to docker daemon.json
           ansible.builtin.set_fact:
             docker_daemon_config: |
               {{ docker_daemon_config
@@ -115,11 +103,24 @@
             var: docker_daemon_config|to_nice_json
             verbosity: 1
 
-        - name: Write modified Docker daemon json
+        - name: Add custom configurations to docker daemon.json
+          ansible.builtin.set_fact:
+            docker_daemon_config: "{{ docker_daemon_config | combine(docker_daemon_opts) }}"
+          when:
+            - has_docker|default(false)
+            - docker_daemon_opts is not none | default(none)
+
+        - name: Echo docker config content
+          ansible.builtin.debug:
+            var: docker_daemon_config|to_nice_json
+            verbosity: 1
+
+        - name: Write modified Docker daemon.json
           ansible.builtin.copy:
             content: "{{ docker_daemon_config | to_nice_json }}"
             dest: /etc/docker/daemon.json
             mode: "0755"
+            backup: true
           notify: Reload Docker
 
 - name: Update docker systemd service
