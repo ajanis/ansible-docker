@@ -2,26 +2,16 @@
 - name: Configure systemd services for standalone Docker containers
   ansible.builtin.include_tasks:
     file: docker-container-systemd.yml
-    apply:
-      tags:
-        - container-systemd
   when:
     - docker_containers is defined
     - (docker_containers | length )> 0
-  tags:
-    - container-systemd
 
 - name: Configure systemd services for docker-compose containers
   ansible.builtin.include_tasks:
     file: docker-compose-systemd.yml
-    apply:
-      tags:
-        - container-systemd
   loop: "{{ docker_compose_projects }}"
   loop_control:
     loop_var: project_item
   when:
     - docker_compose_projects is defined
     - (docker_compose_projects | length) > 0
-  tags:
-    - container-systemd
