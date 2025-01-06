@@ -12,7 +12,7 @@
         mode: "0644"
       notify:
         - Update Initrd
-        - System Reboot
+        - Reboot System
         - Wait for System
 
     - name: Flush handlers
