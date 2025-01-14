@@ -1,32 +1,32 @@
 ---
-- name: Wait for locks
+- name: packages-debian | Wait for locks
   ansible.builtin.include_tasks:
     file: wait_for_locks.yml
 
-- name: Install Docker Community Edition
+- name: packages-debian | Install Docker Community Edition
   when:
     - docker_install_community_edition
   block:
-    - name: Get dpkg architecture
+    - name: packages-debian | Get dpkg architecture
       ansible.builtin.command: dpkg --print-architecture
       register: dpkg_architecture_result
       changed_when: false
 
-    - name: Set machine architecture
+    - name: packages-debian | Set machine architecture
       ansible.builtin.set_fact:
         dpkg_architecture: "{{ dpkg_architecture_result.stdout }}"
 
-    - name: Remove OS Repository Docker Packages
-      ansible.builtin.apt:
+    - name: packages-debian | Remove OS Repository Docker Packages
+      ansible.builtin.package:
         name: "{{ docker_io_pkgs }}"
         state: absent
 
-    - name: Remove old repo file
+    - name: packages-debian | Remove old repo file
       ansible.builtin.file:
         path: /etc/apt/sources.list.d/docker-ce.list
         state: absent
 
-    - name: Add Docker repository and GPG Key
+    - name: packages-debian | Add Docker repository and GPG Key
       ansible.builtin.deb822_repository:
         name: docker-ce
         types: deb
@@ -39,64 +39,57 @@
         signed_by: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
       register: docker_repo_added
 
-    - name: packages-debian | Update APT Repos # noqa no-handler
-      ansible.builtin.apt:
+    - name: packages-debian | Install Docker Packages
+      ansible.builtin.package:
+        name: '{{ docker_ce_pkgs }}'
         update_cache: true
-      register: cache_updated
-      until:
-        - cache_updated is not failed
-      when:
-        - docker_repo_added is changed
-
-    - name: Install Docker Community Edition Packages # noqa package-latest
-      ansible.builtin.apt:
-        name: "{{ docker_ce_pkgs }}"
         state: latest
       register: docker_pkg_install
       until: docker_pkg_install is not failed
       notify: Reload Docker
 
-- name: Install Docker from OS Repository
+- name: packages-debian | Install Docker from OS Repository
   when:
     - not docker_install_community_edition
   block:
-    - name: Remove Docker Community-Edition Packages
-      ansible.builtin.apt:
+    - name: packages-debian | Remove Docker Community-Edition Packages
+      ansible.builtin.package:
         name: "{{ docker_ce_pkgs }}"
         state: absent
 
-    - name: packages-debian | Update APT Repos # noqa no-handler
-      ansible.builtin.apt:
-        update_cache: true
-      register: cache_updated
-      until:
-        - cache_updated is not failed
+    - name: packages-debian | Remove docker-ce repo file
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/docker-ce.list
+        state: absent
 
-    - name: Install Docker Packages From OS Repository # noqa package-latest
-      ansible.builtin.apt:
+    - name: packages-debian | Install Docker Packages From OS Repository # noqa package-latest
+      ansible.builtin.package:
         name: "{{ docker_io_pkgs }}"
+        update_cache: true
         state: latest
       register: docker_pkg_install
       until: docker_pkg_install is not failed
       notify: Reload Docker
 
-- name: Create systemd override for Docker service
+- name: packages-debian | Create systemd override for Docker service
   when:
     - ansible_os_family == "Debian"
   block:
-    - name: Create systemd Docker service.d directory
+    - name: packages-debian | Create systemd Docker service.d directory
       ansible.builtin.file:
         path: /etc/systemd/system/docker.service.d
         state: directory
-        mode: "0644"
+        mode: "0777"
         owner: root
         group: root
       notify: Reload Docker
 
-    - name: Create systemd Docker override config
+    - name: packages-debian | Create systemd Docker override config
       ansible.builtin.template:
         src: docker-override.conf.j2
         dest: /etc/systemd/system/docker.service.d/override.conf
-        mode: "0644"
+        mode: "0777"
+        owner: root
+        group: root
       register: docker_override
       notify: Reload Docker
