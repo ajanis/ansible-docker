@@ -50,46 +50,46 @@
     name: "{{ docker_dependency_pkgs }}"
     state: present
 
-- name: Upgrade python-pip
-  ansible.builtin.pip:
-    name: pip
-    state: present
+# - name: Upgrade python-pip
+#   ansible.builtin.pip:
+#     name: pip
+#     state: present
 
-- name: Install Python Packages
-  when:
-    - ansible_python.version.major == 2
-  block:
-    - name: Install python docker modules
-      ansible.builtin.pip:
-        name: "{{ docker_py26_pkgs }}"
-        state: present
-        executable: pip2
-      when:
-        - ansible_python.version.minor <= 6
-    - name: Uninstall deprecated python 2.7 docker modules
-      ansible.builtin.pip:
-        name: "{{ docker_py26_pkgs }}"
-        state: absent
-        executable: pip2
-      when:
-        - ansible_python.version.minor >= 7
-    - name: Install python 2.7 docker modules
-      ansible.builtin.pip:
-        name: "{{ docker_py27_pkgs }}"
-        state: present
-        executable: pip2
-      when:
-        - ansible_python.version.minor >= 7
+# - name: Install Python Packages
+#   when:
+#     - ansible_python.version.major == 2
+#   block:
+#     - name: Install python docker modules
+#       ansible.builtin.pip:
+#         name: "{{ docker_py26_pkgs }}"
+#         state: present
+#         executable: pip2
+#       when:
+#         - ansible_python.version.minor <= 6
+#     - name: Uninstall deprecated python 2.7 docker modules
+#       ansible.builtin.pip:
+#         name: "{{ docker_py26_pkgs }}"
+#         state: absent
+#         executable: pip2
+#       when:
+#         - ansible_python.version.minor >= 7
+#     - name: Install python 2.7 docker modules
+#       ansible.builtin.pip:
+#         name: "{{ docker_py27_pkgs }}"
+#         state: present
+#         executable: pip2
+#       when:
+#         - ansible_python.version.minor >= 7
 
-- name: Install Python3 Packages
-  when:
-    - ansible_python.version.major == 3
-  block:
-    - name: Install python3 docker modules
-      ansible.builtin.pip:
-        name: "{{ docker_py3_pkgs }}"
-        state: present
-        executable: pip3
+# - name: Install Python3 Packages
+#   when:
+#     - ansible_python.version.major == 3
+#   block:
+#     - name: Install python3 docker modules
+#       ansible.builtin.pip:
+#         name: "{{ docker_py3_pkgs }}"
+#         state: present
+#         executable: pip3
 
 - name: Include Docker daemon.json common tasks
   ansible.builtin.include_tasks:
