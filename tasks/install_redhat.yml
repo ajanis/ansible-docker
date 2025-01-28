@@ -1,15 +1,15 @@
 ---
-- name: Wait for locks
+- name: packages_redhat | Wait for locks
   ansible.builtin.include_tasks:
     file: wait_for_locks.yml
 
-- name: Disable SELinux, Configure FirewallD ports to ACCEPT [RHEL/CentOS]
+- name: packages_redhat | Disable SELinux, Configure FirewallD ports to ACCEPT [RHEL/CentOS]
   block:
-    - name: Disable SELinux
+    - name: packages_redhat | Disable SELinux
       ansible.posix.selinux:
         state: disabled
 
-    - name: Configure Firewalld allowed ports
+    - name: packages_redhat | Configure Firewalld allowed ports
       ansible.posix.firewalld:
         port: "{{ item }}"
         permanent: true
@@ -17,29 +17,28 @@
         state: enabled
       loop: "{{ docker_allowed_ports }}"
 
-- name: Install Docker Community Edition (RHEL Major >= 8)
+- name: packages_redhat | Install Docker Community Edition (RHEL Major >= 8)
   when:
     - docker_install_community_edition
-    - ansible_distribution_major_version is version('7', '<=')
   block:
-    - name: Remove OS Repository Docker Packages
-      ansible.builtin.dnf:
+    - name: packages_redhat | Remove OS Repository Docker Packages
+      ansible.builtin.package:
         name: "{{ docker_io_pkgs }}"
         state: absent
 
-    - name: Install Docker GPG Key
+    - name: packages_redhat | Install Docker GPG Key
       ansible.builtin.rpm_key:
         key: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
         state: present
 
-    - name: Set up Docker Community Edition Repository
+    - name: packages_redhat | Set up Docker Community Edition Repository
       ansible.builtin.yum_repository:
         baseurl: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/$releasever/$basearch/{{ docker_ce_version }}"
         name: docker-ce
         description: Docker Community Edition
 
-    - name: Install Docker Community Edition Packages
-      ansible.builtin.dnf:
+    - name: packages_redhat | Install Docker Community Edition Packages
+      ansible.builtin.package:
         name: "{{ docker_ce_pkgs }}"
         update_cache: true
         state: latest
@@ -48,53 +47,22 @@
       until: docker_pkg_install is not failed
       notify: Reload Docker
 
-- name: Install Docker Community Edition (RHEL Major <= 7)
-  when:
-    - docker_install_community_edition
-    - ansible_distribution_major_version is version('8', '>=')
-
-  block:
-    - name: Remove OS Repository Docker Packages
-      ansible.builtin.dnf:
-        name: "{{ docker_io_pkgs }}"
-        state: absent
-
-    - name: Install Docker GPG Key
-      ansible.builtin.rpm_key:
-        key: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
-        state: present
-
-    - name: Set up Docker Community Edition Repository
-      ansible.builtin.yum_repository:
-        baseurl: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/7/$basearch/{{ docker_ce_version }}"
-        name: docker-ce
-        description: Docker Community Edition
-
-    - name: Manually Install containerd.io Package
-      ansible.builtin.dnf:
-        name: https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.6-3.3.el7.x86_64.rpm
-
-    - name: Install Docker Community Edition Packages
-      ansible.builtin.dnf:
-        name: "{{ docker_ce_pkgs }}"
-        update_cache: true
-        state: latest
-        update_only: true
-      register: docker_pkg_install
-      until: docker_pkg_install is not failed
-      notify: Reload Docker
-
-- name: Install Docker from OS Repository
+- name: packages_redhat | Install Docker from OS Repository
   when:
     - not docker_install_community_edition
   block:
-    - name: Remove Docker Community-Edition Packages
-      ansible.builtin.dnf:
+    - name: packages_redhat | Remove Docker Community-Edition Packages
+      ansible.builtin.package:
         name: "{{ docker_ce_pkgs }}"
         state: absent
 
-    - name: Install Docker Packages From OS Repository
-      ansible.builtin.dnf:
+    - name: packages-debian | Remove old repo file
+      ansible.builtin.file:
+        path: /etc/yum.repos.d/docker-ce.repo
+        state: absent
+
+    - name: packages_redhat | Install Docker Packages From OS Repository
+      ansible.builtin.package:
         name: "{{ docker_io_pkgs }}"
         update_cache: true
         state: latest

@@ -18,10 +18,12 @@ docker_io_pkgs:
 
 docker_ce_pkgs:
   - docker-ce
-  - containerd.io
   - docker-ce-cli
-  - docker-compose-plugin
+  - containerd.io
   - docker-buildx-plugin
+  - docker-compose-plugin
+  - python3-requests
+  - python3-docker
 
 docker_nvidia_driver_dependencies:
   - gcc
