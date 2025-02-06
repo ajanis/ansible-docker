@@ -65,7 +65,7 @@
 
     - name: Parse detected GPUs for inclusion in Docker daemon.json
       ansible.builtin.shell: >-
-        nvidia-smi --query-gpu=uuid --format=csv,noheader | jq -Rrn --arg prefix "gpu=" '$prefix + inputs'
+        nvidia-smi --query-gpu=uuid --format=csv,noheader | jq -Rrn --arg prefix "NVIDIA-GPU=" '$prefix + inputs'
       register: gpu_resources
       when: has_gpu | default(false)
       changed_when:
