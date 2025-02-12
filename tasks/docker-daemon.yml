@@ -65,7 +65,7 @@
 
     - name: Parse detected GPUs for inclusion in Docker daemon.json
       ansible.builtin.shell: >-
-        nvidia-smi --query-gpu=uuid --format=csv,noheader | jq -Rrn --arg prefix "NVIDIA-GPU=" '$prefix + inputs'
+        nvidia-smi --query-gpu=uuid --format=csv,noheader | jq -Rrn --arg prefix "NVIDIAGPU=" '$prefix + inputs'
       register: gpu_resources
       when: has_gpu | default(false)
       changed_when:
@@ -128,7 +128,7 @@
       notify: Reload Docker
       loop:
         - regexp: ^#?swarm-resource.*
-          line: swarm-resource = "DOCKER_RESOURCE_GPU"
+          line: swarm-resource = "DOCKER_RESOURCE_NVIDIAGPU"
         - regexp: ^#?accept-nvidia-visible-devices-as-volume-mounts.*
           line: accept-nvidia-visible-devices-as-volume-mounts = true
         - regexp: ^#?accept-nvidia-visible-devices-envvar-when-unprivileged.*
