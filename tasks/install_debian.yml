@@ -41,7 +41,7 @@
 
     - name: packages-debian | Install Docker Packages
       ansible.builtin.package:
-        name: '{{ docker_ce_pkgs }}'
+        name: "{{ docker_ce_pkgs }}"
         update_cache: true
         state: latest
       register: docker_pkg_install

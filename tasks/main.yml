@@ -19,24 +19,6 @@
       tags:
         - docker-install
 
-# - name: Include image build tasks
-#   tags:
-#     - docker
-#   ansible.builtin.include_tasks:
-#     file: image-build.yml
-#     apply:
-#       tags:
-#         - docker-build
-
-# - name: Include network setup tasks
-#   tags:
-#     - docker
-#   ansible.builtin.include_tasks:
-#     file: network-setup.yml
-#     apply:
-#       tags:
-#         - docker-network
-
 - name: Include container setup tasks
   tags:
     - docker-container
