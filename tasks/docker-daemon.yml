@@ -43,7 +43,6 @@
           {{ gpu_resources.stdout_lines | to_nice_json }}
         verbosity: 0
       when: gpu_resources | default(None) is not none
-      changed_when: false
 
     - name: Update Docker 'swarm' config to present GPU resources
       ansible.builtin.lineinfile:
