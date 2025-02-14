@@ -1,5 +1,68 @@
 ---
-- name: Get Docker base info
+# - name: Set empty array for Docker daemon.json if not found
+#   when:
+#     - not docker_daemon_json.stat.exists
+#   block:
+#     - name: Set empty array for docker daemon.json
+#       ansible.builtin.set_fact:
+#         docker_daemon_config: {}
+
+- name: Gather GPU info and set facts for Docker configuration
+  when:
+    - docker_install_nvidia | default(false) or docker_vgpu.enabled | default(false)
+  block:
+    - name: Collect GPU info
+      ansible.builtin.command:
+        cmd: nvidia-smi -L
+      register: nvidia_detected
+      changed_when: false
+      failed_when: false
+      check_mode: false
+      when:
+        - docker_install_nvidia | default(false) or docker_vgpu.enabled | default(false)
+
+    - name: Set 'has_gpu' fact
+      ansible.builtin.set_fact:
+        has_gpu: true
+      when: nvidia_detected.rc == 0
+
+    - name: Parse detected GPUs for inclusion in Docker daemon.json
+      ansible.builtin.shell: >-
+        set -o pipefail && nvidia-smi --query-gpu=uuid --format=csv,noheader | jq -Rrn --arg prefix "NVIDIAGPU=" '$prefix + inputs'
+      args:
+        executable: /bin/bash
+      register: gpu_resources
+      when: has_gpu | default(false)
+      changed_when:
+        - gpu_resources | default(None) is not none
+      check_mode: false
+
+    - name: Print GPU info
+      ansible.builtin.debug:
+        msg: |
+          {{ gpu_resources.stdout_lines | to_nice_json }}
+        verbosity: 0
+      when: gpu_resources | default(None) is not none
+
+    - name: Update Docker 'swarm' config to present GPU resources
+      ansible.builtin.lineinfile:
+        backup: true
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+        path: /etc/nvidia-container-runtime/config.toml
+      notify: Reload Docker
+      when:
+        - gpu_resources | default(None) is not none
+      loop:
+        - regexp: ^#?swarm-resource.*
+          line: swarm-resource = "DOCKER_RESOURCE_NVIDIAGPU"
+        - regexp: ^#?accept-nvidia-visible-devices-as-volume-mounts.*
+          line: accept-nvidia-visible-devices-as-volume-mounts = true
+        - regexp: ^#?accept-nvidia-visible-devices-envvar-when-unprivileged.*
+          line: accept-nvidia-visible-devices-envvar-when-unprivileged = true
+
+- name: Docker base info
   block:
     - name: Get docker version
       ansible.builtin.command:
@@ -13,65 +76,31 @@
         msg: "{{ docker_presence.stdout }}"
         verbosity: 0
 
-    - name: Check for existing docker daemon config
+- name: Docker daemon.json config
+  block:
+    - name: Check for existing Docker daemon.json
       ansible.builtin.stat:
         path: /etc/docker/daemon.json
       register: docker_daemon_json
 
-- name: Get any existing Docker daemon.json config
-  when:
-    - docker_daemon_json.stat.exists
-  block:
-    - name: Slurp JSON from file if present
+    - name: Slurp contents from daemon.json file if present
       ansible.builtin.slurp:
         src: /etc/docker/daemon.json
       register: docker_daemon_configfile
-
-    - name: Set daemon config to existing file content if found
-      ansible.builtin.set_fact:
-        docker_daemon_config: "{{ docker_daemon_configfile.content | b64decode }}"
-
-    - name: Echo docker config content
-      ansible.builtin.debug:
-        var: docker_daemon_configfile.content|b64decode
-        verbosity: 0
-
-- name: Set empty array for Docker daemon.json if not found
-  when:
-    - not docker_daemon_json.stat.exists
-  block:
-    - name: Set empty array for docker daemon.json
-      ansible.builtin.set_fact:
-        docker_daemon_config: {}
-
-- name: Collect Docker GPU configs
-  block:
-    - name: Check for GPU presence
-      ansible.builtin.command:
-        cmd: nvidia-smi -L
-      register: nvidia_detected
-      changed_when: false
       failed_when: false
+      when:
+        - docker_daemon_json.stat.exists
 
-    - name: Print GPU info
+    - name: Set Docker daemon.json content to slurpped file contents if found, otherwise set to empty array
+      ansible.builtin.set_fact:
+        docker_daemon_config: "{{ (docker_daemon_configfile.content | b64decode) if docker_daemon_json.stat.exists else {} }}"
+
+    - name: Print currently held daemon config contents
       ansible.builtin.debug:
-        msg: |
-          {{ nvidia_detected }}
+        var: docker_daemon_config | to_nice_json
         verbosity: 0
 
-    - name: Set 'has_gpu' fact
-      ansible.builtin.set_fact:
-        has_gpu: true
-
-    - name: Parse detected GPUs for inclusion in Docker daemon.json
-      ansible.builtin.shell: >-
-        nvidia-smi --query-gpu=uuid --format=csv,noheader | jq -Rrn --arg prefix "NVIDIAGPU=" '$prefix + inputs'
-      register: gpu_resources
-      when: has_gpu | default(false)
-      changed_when:
-        - gpu_resources | default(None) is not none
-
-    - name: Add Nvidia runtime to docker daemon.json
+    - name: Combine any defined [docker_daemon_opts] and detected [gpu_resources] into a new JSON array
       ansible.builtin.set_fact:
         docker_daemon_config: |-
           {%- set ns = namespace(configs={}) -%}
@@ -103,36 +132,18 @@
             {%- endif -%}
           {{ ns.configs }}
 
-    - name: Echo docker config content
+    - name: Print updated config contents
       ansible.builtin.debug:
-        var: docker_daemon_config|to_nice_json
+        var: docker_daemon_config | to_nice_json
         verbosity: 0
 
-    - name: Write modified Docker daemon.json
+    - name: Write updated configs to Docker daemon.json
       ansible.builtin.copy:
         content: "{{ docker_daemon_config | to_nice_json }}"
         dest: /etc/docker/daemon.json
         mode: "0755"
         backup: true
       notify: Reload Docker
-
-- name: Modify /etc/nvidia-container-runtime for Swarm GPUs
-  block:
-    - name: Enable 'DOCKER_RESOURCE_GPU' swarm-resource
-      ansible.builtin.lineinfile:
-        backup: true
-        regexp: "{{ item.regexp }}"
-        line: "{{ item.line }}"
-        state: present
-        path: /etc/nvidia-container-runtime/config.toml
-      notify: Reload Docker
-      loop:
-        - regexp: ^#?swarm-resource.*
-          line: swarm-resource = "DOCKER_RESOURCE_NVIDIAGPU"
-        - regexp: ^#?accept-nvidia-visible-devices-as-volume-mounts.*
-          line: accept-nvidia-visible-devices-as-volume-mounts = true
-        - regexp: ^#?accept-nvidia-visible-devices-envvar-when-unprivileged.*
-          line: accept-nvidia-visible-devices-envvar-when-unprivileged = true
 
 - name: Update docker systemd service
   block:
@@ -151,20 +162,6 @@
         dest: /etc/systemd/system/docker.service.d/override.conf
         mode: "0644"
       register: docker_override
-      notify: Reload Docker
-
-    - name: Set docker ExecStart
-      ansible.builtin.set_fact:
-        docker_execstart: ExecStart=/usr/bin/dockerd -H unix:///var/run/docker.sock {% if docker_socket_listen %}-H tcp://{{ docker_socket_ip | default('0.0.0.0')
-          }}:{{ docker_socket_port | default('2375') }}{% endif %} --containerd=/run/containerd/containerd.sock
-
-    - name: Expose docker socket over TCP
-      ansible.builtin.lineinfile:
-        line: "{{ docker_execstart }}"
-        path: /etc/systemd/system/multi-user.target.wants/docker.service
-        backup: true
-        regexp: ^ExecStart=.*$
-        state: present
       notify: Reload Docker
 
 - name: Flush handlers
