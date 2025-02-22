@@ -97,12 +97,20 @@
     #   register: install_nvidia_drivers
     #   until: install_nvidia_drivers is not failed
     #   notify: Reload Docker
+    - name: "Create /etc/nvidia/ClientConfigToken directory"
+      ansible.builtin.file:
+        dest: /etc/nvidia/ClientConfigToken
+        state: directory
+        mode: "0755"
+      when:
+        - docker_vgpu.enabled | default(false)
+        - docker_vgpu.license_url | default(none) is string
 
     - name: Retrieve grid license token
       ansible.builtin.uri:
         url: "{{ docker_vgpu.license_url | trim('/') }}/-/client-token"
         method: GET
-        dest: /etc/nvidia/ClientConfigToken/client_configuration_token_{{ '%d-%m-%Y-%H-%M-%S' | strftime }}.tok
+        dest: /etc/nvidia/ClientConfigToken/
         validate_certs: false
         mode: "0644"
       when:
