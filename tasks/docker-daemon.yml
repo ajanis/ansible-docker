@@ -120,7 +120,7 @@
             {%- if docker_daemon_opts | default(None) is not none -%}
               {%- set ns.configs = ns.configs | combine(docker_daemon_opts) -%}
             {%- endif -%}
-            {%- if gpu_resources | default(None) is not none -%}
+            {%- if gpu_resources.stdout_lines | default(None) is not none -%}
               {%- for gpu in gpu_resources.stdout_lines -%}
                 {%- set ns.gpus = ns.gpus + [
                   gpu
