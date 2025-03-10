@@ -35,6 +35,7 @@ docker_nvidia_driver_dependencies:
   - curl
   - gnupg-agent
   - software-properties-common
+  - jq
 
 docker_nvidia_driver_packages:
   - nvidia-headless-550

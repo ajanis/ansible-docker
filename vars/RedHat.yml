@@ -45,6 +45,7 @@ docker_nvidia_driver_dependencies:
   - pciutils
   - elfutils-libelf-devel
   - libglvnd-devel
+  - jq
 
 docker_nvidia_driver_packages:
   - kernel-headers-{{ ansible_kernel }}
