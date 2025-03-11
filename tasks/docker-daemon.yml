@@ -145,25 +145,6 @@
         backup: true
       notify: Reload Docker
 
-- name: Update docker systemd service
-  block:
-    - name: Create systemd Docker service.d directory
-      ansible.builtin.file:
-        path: /etc/systemd/system/docker.service.d
-        state: directory
-        mode: "0666"
-        owner: root
-        group: root
-      notify: Reload Docker
-
-    - name: Create systemd Docker override config
-      ansible.builtin.template:
-        src: docker-override.conf.j2
-        dest: /etc/systemd/system/docker.service.d/override.conf
-        mode: "0666"
-      register: docker_override
-      notify: Reload Docker
-
 - name: Flush handlers
   ansible.builtin.meta: flush_handlers
 

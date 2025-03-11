@@ -79,7 +79,7 @@
       ansible.builtin.file:
         path: /etc/systemd/system/docker.service.d
         state: directory
-        mode: "0666"
+        mode: "0655"
         owner: root
         group: root
       notify: Reload Docker
@@ -88,7 +88,7 @@
       ansible.builtin.template:
         src: docker-override.conf.j2
         dest: /etc/systemd/system/docker.service.d/override.conf
-        mode: "0666"
+        mode: "0655"
         owner: root
         group: root
       register: docker_override
