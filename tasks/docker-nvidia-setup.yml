@@ -78,3 +78,7 @@
     file: docker-nvidia-grid-driver.yml
   when:
     - docker_vgpu.enabled | default(False)
+
+- name: Include nvidia container runtime tasks
+  ansible.builtin.include_tasks:
+    file: docker-nvidia-container-runtime.yml
