@@ -1,0 +1,22 @@
+---
+- name: docker-nvidia-container-runtime | Wait for locks
+  ansible.builtin.include_tasks:
+    file: wait_for_locks.yml
+
+- name: docker-nvidia-container-runtime | Install dependencies for building kernel modules and drivers
+  ansible.builtin.package:
+    name: "{{ docker_nvidia_driver_dependencies }}"
+    state: present
+  register: install_nvidia_dependencies
+  until: install_nvidia_dependencies is not failed
+
+- name: docker-nvidia-container-runtime | Install nvidia container runtime and toolkit packages
+  ansible.builtin.package:
+    name: "{{ docker_nvidia_docker_packages }}"
+    state: present
+  register: install_nvidia_runtime
+  until: install_nvidia_runtime is not failed
+  notify: Reload Docker
+
+- name: docker-nvidia-container-runtime | Flush handlers
+  ansible.builtin.meta: flush_handlers
