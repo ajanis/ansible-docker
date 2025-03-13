@@ -1,0 +1,63 @@
+---
+- name: docker-nvidia-hw-driver | Nvidia grid uninstall tasks
+  block:
+    - name: docker-nvidia-hw-driver | Remove nvidia grid repository files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/apt/sources.list.d/prettybaked.sources
+        - /etc/yum/repos.d/prettybaked.repo
+
+    - name: docker-nvidia-hw-driver | Remove nvidia grid drivers
+      ansible.builtin.package:
+        name:
+          - "{{ docker_vgpu.driver }}"
+        state: absent
+        autoremove: true
+      register: uninstall_grid_drivers
+      until: uninstall_grid_drivers is not failed
+
+- name: docker-nvidia-hw-driver | Nvidia hardware-passthrough driver tasks
+  block:
+    - name: Wait for locks
+      ansible.builtin.include_tasks:
+        file: wait_for_locks.yml
+
+    - name: docker-nvidia-hw-driver | Install hardware video driver for our card
+      ansible.builtin.package:
+        name: "{{ docker_nvidia_driver_packages }}"
+        state: present
+        autoremove: true
+      register: install_nvidia_drivers
+      until: install_nvidia_drivers is not failed
+      notify: Reload Docker
+
+- name: docker-nvidia-hw-driver | Patch nvidia drivers to allow more than 2 transcodes
+  block:
+    - name: Create nvidia patch directory
+      ansible.builtin.file:
+        path: "{{ docker_nvidia_transcode_patch_dir }}"
+        state: directory
+        mode: "0755"
+        owner: root
+        group: root
+
+    - name: docker-nvidia-hw-driver | Clone patch repository
+      ansible.builtin.git:
+        repo: "{{ docker_nvidia_transcode_patch }}"
+        dest: "{{ docker_nvidia_transcode_patch_dir }}/nvidia-patch"
+        clone: true
+        update: true
+        version: master
+
+    - name: docker-nvidia-hw-driver | Run patch script
+      ansible.builtin.command:
+        cmd: ./patch.sh
+        chdir: "{{ docker_nvidia_transcode_patch_dir }}/nvidia-patch"
+        creates: "{{ docker_nvidia_transcode_patch_dir }}/libnvidia-encode-backup"
+      register: nvidia_transcode_patch_result
+      until: nvidia_transcode_patch_result is not failed
+      notify: Reload Docker
+      when:
+        - docker_nvidia_transcode_patch_dir ~ '/libnvidia-encode-backup' is not file

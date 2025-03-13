@@ -1,7 +1,5 @@
 ---
 - name: Configure kernel modules for nvidia
-  when:
-    - docker_install_nvidia | default(false)
   block:
     - name: Blacklist nouveau kernel module when cuda cards are present
       ansible.builtin.copy:
@@ -18,16 +16,69 @@
     - name: Flush handlers
       ansible.builtin.meta: flush_handlers
 
-- name: Add nvidia driver repo and packages
+- name: Add nvidia-docker repositories [Debian]
+  when: ansible_os_family == "Debian"
+  block:
+    - name: Add repository for nvidia container runtime and toolkit
+      ansible.builtin.deb822_repository:
+        name: nvidia-docker
+        types: deb
+        allow_insecure: true
+        uris:
+          - "{{ nvidia_repo_url }}/libnvidia-container/{{ docker_nvidia_version }}/deb/$(ARCH)/"
+        suites:
+          - /
+        signed_by: "{{ nvidia_repo_url }}/nvidia-container-runtime/gpgkey"
+      register: nvidia_repo_added
+
+    - name: Wait for locks
+      ansible.builtin.include_tasks:
+        file: wait_for_locks.yml
+
+    - name: Update APT Repos
+      ansible.builtin.apt:
+        update_cache: true
+      register: cache_updated
+      until:
+        - cache_updated is success
+
+- name: Add nvidia-docker repositories [RHEL]
+  when: ansible_os_family == "RedHat"
+  block:
+    - name: Wait for locks
+      ansible.builtin.include_tasks:
+        file: wait_for_locks.yml
+
+    - name: Enable EPEL repo
+      ansible.builtin.dnf:
+        name: "{{ epel_rpm }}"
+        state: present
+        update_cache: true
+
+    - name: Install yum repository for nvidia drivers
+      ansible.builtin.yum_repository:
+        name: cuda-{{ ansible_distribution }}
+        baseurl: http://developer.download.nvidia.com/compute/cuda/repos/{{ ansible_distribution }}/{{ ansible_machine }}
+        state: present
+
+    - name: Add yum repositories for nvidia container toolkit and runtime
+      ansible.builtin.yum_repository:
+        name: nvidia-docker
+        baseurl: "{{ nvidia_repo_url }}/libnvidia-container/{{ docker_nvidia_version }}/rpm/$basearch"
+        state: present
+
+- name: Include nvidia hardware passthrough driver tasks
   ansible.builtin.include_tasks:
-    file: docker-install-nvidia.yml
+    file: docker-nvidia-hw-driver.yml
   when:
-    - docker_install_nvidia | default(False)
     - not docker_vgpu.enabled | default(False)
 
-- name: Add nvidia grid driver repo and packages
+- name: Include nvidia grid driver tasks
   ansible.builtin.include_tasks:
-    file: docker-install-nvidia-vgpu.yml
+    file: docker-nvidia-grid-driver.yml
   when:
-    - docker_install_nvidia | default(False)
     - docker_vgpu.enabled | default(False)
+
+- name: Include nvidia container runtime tasks
+  ansible.builtin.include_tasks:
+    file: docker-nvidia-container-runtime.yml
