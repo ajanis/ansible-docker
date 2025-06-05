@@ -26,21 +26,21 @@
         has_gpu: true
       when: nvidia_detected.rc == 0
 
-    - name: Parse detected GPUs for inclusion in Docker daemon.json
-      ansible.builtin.shell: >-
-        set -o pipefail && nvidia-smi --query-gpu=uuid --format=csv,noheader | jq -Rrn --arg prefix "NVIDIAGPU=" '$prefix + inputs'
-      args:
-        executable: /bin/bash
-      register: gpu_resources
-      when: has_gpu | default(false)
-      changed_when:
-        - gpu_resources | default(None) is not none
-      check_mode: false
+    # - name: Parse detected GPUs for inclusion in Docker daemon.json
+    #   ansible.builtin.shell: >-
+    #     set -o pipefail && nvidia-smi --query-gpu=uuid --format=csv,noheader | jq -Rrn --arg prefix "NVIDIAGPU=" '$prefix + inputs'
+    #   args:
+    #     executable: /bin/bash
+    #   register: gpu_resources
+    #   when: has_gpu | default(false)
+    #   changed_when:
+    #     - gpu_resources | default(None) is not none
+    #   check_mode: false
 
     - name: Print GPU info
       ansible.builtin.debug:
         msg: |
-          {{ gpu_resources.stdout_lines | to_nice_json }}
+          {{ (gpu_resources.stdout_lines | to_nice_json) | default([]) }}
         verbosity: 0
       when: gpu_resources | default(None) is not none
 
@@ -120,6 +120,7 @@
             {%- if docker_daemon_opts | default(None) is not none -%}
               {%- set ns.configs = ns.configs | combine(docker_daemon_opts) -%}
             {%- endif -%}
+            {#
             {%- if gpu_resources.stdout_lines is defined -%}
               {%- for gpu in gpu_resources.stdout_lines -%}
                 {%- set ns.gpus = ns.gpus + [
@@ -130,6 +131,7 @@
                 "node-generic-resources": ns.gpus
               }) -%}
             {%- endif -%}
+            #}
           {{ ns.configs }}
 
     - name: Print updated config contents
