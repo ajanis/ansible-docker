@@ -1,10 +1,10 @@
 ---
 docker_dependency_pkgs:
   - gcc
-  - python3-pip
+  - python{{ ansible_facts['python']['version']['major'] }}-pip
   - gcc
-  - python3-devel
-  - python3-urllib3
+  - python{{ ansible_facts['python']['version']['major'] }}-devel
+  - python{{ ansible_facts['python']['version']['major'] }}-urllib3
 
 docker_install_community_edition: true
 
@@ -19,8 +19,8 @@ docker_ce_pkgs:
   - containerd.io
   - docker-buildx-plugin
   - docker-compose-plugin
-  - python3-requests
-  - python3-docker
+  - python{{ ansible_facts['python']['version']['major'] }}-requests
+  - python{{ ansible_facts['python']['version']['major'] }}-docker
 
 docker_py3_pkgs:
   - docker
