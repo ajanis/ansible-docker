@@ -42,6 +42,8 @@
       retries: 3
       delay: 5
       notify: Reload Docker
+      when:
+        - docker_nvidia_cuda_packages | default([]) | length > 0
 
 - name: docker-nvidia-hw-driver | Patch nvidia drivers to allow more than 2 transcodes
   block:
