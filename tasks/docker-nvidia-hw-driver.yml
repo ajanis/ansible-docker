@@ -33,7 +33,7 @@
       until: install_nvidia_drivers is not failed
       notify: Reload Docker
 
-    - name: docker-nvidia-hw-driver | Install CUDA packages
+    - name: docker-nvidia-hw-driver | Install cuDNN packages
       ansible.builtin.package:
         name: "{{ docker_nvidia_cuda_packages }}"
         state: present
