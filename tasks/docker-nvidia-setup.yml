@@ -47,7 +47,7 @@
             msg: >-
               Unable to install the NVIDIA CUDA keyring package from
               {{ docker_nvidia_cuda_keyring_url }}.
-              {{ ansible_failed_result.msg | default(ansible_failed_result | string) }}
+              Failed task: {{ ansible_failed_task.name | default('unknown') }}.
               Verify network connectivity and the checksum value.
       always:
         - name: Remove temporary CUDA keyring directory
