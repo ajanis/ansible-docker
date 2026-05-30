@@ -35,7 +35,6 @@
             url: "{{ docker_nvidia_cuda_keyring_url }}"
             dest: "{{ cuda_keyring_tempdir.path }}/cuda-keyring_{{ docker_nvidia_cuda_keyring_version }}_all.deb"
             mode: "0644"
-            checksum: "{{ docker_nvidia_cuda_keyring_checksum }}"
 
         - name: Install CUDA keyring package
           ansible.builtin.apt:
