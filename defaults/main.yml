@@ -5,6 +5,8 @@ docker_install_community_edition: true
 docker_ce_version: stable
 docker_repo_url: https://download.docker.com/linux
 nvidia_repo_url: https://nvidia.github.io
+docker_nvidia_cuda_keyring_url: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+docker_nvidia_cuda_keyring_path: /tmp/cuda-keyring_1.1-1_all.deb
 docker_nvidia_version: stable
 # CUDA major version used to build the cuDNN package name; override docker_nvidia_cudnn_package for a different suffix.
 docker_nvidia_cuda_version: 12
