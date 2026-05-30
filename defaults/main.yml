@@ -6,7 +6,7 @@ docker_ce_version: stable
 docker_repo_url: https://download.docker.com/linux
 nvidia_repo_url: https://nvidia.github.io
 docker_nvidia_version: stable
-# CUDA major version used to build NVIDIA cuDNN package names like cudnn9-cuda-12.
+# CUDA major version used to build NVIDIA cuDNN package names like cudnn9-cuda-12; override if NVIDIA uses a different distro-specific suffix.
 docker_nvidia_cuda_version: 12
 # Full NVIDIA cuDNN package name template built from docker_nvidia_cuda_version.
 docker_nvidia_cudnn_package: "cudnn9-cuda-{{ docker_nvidia_cuda_version }}"
