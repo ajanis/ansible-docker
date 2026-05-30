@@ -47,6 +47,7 @@
             state: absent
           when:
             - cuda_keyring_tempdir is defined
+            - cuda_keyring_tempdir.path is defined
 
     - name: Add repository for nvidia container runtime and toolkit
       ansible.builtin.deb822_repository:
