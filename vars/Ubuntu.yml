@@ -52,7 +52,7 @@ docker_nvidia_docker_packages:
 
 docker_nvidia_cuda_packages:
   - libnvidia-ml-dev
-  - nvidia-cudnn
+  - cudnn9-cuda-12
   - nvidia-compute-utils-565-server
   - libnvidia-compute-565-server
   - nvidia-cuda-dev
