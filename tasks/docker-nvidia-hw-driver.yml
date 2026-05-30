@@ -39,7 +39,7 @@
         state: present
       register: install_nvidia_cuda_packages
       until: install_nvidia_cuda_packages is not failed
-      retries: 3
+      retries: 30
       delay: 5
       notify: Reload Docker
       when:
