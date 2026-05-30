@@ -33,6 +33,19 @@
       until: install_nvidia_drivers is not failed
       notify: Reload Docker
 
+    - name: docker-nvidia-hw-driver | Install CUDA and cuDNN packages
+      ansible.builtin.package:
+        name: "{{ docker_nvidia_cuda_packages }}"
+        state: present
+      register: install_nvidia_cuda_packages
+      until: install_nvidia_cuda_packages is not failed
+      retries: 30
+      delay: 5
+      notify: Reload Docker
+      when:
+        - docker_nvidia_cuda_packages is defined
+        - docker_nvidia_cuda_packages | length > 0
+
 - name: docker-nvidia-hw-driver | Patch nvidia drivers to allow more than 2 transcodes
   block:
     - name: Create nvidia patch directory

@@ -51,8 +51,9 @@ docker_nvidia_docker_packages:
   - nvidia-container-toolkit
 
 docker_nvidia_cuda_packages:
+# Ubuntu keeps the additional CUDA toolkit support packages used by the existing NVIDIA stack.
   - libnvidia-ml-dev
-  - nvidia-cudnn
+  - "{{ docker_nvidia_cudnn_package }}"
   - nvidia-compute-utils-565-server
   - libnvidia-compute-565-server
   - nvidia-cuda-dev
