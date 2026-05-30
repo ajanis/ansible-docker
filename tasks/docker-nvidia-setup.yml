@@ -19,6 +19,46 @@
 - name: Add nvidia-docker repositories [Debian]
   when: ansible_os_family == "Debian"
   block:
+    - name: Add CUDA keyring [Ubuntu 22.04]
+      when:
+        - ansible_distribution == "Ubuntu"
+        - ansible_distribution_version == "22.04"
+      block:
+        - name: Create temporary CUDA keyring directory
+          ansible.builtin.tempfile:
+            state: directory
+            suffix: cuda-keyring
+          register: cuda_keyring_tempdir
+
+        - name: Download CUDA keyring package
+          ansible.builtin.get_url:
+            url: "{{ docker_nvidia_cuda_keyring_url }}"
+            dest: "{{ cuda_keyring_tempdir.path }}/cuda-keyring_{{ docker_nvidia_cuda_keyring_version }}_all.deb"
+            mode: "0644"
+            checksum: "{{ docker_nvidia_cuda_keyring_checksum }}"
+
+        - name: Install CUDA keyring package
+          ansible.builtin.apt:
+            deb: "{{ cuda_keyring_tempdir.path }}/cuda-keyring_{{ docker_nvidia_cuda_keyring_version }}_all.deb"
+            state: present
+      rescue:
+        - name: Fail CUDA keyring installation
+          ansible.builtin.fail:
+            msg: >-
+              Unable to install the NVIDIA CUDA keyring package from
+              {{ docker_nvidia_cuda_keyring_url }}.
+              Failed task: {{ ansible_failed_task.name | default('unknown') }}.
+              Verify network connectivity and the checksum value.
+      always:
+        - name: Remove temporary CUDA keyring directory
+          ansible.builtin.file:
+            path: "{{ cuda_keyring_tempdir.path }}"
+            state: absent
+          failed_when: false
+          when:
+            - cuda_keyring_tempdir is defined
+            - cuda_keyring_tempdir.path is defined
+
     - name: Add repository for nvidia container runtime and toolkit
       ansible.builtin.deb822_repository:
         name: nvidia-docker
