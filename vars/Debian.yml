@@ -47,7 +47,7 @@ docker_nvidia_driver_packages:
   - nvidia-kernel-source-550
 
 docker_nvidia_cuda_packages:
-  - "cudnn9-cuda-{{ docker_nvidia_cuda_version }}"
+  - "{{ docker_nvidia_cudnn_package }}"
 
 docker_nvidia_docker_packages:
   - libnvidia-container-tools
