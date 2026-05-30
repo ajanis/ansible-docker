@@ -41,7 +41,6 @@
           ansible.builtin.apt:
             deb: "{{ cuda_keyring_tempdir.path }}/cuda-keyring_{{ docker_nvidia_cuda_keyring_version }}_all.deb"
             state: present
-          register: cuda_keyring_install_result
       rescue:
         - name: Fail CUDA keyring installation
           ansible.builtin.fail:
