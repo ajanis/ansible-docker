@@ -40,11 +40,13 @@
         - name: Install CUDA keyring package
           ansible.builtin.apt:
             deb: "{{ cuda_keyring_tempdir.path }}/cuda-keyring_{{ docker_nvidia_cuda_keyring_version }}_all.deb"
-
+      always:
         - name: Remove temporary CUDA keyring directory
           ansible.builtin.file:
             path: "{{ cuda_keyring_tempdir.path }}"
             state: absent
+          when:
+            - cuda_keyring_tempdir is defined
 
     - name: Add repository for nvidia container runtime and toolkit
       ansible.builtin.deb822_repository:
