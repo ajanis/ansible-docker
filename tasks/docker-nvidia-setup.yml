@@ -49,6 +49,7 @@
           ansible.builtin.file:
             path: "{{ cuda_keyring_tempdir.path }}"
             state: absent
+          failed_when: false
           when:
             - cuda_keyring_tempdir is defined
             - cuda_keyring_tempdir.path is defined
