@@ -40,6 +40,10 @@
         - name: Install CUDA keyring package
           ansible.builtin.apt:
             deb: "{{ cuda_keyring_tempdir.path }}/cuda-keyring_{{ docker_nvidia_cuda_keyring_version }}_all.deb"
+      rescue:
+        - name: Fail CUDA keyring installation
+          ansible.builtin.fail:
+            msg: "Unable to install the NVIDIA CUDA keyring package from {{ docker_nvidia_cuda_keyring_url }}"
       always:
         - name: Remove temporary CUDA keyring directory
           ansible.builtin.file:
