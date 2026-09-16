@@ -72,5 +72,3 @@
       register: nvidia_transcode_patch_result
       until: nvidia_transcode_patch_result is not failed
       notify: Reload Docker
-      when:
-        - docker_nvidia_transcode_patch_dir ~ '/libnvidia-encode-backup' is not file

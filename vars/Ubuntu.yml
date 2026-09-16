@@ -38,10 +38,10 @@ docker_nvidia_driver_dependencies:
   - jq
 
 docker_nvidia_driver_packages:
-  - nvidia-headless-no-dkms-595-server
-  - nvidia-driver-595-server
-  - libnvidia-decode-595-server
-  - libnvidia-encode-595-server
+  - "nvidia-headless-no-dkms-{{ docker_nvidia_driver_version }}-server"
+  - "nvidia-driver-{{ docker_nvidia_driver_version }}-server"
+  - "libnvidia-decode-{{ docker_nvidia_driver_version }}-server"
+  - "libnvidia-encode-{{ docker_nvidia_driver_version }}-server"
 
 docker_nvidia_docker_packages:
   - libnvidia-container-tools
@@ -51,11 +51,11 @@ docker_nvidia_docker_packages:
   - nvidia-container-toolkit
 
 docker_nvidia_cuda_packages:
-# Ubuntu keeps the additional CUDA toolkit support packages used by the existing NVIDIA stack.
+  # Ubuntu keeps the additional CUDA toolkit support packages used by the existing NVIDIA stack.
   - libnvidia-ml-dev
   - "{{ docker_nvidia_cudnn_package }}"
-  - nvidia-compute-utils-595-server
-  - libnvidia-compute-595-server
+  - "nvidia-compute-utils-{{ docker_nvidia_driver_version }}-server"
+  - "libnvidia-compute-{{ docker_nvidia_driver_version }}-server"
   - nvidia-cuda-dev
   - nvidia-cuda-gdb
   - nvidia-cuda-toolkit-doc
